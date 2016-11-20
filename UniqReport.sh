@@ -48,12 +48,17 @@ if [ $# != 1 ]; then # Using != instead of -ne
 fi
 
 EXITCODE=0
+START_DATETIME=$(date --utc +'%F %H:%M:%S')
 
-find $1 -type f -print0 | xargs --null md5sum | sort -k1,32 | uniq -D -w 32 > UniqReport$(date +%Y%m%d_%H%M%S).txt
+# Use double quotes around $1 (find "$1"...) to protect against any spaces in the path in $1
+find "$1" -type f -print0 | xargs --null md5sum | sort -k1,32 | uniq -D -w 32 > UniqReport$(date +%Y%m%d_%H%M%S).txt
 
 # See https://unix.stackexchange.com/questions/14270/get-exit-status-of-process-thats-piped-to-another
 
-if [ `echo "${PIPESTATUS[@]}" | tr -s ' ' + | bc` -ne 0 ]; then EXITCODE=1; echo FAIL; fi
+if [ `echo "${PIPESTATUS[@]}" | tr -s ' ' + | bc` -ne 0 ]; then EXITCODE=1; echo "Error."; fi
 
-echo "Done; exit code $EXITCODE"
+echo "Done"
+echo "Started at $START_DATETIME"
+echo "Ended at   $(date --utc +'%F %H:%M:%S')"
+echo "Exit code: $EXITCODE"
 clean_up $EXITCODE
