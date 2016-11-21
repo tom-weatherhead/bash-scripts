@@ -47,7 +47,6 @@ error_exit()
 
 trap clean_up SIGHUP SIGINT SIGTERM
 
-# A maximum of 1048575 blocks per slice allows each slice to be as large as 4 GB - 4 KB, suitable for slicing a file into slices that can be stored on 32-bit file systems (e.g. FAT32), such as on many USB Flash drives.
 BLOCK_SIZE=4096 # Bytes
 NUM_BLOCKS_PER_SLICE_TO_FIT_WITHIN_4GB=1048575
 DEFAULT_NUM_BLOCKS_PER_SLICE=$NUM_BLOCKS_PER_SLICE_TO_FIT_WITHIN_4GB
@@ -71,25 +70,11 @@ if [ $NUM_BLOCKS_PER_SLICE -eq $NUM_BLOCKS_PER_SLICE_TO_FIT_WITHIN_4GB ]; then
 	echo "Each slice will be at most 4 GB minus 4 KB; ideal for 32-bit file systems."
 fi
 
-# LS_OUTPUT=$(ls -ln "$1")
-# SSS=${LS_OUTPUT[4]}
-# echo "SSS = $SSS"
-
-# DU_OUTPUT=$(du -b "$1")
-# DDD=${DU_OUTPUT[4]}
-# echo "DDD = $DDD"
-
-# TODO: 2016/11/20 : A bug to fix: if $1 is a symbolic link, stat will find the size of the link itself,
-# not the size of the file to which the link refers.
-FILESIZE=$(stat -c%s "$1")
-echo "FILESIZE = $FILESIZE"
-echo "BLOCK_SIZE = $BLOCK_SIZE"
+# TODO: Ensure that this ls-awk solution is portable.
+FILESIZE=$(ls -lH "$1" | awk '{print $5}')
 NUM_BLOCKS_REMAINING=$(((FILESIZE + BLOCK_SIZE - 1) / BLOCK_SIZE))
 SKIP=0
 i=0
-
-echo "NUM_BLOCKS_REMAINING = $NUM_BLOCKS_REMAINING"
-echo "NUM_BLOCKS_PER_SLICE = $NUM_BLOCKS_PER_SLICE"
 
 # while [ "$NUM_BLOCKS_REMAINING" -gt "$NUM_BLOCKS_PER_SLICE" ]; do		# Comparing strings?
 while [ $NUM_BLOCKS_REMAINING -gt $NUM_BLOCKS_PER_SLICE ]; do			# Comparing integers
@@ -98,9 +83,6 @@ while [ $NUM_BLOCKS_REMAINING -gt $NUM_BLOCKS_PER_SLICE ]; do			# Comparing inte
 	NUM_BLOCKS_REMAINING=$((NUM_BLOCKS_REMAINING - NUM_BLOCKS_PER_SLICE))
 	SKIP=$((SKIP + NUM_BLOCKS_PER_SLICE))
     i=$((i + 1))
-
-	echo "NUM_BLOCKS_REMAINING = $NUM_BLOCKS_REMAINING"
-	echo "NUM_BLOCKS_PER_SLICE = $NUM_BLOCKS_PER_SLICE"
 done
 
 echo "dd if=$1 of=Slice$i.bin iflag=fullblock bs=$BLOCK_SIZE skip=$SKIP"
