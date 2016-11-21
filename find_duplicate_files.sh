@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# UniqReport.sh - Find all duplicate files in a subtree of the file system - November 18, 2016
+# find_duplicate_files.sh - Find all duplicate files in a subtree of the file system - November 18, 2016
 
 PROGRAM_NAME=$(basename "$0")
 
