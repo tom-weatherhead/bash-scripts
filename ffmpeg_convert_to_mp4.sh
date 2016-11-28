@@ -24,6 +24,7 @@
 #   - ln -sf /path/to/ffmpeg_convert_to_mp4.sh
 #   - ln -s ffmpeg_convert_to_mp4.sh ffmpeg_convert_to_mp4
 # Note: As of November 27, 2016, the Windows version of ffmpeg cannot be invoked from Window 10 Bash in the current production version of Windows (build 14.393.447), but it can in the current Insider Preview build (14971).
+#   -> It was added in build 14951. See https://github.com/Microsoft/BashOnWindows/issues/333
 
 # CRF (constant rate factor) Example:
 #
@@ -70,20 +71,20 @@ PROGRAM_NAME=$(basename "$0")
 usage()
 {
 	# Output the usage message to the standard error stream.
-	echo
-	echo "Usage: $PROGRAM_NAME InputFilename" 1>&2
-#	echo "Usage: $PROGRAM_NAME [-c | -v] InputFilename" 1>&2
-#	echo "-c : Constant Bitrate Encoding (CBR) (default)" 1>&2
-#	echo "-v : Variable Bitrate Encoding (VBR)" 1>&2
-#	echo "-t n : Adjust the audio tempo: Speed up the audio by a factor of n" 1>&2
-	echo
+	echo 1>&2
+	echo "Usage: $PROGRAM_NAME [-c | -2] InputFilename" 1>&2
+	echo "-c : Constant Rate Factor (CRF) Encoding (default)" 1>&2
+	echo "-2 : Two-Pass Encoding" 1>&2
+	echo 1>&2
 }
 
 clean_up()
 {
 	# Perform end-of-execution housekeeping
 	# Optionally accepts an exit status
-	# rm -f $TEMP_FILE
+	# TEMP_FILES="ffmpeg2pass-*.log*"
+	# rm -f $TEMP_FILES
+	rm -f ffmpeg2pass-*.log*
 	exit $1
 }
 
@@ -96,32 +97,25 @@ error_exit()
 
 trap clean_up SIGHUP SIGINT SIGTERM
 
-# Using getopts to detect and handle options such as -c and -v : See https://stackoverflow.com/questions/16483119/example-of-how-to-use-getopts-in-bash
+# Using getopts to detect and handle command-line options : See https://stackoverflow.com/questions/16483119/example-of-how-to-use-getopts-in-bash
 
-CONSTANT_RATE_FACTOR=1 # Our default.
-# AUDIO_TEMPO_FACTOR=0
+MODE="c"
 
-#while getopts ":c:v:t:" option; do
-#    case $option in
-#        c)
-#			# echo "-c detected"
-#            ;;
-#        v)
-#            # If an option value followed the -v, it would be in $OPTARG or ${OPTARG}; e.g. if -vABC was passed in, $OPTARG would be ABC. There is no need to use = ; e.g. -v=ABC
-#			# echo "-v detected $OPTARG ${OPTARG}"
-#			CONSTANT_RATE_FACTOR=0
-#            ;;
-#        t)
-#			AUDIO_TEMPO_FACTOR=$OPTARG
-#			echo "AUDIO_TEMPO_FACTOR = $AUDIO_TEMPO_FACTOR"
-#            ;;
-#        *)
-#            usage
-#			error_exit "Unrecognized option: -$OPTARG"
-#            # No ;; is necessary here.
-#    esac
-#	shift
-#done
+while getopts ":2:c:" option; do
+    case $option in
+        2)
+			MODE="2"
+            ;;
+        c)
+			MODE="c"
+            ;;
+        *)
+            usage
+			error_exit "Unrecognized option: -$OPTARG"
+            # No ;; is necessary here.
+    esac
+	shift
+done
 
 if [ $# != 1 ]; then # Using != instead of -ne
 	usage
@@ -137,28 +131,53 @@ EXTENSION="${FILENAME_WITH_EXTENSION##*.}" # If FILENAME_WITH_EXTENSION contains
 # To get the filename without the extension, see https://stackoverflow.com/questions/965053/extract-filename-and-extension-in-bash
 FILENAME=$(basename -s ."$EXTENSION" "$1")
 
-if [ $CONSTANT_RATE_FACTOR != 0 ]; then
-	echo "Constant Rate Factor (CRF)"
-#	BITRATE_SETTING="-ab 160k"
-else
-	echo "Something other than Constant Rate Factor (CRF)"
-#	echo "Variable Bitrate Encoding (VBR)"
-#	echo "Using settings with a target bitrate of 165 Kbits/s and a bitrate range of 140...185"
-#	BITRATE_SETTING="-qscale:a 4"
+AUDIO_CODEC="aac"
+VIDEO_CODEC="libx264"
+
+case $MODE in
+	2)
+		echo "Something other than Constant Rate Factor (CRF)"
+		echo "Two-pass"
+		AUDIO_BITRATE="128k"
+		VIDEO_BITRATE="555k"
+		# Are we running on Windows or *nix? "uname -a" and "awk" should be able to tell us:
+		# - On Win10 Cygwin: "uname -a" generates: CYGWIN_NT-10.0 ... 2.6.0(0.304/5/3) 2016-08-31 14:32 x86_64 Cygwin
+		#   - uname -a | awk '{print $NF}' -> "Cygwin"
+		# - On Win10 Bash: "uname -a" generates: Linux ... 3.4.0+ #1 PREEMPT Thu Aug 1 17:06:05 CST 2013 x86_64 x86_64 x86_64 GNU/Linux
+		#   - uname -a | awk '{print $NF}' -> "GNU/Linux"
+		#
+		# See https://stackoverflow.com/questions/3466166/how-to-check-if-running-in-cygwin-mac-or-linux
+
+		# OS_TYPE=$(uname -a | awk '{print $NF}')
+		OS_TYPE=$(uname -o)
+		echo "OS_TYPE is $OS_TYPE"
+		
+		if [ $OS_TYPE == "Cygwin" ]; then
+			NULL_DEVICE="NUL" # "NUL" on Windows; "/dev/null" on Linux, etc.
+		else
+			NULL_DEVICE="/dev/null"
+		fi
+
+		echo "NULL_DEVICE is $NULL_DEVICE"
+		ffmpeg -y -i "$1" -c:v $VIDEO_CODEC -preset medium -b:v $VIDEO_BITRATE -pass 1 -c:a $AUDIO_CODEC -b:a $AUDIO_BITRATE -f mp4 $NULL_DEVICE && \
+			ffmpeg -i "$1" -c:v $VIDEO_CODEC -preset medium -b:v $VIDEO_BITRATE -pass 2 -c:a $AUDIO_CODEC -b:a $AUDIO_BITRATE "$FILENAME.mp4"
+		;;
+	c)
+		echo "Constant Rate Factor (CRF)"
+		# CRF: Can we re-encode the audio, or must we just copy it?
+		ffmpeg -i "$1" -c:v $VIDEO_CODEC -preset slow -crf 22 -c:a copy "$FILENAME.mp4" # || error_exit "ffmpeg returned an error: $?"
+		;;
+	*)
+		usage
+		error_exit "Bad mode; toast."
+esac
+
+EXIT_STATUS=$?
+
+echo "Exit status: $EXIT_STATUS"
+
+if [ $EXIT_STATUS != 0 ]; then
+	echo "ffmpeg experienced an error.";
 fi
 
-# bash cannot handle floating-point numbers, so invoke bc to do the floating-point comparisons.
-# See https://stackoverflow.com/questions/15224581/floating-point-comparison-with-variable-in-bash
-#if (( $(bc <<< "$AUDIO_TEMPO_FACTOR >= 0.5") && $(bc <<< "$AUDIO_TEMPO_FACTOR <= 2.0"))); then
-#	echo "The audio tempo will be adjusted by a factor of $AUDIO_TEMPO_FACTOR"
-#	echo "ffmpeg -i \"$1\" -vn -acodec libmp3lame -ac 2 $BITRATE_SETTING -filter:a \"atempo=$AUDIO_TEMPO_FACTOR\" -ar 48000 \"$FILENAME.mp3\""
-#	ffmpeg -i "$1" -vn -acodec libmp3lame -ac 2 $BITRATE_SETTING -filter:a "atempo=$AUDIO_TEMPO_FACTOR" -ar 48000 "$FILENAME.mp3" || error_exit "ffmpeg returned an error: $?" # I believe that $? will contain the error code that ffmpeg returned.
-#else
-#	echo "No valid AUDIO_TEMPO_FACTOR detected - the audio tempo will not be changed."
-#	echo "ffmpeg -i \"$1\" -vn -acodec libmp3lame -ac 2 $BITRATE_SETTING -ar 48000 \"$FILENAME.mp3\""
-#	ffmpeg -i "$1" -vn -acodec libmp3lame -ac 2 $BITRATE_SETTING -ar 48000 "$FILENAME.mp3" || error_exit "ffmpeg returned an error: $?" # I believe that $? will contain the error code that ffmpeg returned.
-#fi
-
-ffmpeg -i "$1" -c:v libx264 -preset slow -crf 22 -c:a copy "$FILENAME.mp4" || error_exit "ffmpeg returned an error: $?"
-
-# clean_up # Let ffmpeg be the last command in the script, so that ffmpeg's exit code will be the exit code of the script.
+clean_up $EXIT_STATUS
