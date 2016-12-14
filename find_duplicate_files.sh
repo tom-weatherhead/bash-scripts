@@ -7,9 +7,9 @@ PROGRAM_NAME=$(basename "$0")
 usage()
 {
 	# Output the usage message to the standard error stream.
-	echo
+	echo 1>&2
 	echo "Usage: $PROGRAM_NAME path_to_root_of_subtree" 1>&2
-	echo
+	echo 1>&2
 }
 
 clean_up()
@@ -47,18 +47,26 @@ if [ $# != 1 ]; then # Using != instead of -ne
 	error_exit "Exactly one path must be specified as a command-line argument."
 fi
 
+REPORT_FILENAME=duplicate_files_report_$(date --utc +%Y%m%d_%H%M%S).txt
+START_DATETIME=$(date --utc +'%F at %H:%M:%S')
+
+echo "Duplicate files report for the path $1" > $REPORT_FILENAME
+echo >> $REPORT_FILENAME
+echo "Generated on $START_DATETIME UTC" >> $REPORT_FILENAME
+echo >> $REPORT_FILENAME
+
 EXITCODE=0
-START_DATETIME=$(date --utc +'%F %H:%M:%S')
 
 # Use double quotes around $1 (find "$1"...) to protect against any spaces in the path in $1
-find "$1" -type f -print0 | xargs --null md5sum | sort -k1,32 | uniq -D -w 32 > UniqReport$(date +%Y%m%d_%H%M%S).txt
+# 2016/12/12 : Changed "sort -k1,32" to "sort"
+find "$1" -type f -print0 | xargs --null md5sum | sort | uniq -D -w 32 >> $REPORT_FILENAME
 
 # See https://unix.stackexchange.com/questions/14270/get-exit-status-of-process-thats-piped-to-another
 
-if [ `echo "${PIPESTATUS[@]}" | tr -s ' ' + | bc` -ne 0 ]; then EXITCODE=1; echo "Error."; fi
+if [ `echo "${PIPESTATUS[@]}" | tr -s ' ' + | bc` -ne 0 ]; then EXITCODE=1; echo "Error." 1>&2; fi
 
 echo "Done"
-echo "Started at $START_DATETIME"
-echo "Ended at   $(date --utc +'%F %H:%M:%S')"
+echo "Started on $START_DATETIME"
+echo "Ended on   $(date --utc +'%F at %H:%M:%S') UTC"
 echo "Exit code: $EXITCODE"
 clean_up $EXITCODE
