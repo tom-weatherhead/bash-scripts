@@ -5,3 +5,4 @@ uname -a
 who 
 who -r 
 lsb_release -a
+echo "Done."
