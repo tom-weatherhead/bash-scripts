@@ -72,9 +72,15 @@ usage()
 {
 	# Output the usage message to the standard error stream.
 	echo 1>&2
-	echo "Usage: $PROGRAM_NAME [-c | -2] InputFilename" 1>&2
-	echo "-c : Constant Rate Factor (CRF) Encoding (default)" 1>&2
+	echo "Usage: $PROGRAM_NAME [-c [crf] | -2] InputFilename" 1>&2
+	echo "-c : Constant Rate Factor (CRF) Encoding (default); 17 <= crf <= 27" 1>&2
 	echo "-2 : Two-Pass Encoding" 1>&2
+	echo 1>&2
+	echo "Examples:" 1>&2
+	echo "$PROGRAM_NAME InputFilename" 1>&2
+	echo "$PROGRAM_NAME -c -- InputFilename" 1>&2
+	echo "$PROGRAM_NAME -c 17 InputFilename" 1>&2
+	echo "$PROGRAM_NAME -2 InputFilename" 1>&2
 	echo 1>&2
 }
 
@@ -95,11 +101,23 @@ error_exit()
 	clean_up 1
 }
 
+where_test()
+{
+	where $1 > /dev/null 2>&1 && {
+		echo "Command '$1' found."
+	} || {
+		error_exit "Command '$1' not found; exiting."
+	}
+}
+
 trap clean_up SIGHUP SIGINT SIGTERM
+
+where_test ffmpeg
 
 # Using getopts to detect and handle command-line options : See https://stackoverflow.com/questions/16483119/example-of-how-to-use-getopts-in-bash
 
 MODE="c"
+CRF=22
 
 while getopts ":2:c:" option; do
     case $option in
@@ -108,14 +126,25 @@ while getopts ":2:c:" option; do
             ;;
         c)
 			MODE="c"
+			# If $OPTARG is not empty (-z), ensure that $OPTARG is an integer in the range [17, 27]
+			# (we may need ro use bc to check this),
+			# and then pass it to ffmpeg as the constant rate factor.
+
+			# If $OPTARG is not parseable as an integer, Bash will throw an error, which will be trapped.
+			
+			if ! [ -z $OPTARG ] && [ $OPTARG -ge 17 ] && [ $OPTARG -le 27 ]; then
+				CRF=$OPTARG
+			fi
             ;;
         *)
             usage
 			error_exit "Unrecognized option: -$OPTARG"
             # No ;; is necessary here.
     esac
-	shift
+	# shift
 done
+
+shift $((OPTIND -1)) # TODO: Uncomment this line, and delete the "shift" in the loop above.
 
 if [ $# != 1 ]; then # Using != instead of -ne
 	usage
@@ -165,7 +194,13 @@ case $MODE in
 	c)
 		echo "Constant Rate Factor (CRF)"
 		# CRF: Can we re-encode the audio, or must we just copy it?
-		ffmpeg -i "$1" -c:v $VIDEO_CODEC -preset slow -crf 22 -c:a copy "$FILENAME.mp4" # || error_exit "ffmpeg returned an error: $?"
+		
+		if [ $CRF != 22 ]; then
+			FILENAME="${FILENAME}_crf$CRF"
+		fi
+		
+		# echo "ffmpeg -i $1 -c:v $VIDEO_CODEC -preset slow -crf $CRF -c:a copy $FILENAME.mp4"
+		ffmpeg -i "$1" -c:v $VIDEO_CODEC -preset slow -crf $CRF -c:a copy "$FILENAME.mp4" # || error_exit "ffmpeg returned an error: $?"
 		;;
 	*)
 		usage

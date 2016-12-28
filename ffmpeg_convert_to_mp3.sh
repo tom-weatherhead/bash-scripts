@@ -58,13 +58,25 @@ error_exit()
 	clean_up 1
 }
 
+where_test()
+{
+	where $1 > /dev/null 2>&1 && {
+		echo "Command '$1' found."
+	} || {
+		error_exit "Command '$1' not found; exiting."
+	}
+}
+
 # This trap command works on bash, but on Ubuntu 16.10, dash (via sh) complains: "trap: SIGHUP: bad trap" ; another reason to use #!/bin/bash instead of #!/bin/sh ?
 # See e.g. https://lists.yoctoproject.org/pipermail/yocto/2013-April/013125.html
 trap clean_up SIGHUP SIGINT SIGTERM
 
+where_test ffmpeg
+
 # Using getopts to detect and handle options such as -c and -v : See https://stackoverflow.com/questions/16483119/example-of-how-to-use-getopts-in-bash
 
 CONSTANT_BITRATE=1 # Our default.
+AUDIO_TEMPO_FACTOR_SET=0 # Use this variable so that "bc" does not need to be present unless the user wishes to change the audio tempo.
 AUDIO_TEMPO_FACTOR=0
 
 while getopts ":c:v:t:" option; do
@@ -78,6 +90,7 @@ while getopts ":c:v:t:" option; do
 			CONSTANT_BITRATE=0
             ;;
         t)
+			AUDIO_TEMPO_FACTOR_SET=1
 			AUDIO_TEMPO_FACTOR=$OPTARG
 			echo "AUDIO_TEMPO_FACTOR = $AUDIO_TEMPO_FACTOR"
             ;;
@@ -86,8 +99,10 @@ while getopts ":c:v:t:" option; do
 			error_exit "Unrecognized option: -$OPTARG"
             # No ;; is necessary here.
     esac
-	shift
+	# shift
 done
+
+shift $((OPTIND -1)) # TODO: Uncomment this line, and delete the "shift" in the loop above.
 
 #echo "\$* is $*" # I saw $* metioned in https://unix.stackexchange.com/questions/156223/bash-how-to-remove-options-from-parameters-after-processing
 
@@ -122,9 +137,16 @@ else
 	BITRATE_SETTING="-qscale:a 4"
 fi
 
-# bash cannot handle floating-point numbers, so invoke bc to do the floating-point comparisons.
-# See https://stackoverflow.com/questions/15224581/floating-point-comparison-with-variable-in-bash
-if (( $(bc <<< "$AUDIO_TEMPO_FACTOR >= 0.5") && $(bc <<< "$AUDIO_TEMPO_FACTOR <= 2.0"))); then
+if [ $AUDIO_TEMPO_FACTOR_SET != 0 ]; then
+	# bash cannot handle floating-point numbers, so invoke bc to do the floating-point comparisons.
+	# See https://stackoverflow.com/questions/15224581/floating-point-comparison-with-variable-in-bash
+
+	where_test bc
+
+	if (( $(bc <<< "$AUDIO_TEMPO_FACTOR < 0.5") || $(bc <<< "$AUDIO_TEMPO_FACTOR > 2.0"))); then
+		error_exit "The audio tempo factor is not in the range [0.5, 2.0]; exiting."
+	fi
+
 	echo "The audio tempo will be adjusted by a factor of $AUDIO_TEMPO_FACTOR"
 	echo "ffmpeg -i \"$1\" -vn -acodec libmp3lame -ac 2 $BITRATE_SETTING -filter:a \"atempo=$AUDIO_TEMPO_FACTOR\" -ar 48000 \"$FILENAME.mp3\""
 	ffmpeg -i "$1" -vn -acodec libmp3lame -ac 2 $BITRATE_SETTING -filter:a "atempo=$AUDIO_TEMPO_FACTOR" -ar 48000 "$FILENAME.mp3" || error_exit "ffmpeg returned an error: $?" # I believe that $? will contain the error code that ffmpeg returned.

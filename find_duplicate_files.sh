@@ -50,10 +50,10 @@ fi
 REPORT_FILENAME=duplicate_files_report_$(date --utc +%Y%m%d_%H%M%S).txt
 START_DATETIME=$(date --utc +'%F at %H:%M:%S')
 
-echo "Duplicate files report for the path $1" > $REPORT_FILENAME
-echo >> $REPORT_FILENAME
-echo "Generated on $START_DATETIME UTC" >> $REPORT_FILENAME
-echo >> $REPORT_FILENAME
+echo "Duplicate files report for the path $1\n" > $REPORT_FILENAME
+# echo >> $REPORT_FILENAME
+echo "Generated on $START_DATETIME UTC\n" >> $REPORT_FILENAME
+# echo >> $REPORT_FILENAME
 
 EXITCODE=0
 
