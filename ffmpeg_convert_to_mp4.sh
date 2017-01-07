@@ -68,20 +68,26 @@
 
 PROGRAM_NAME=$(basename "$0")
 
+echo_error_message()
+{
+	# echo $1 1>&2
+	echo $1 2>&1
+}
+
 usage()
 {
 	# Output the usage message to the standard error stream.
-	echo 1>&2
-	echo "Usage: $PROGRAM_NAME [-c [crf] | -2] InputFilename" 1>&2
-	echo "-c : Constant Rate Factor (CRF) Encoding (default); 17 <= crf <= 27" 1>&2
-	echo "-2 : Two-Pass Encoding" 1>&2
-	echo 1>&2
-	echo "Examples:" 1>&2
-	echo "$PROGRAM_NAME InputFilename" 1>&2
-	echo "$PROGRAM_NAME -c -- InputFilename" 1>&2
-	echo "$PROGRAM_NAME -c 17 InputFilename" 1>&2
-	echo "$PROGRAM_NAME -2 InputFilename" 1>&2
-	echo 1>&2
+	echo_error_message
+	echo_error_message "Usage: $PROGRAM_NAME [-c [crf] | -2] InputFilename"
+	echo_error_message "-c : Constant Rate Factor (CRF) Encoding (default); 17 <= crf <= 27"
+	echo_error_message "-2 : Two-Pass Encoding"
+	echo_error_message
+	echo_error_message "Examples:"
+	echo_error_message "$PROGRAM_NAME InputFilename"
+	echo_error_message "$PROGRAM_NAME -c -- InputFilename"
+	echo_error_message "$PROGRAM_NAME -c 17 InputFilename"
+	echo_error_message "$PROGRAM_NAME -2 InputFilename"
+	echo_error_message
 }
 
 clean_up()
@@ -97,22 +103,26 @@ clean_up()
 error_exit()
 {
 	# Display an error message and exit
-	echo "${PROGRAM_NAME}: ${1:-"Unknown Error"}" 1>&2
+	echo_error_message "${PROGRAM_NAME}: Error: ${1:-"Unknown Error"}"
 	clean_up 1
 }
 
-where_test()
+which_test()
 {
-	where $1 > /dev/null 2>&1 && {
+	which $1 1>/dev/null 2>&1 && {
 		echo "Command '$1' found."
 	} || {
+		echo_error_message
+		echo_error_message "The command '$1' was not found in the path."
+		echo_error_message "To view the path, execute this command: echo \$PATH"
+		echo_error_message
 		error_exit "Command '$1' not found; exiting."
 	}
 }
 
 trap clean_up SIGHUP SIGINT SIGTERM
 
-where_test ffmpeg
+which_test ffmpeg
 
 # Using getopts to detect and handle command-line options : See https://stackoverflow.com/questions/16483119/example-of-how-to-use-getopts-in-bash
 
@@ -141,10 +151,9 @@ while getopts ":2:c:" option; do
 			error_exit "Unrecognized option: -$OPTARG"
             # No ;; is necessary here.
     esac
-	# shift
 done
 
-shift $((OPTIND -1)) # TODO: Uncomment this line, and delete the "shift" in the loop above.
+shift $((OPTIND -1))
 
 if [ $# != 1 ]; then # Using != instead of -ne
 	usage
@@ -212,7 +221,7 @@ EXIT_STATUS=$?
 echo "Exit status: $EXIT_STATUS"
 
 if [ $EXIT_STATUS != 0 ]; then
-	echo "ffmpeg experienced an error.";
+	echo "ffmpeg experienced an error."
 fi
 
 clean_up $EXIT_STATUS

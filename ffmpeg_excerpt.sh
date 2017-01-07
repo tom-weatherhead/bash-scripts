@@ -2,14 +2,20 @@
 
 PROGRAM_NAME=$(basename "$0")
 
+echo_error_message()
+{
+	# echo $1 1>&2
+	echo $1 2>&1
+}
+
 usage()
 {
 	# Output the usage message to the standard error stream.
-	echo 1>&2
-	echo "Usage: $PROGRAM_NAME -s StartTime -t EndTime InputFilename" 1>&2
-	echo 1>&2
-	echo "E.g. $PROGRAM_NAME -s 13:37 -t 1:06:23 foo/bar/video.mp4" 1>&2
-	echo 1>&2
+	echo_error_message
+	echo_error_message "Usage: $PROGRAM_NAME -s StartTime -t EndTime InputFilename"
+	echo_error_message
+	echo_error_message "E.g. $PROGRAM_NAME -s 13:37 -t 1:06:23 foo/bar/video.mp4"
+	echo_error_message
 }
 
 clean_up()
@@ -25,22 +31,26 @@ clean_up()
 error_exit()
 {
 	# Display an error message and exit
-	echo "${PROGRAM_NAME}: ${1:-"Unknown Error"}" 1>&2
+	echo_error_message "${PROGRAM_NAME}: Error: ${1:-"Unknown Error"}"
 	clean_up 1
 }
 
-where_test()
+which_test()
 {
-	where $1 > /dev/null 2>&1 && {
+	which $1 1>/dev/null 2>&1 && {
 		echo "Command '$1' found."
 	} || {
+		echo_error_message
+		echo_error_message "The command '$1' was not found in the path."
+		echo_error_message "To view the path, execute this command: echo \$PATH"
+		echo_error_message
 		error_exit "Command '$1' not found; exiting."
 	}
 }
 
 trap clean_up SIGHUP SIGINT SIGTERM
 
-where_test ffmpeg
+which_test ffmpeg
 
 # Using getopts to detect and handle command-line options : See https://stackoverflow.com/questions/16483119/example-of-how-to-use-getopts-in-bash
 
@@ -51,8 +61,7 @@ parse_time()
 	elif [[ $1 =~ ^([0-9]{1,2}):([0-9]{2})$ ]]; then
 		echo ${BASH_REMATCH[1]}m${BASH_REMATCH[2]}s
 	else
-		echo "No regex match for $1"
-		exit 1
+		error_exit "No regex match for $1"
 	fi
 }
 
@@ -129,7 +138,7 @@ EXIT_STATUS=$?
 echo "Exit status: $EXIT_STATUS"
 
 if [ $EXIT_STATUS != 0 ]; then
-	echo "ffmpeg experienced an error.";
+	echo "ffmpeg experienced an error."
 fi
 
 clean_up $EXIT_STATUS

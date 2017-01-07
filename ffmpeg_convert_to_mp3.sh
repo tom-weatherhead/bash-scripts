@@ -32,15 +32,21 @@
 
 PROGRAM_NAME=$(basename "$0")
 
+echo_error_message()
+{
+	# echo $1 1>&2
+	echo $1 2>&1
+}
+
 usage()
 {
 	# Output the usage message to the standard error stream.
-	echo
-	echo "Usage: $PROGRAM_NAME [-c | -v] InputMP4Filename" 1>&2
-	echo "-c : Constant Bitrate Encoding (CBR) (default)" 1>&2
-	echo "-v : Variable Bitrate Encoding (VBR)" 1>&2
-	echo "-t n : Adjust the audio tempo: Speed up the audio by a factor of n" 1>&2
-	echo
+	echo_error_message
+	echo_error_message "Usage: $PROGRAM_NAME [-c | -v] InputMP4Filename"
+	echo_error_message "-c : Constant Bitrate Encoding (CBR) (default)"
+	echo_error_message "-v : Variable Bitrate Encoding (VBR)"
+	echo_error_message "-t n : Adjust the audio tempo: Speed up the audio by a factor of n"
+	echo_error_message
 }
 
 clean_up()
@@ -54,15 +60,19 @@ clean_up()
 error_exit()
 {
 	# Display an error message and exit
-	echo "${PROGRAM_NAME}: ${1:-"Unknown Error"}" 1>&2
+	echo_error_message "${PROGRAM_NAME}: Error: ${1:-"Unknown Error"}"
 	clean_up 1
 }
 
-where_test()
+which_test()
 {
-	where $1 > /dev/null 2>&1 && {
+	which $1 1>/dev/null 2>&1 && {
 		echo "Command '$1' found."
 	} || {
+		echo_error_message
+		echo_error_message "The command '$1' was not found in the path."
+		echo_error_message "To view the path, execute this command: echo \$PATH"
+		echo_error_message
 		error_exit "Command '$1' not found; exiting."
 	}
 }
@@ -71,7 +81,7 @@ where_test()
 # See e.g. https://lists.yoctoproject.org/pipermail/yocto/2013-April/013125.html
 trap clean_up SIGHUP SIGINT SIGTERM
 
-where_test ffmpeg
+which_test ffmpeg
 
 # Using getopts to detect and handle options such as -c and -v : See https://stackoverflow.com/questions/16483119/example-of-how-to-use-getopts-in-bash
 
@@ -99,10 +109,9 @@ while getopts ":c:v:t:" option; do
 			error_exit "Unrecognized option: -$OPTARG"
             # No ;; is necessary here.
     esac
-	# shift
 done
 
-shift $((OPTIND -1)) # TODO: Uncomment this line, and delete the "shift" in the loop above.
+shift $((OPTIND -1))
 
 #echo "\$* is $*" # I saw $* metioned in https://unix.stackexchange.com/questions/156223/bash-how-to-remove-options-from-parameters-after-processing
 
@@ -141,7 +150,7 @@ if [ $AUDIO_TEMPO_FACTOR_SET != 0 ]; then
 	# bash cannot handle floating-point numbers, so invoke bc to do the floating-point comparisons.
 	# See https://stackoverflow.com/questions/15224581/floating-point-comparison-with-variable-in-bash
 
-	where_test bc
+	which_test bc
 
 	if (( $(bc <<< "$AUDIO_TEMPO_FACTOR < 0.5") || $(bc <<< "$AUDIO_TEMPO_FACTOR > 2.0"))); then
 		error_exit "The audio tempo factor is not in the range [0.5, 2.0]; exiting."
@@ -156,4 +165,12 @@ else
 	ffmpeg -i "$1" -vn -acodec libmp3lame -ac 2 $BITRATE_SETTING -ar 48000 "$FILENAME.mp3" || error_exit "ffmpeg returned an error: $?" # I believe that $? will contain the error code that ffmpeg returned.
 fi
 
-# clean_up # Let ffmpeg be the last command in the script, so that ffmpeg's exit code will be the exit code of the script.
+EXIT_STATUS=$?
+
+echo "Exit status: $EXIT_STATUS"
+
+if [ $EXIT_STATUS != 0 ]; then
+	echo "ffmpeg experienced an error."
+fi
+
+clean_up $EXIT_STATUS
