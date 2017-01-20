@@ -8,6 +8,9 @@
 # Ubuntu's netstat man page:
 # "This program is mostly obsolete. Replacement for netstat is ss. Replacement for netstat -r is ip route. Replacement for netstat -i is ip -s link. Replacement for netstat -g is maddr."
 
+# Perl regular expression charcter classes:
+# See https://www.google.ca/search?q=perl+regex+classes
+# See http://perldoc.perl.org/perlrecharclass.html
 # Hexadecimal digit: [0-9a-fA-F] -> [[:xdigit:]]
 
 # 2017/01/16 : Google "linux netstat" and look for "10 basic examples of linux netstat command" on www.binarytides.com

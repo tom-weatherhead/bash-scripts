@@ -1,16 +1,12 @@
 # From http://tldp.org/LDP/abs/html/sample-bashrc.html
 
-Advanced Bash-Scripting Guide:
-Prev		Next
-Appendix M. Sample .bashrc and .bash_profile Files
+# The ~/.bashrc file determines the behavior of interactive shells. A good look at this file can lead to a better understanding of Bash.
 
-The ~/.bashrc file determines the behavior of interactive shells. A good look at this file can lead to a better understanding of Bash.
+# Emmanuel Rouat contributed the following very elaborate .bashrc file, written for a Linux system. He welcomes reader feedback on it.
 
-Emmanuel Rouat contributed the following very elaborate .bashrc file, written for a Linux system. He welcomes reader feedback on it.
+# Study the file carefully, and feel free to reuse code snippets and functions from it in your own .bashrc file or even in your scripts.
 
-Study the file carefully, and feel free to reuse code snippets and functions from it in your own .bashrc file or even in your scripts.
-
-Example M-1. Sample .bashrc file
+# Example M-1. Sample .bashrc file
 
 # =============================================================== #
 #
@@ -227,7 +223,8 @@ fi
 # Test user type:
 if [[ ${USER} == "root" ]]; then
     SU=${Red}           # User is root.
-elif [[ ${USER} != $(logname) ]]; then
+# elif [[ ${USER} != $(logname) ]]; then	# TW 2017/01/20 : In Windows 10 Bash, logname prints "logname: no login name"
+elif [[ ${USER} != $(whoami) ]]; then		# TW 2017/01/20 : Replaced logname with whoami.
     SU=${BRed}          # User is not login user.
 else
     SU=${BCyan}         # User is normal (well ... most of us are).
@@ -893,60 +890,3 @@ complete -F _killall killall killps
 # mode:shell-script
 # sh-shell:bash
 # End:
-
-And, here is a snippet from Andrzej Szelachowski's instructive .bash_profile file.
-
-Example M-2. .bash_profile file
-
-# From Andrzej Szelachowski's ~/.bash_profile:
-
-#  Note that a variable may require special treatment
-#+ if it will be exported.
-
-DARKGRAY='\e[1;30m'
-LIGHTRED='\e[1;31m'
-GREEN='\e[32m'
-YELLOW='\e[1;33m'
-LIGHTBLUE='\e[1;34m'
-NC='\e[m'
-
-PCT="\`if [[ \$EUID -eq 0 ]]; then T='$LIGHTRED' ; else T='$LIGHTBLUE'; fi; 
-echo \$T \`"
-
-#  For "literal" command substitution to be assigned to a variable,
-#+ use escapes and double quotes:
-#+       PCT="\` ... \`" . . .
-#  Otherwise, the value of PCT variable is assigned only once,
-#+ when the variable is exported/read from .bash_profile,
-#+ and it will not change afterwards even if the user ID changes.
-
-PS1="\n$GREEN[\w] \n$DARKGRAY($PCT\t$DARKGRAY)-($PCT\u$DARKGRAY)-($PCT\!
-$DARKGRAY)$YELLOW-> $NC"
-
-#  Escape a variables whose value changes:
-#        if [[ \$EUID -eq 0 ]],
-#  Otherwise the value of the EUID variable will be assigned only once,
-#+ as above.
-
-#  When a variable is assigned, it should be called escaped:
-#+       echo \$T,
-#  Otherwise the value of the T variable is taken from the moment the PCT 
-#+ variable is exported/read from .bash_profile.
-#  So, in this example it would be null.
-
-#  When a variable's value contains a semicolon it should be strong quoted:
-#        T='$LIGHTRED',
-#  Otherwise, the semicolon will be interpreted as a command separator.
-
-
-#  Variables PCT and PS1 can be merged into a new PS1 variable:
-
-PS1="\`if [[ \$EUID -eq 0 ]]; then PCT='$LIGHTRED';
-else PCT='$LIGHTBLUE'; fi; 
-echo '\n$GREEN[\w] \n$DARKGRAY('\$PCT'\t$DARKGRAY)-\
-('\$PCT'\u$DARKGRAY)-('\$PCT'\!$DARKGRAY)$YELLOW-> $NC'\`"
-
-# The trick is to use strong quoting for parts of old PS1 variable.
-
-Prev	Home	Next
-History Commands	 	Converting DOS Batch Files to Shell Scripts
