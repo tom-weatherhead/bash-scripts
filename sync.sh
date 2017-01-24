@@ -238,6 +238,13 @@ RSYNC_COMMAND="rsync $RSYNC_SHORT_OPTIONS --del --exclude=?RECYCLE.BIN --exclude
 # The following Cygwin example won't work because it doesn't set up the ACL(s) (access control list(s)) on the receiver correctly:
 # rsync -rltDHvz --chmod=ugo=rwX --chown=tomw:tomw --del --numeric-ids /cygdrive/j/Archive/TarBz2/ /cygdrive/c/NoArchiv/TarBz2
 
+# Note: In order to see a VeraCrypt-mounted NTFS drive under /mnt in Windows 10 Bash:
+# 1) Configure VeraCrypt to *not* mount drives as removable media
+# 2) Use VeraCrypt to mount the NTFS drive
+# 3) Start up a Windows 10 Bash windows
+# 4) ls -l /mnt
+# 5) ls -l /mnt/x (replace x with the relevant drive letter); verify that you can see the drive's contents
+
 echo $RSYNC_COMMAND
 eval $RSYNC_COMMAND
 
