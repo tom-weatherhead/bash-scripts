@@ -132,15 +132,15 @@ EXPECTED_NUMBER_OF_ARGUMENTS=1
 
 if [ $# != $EXPECTED_NUMBER_OF_ARGUMENTS ]; then # Using != instead of -ne
 	usage
-	error_exit "$EXPECTED_NUMBER_OF_ARGUMENTS argument(s) was/were expected; $#argument(s) was/were recceived."
+	error_exit "$EXPECTED_NUMBER_OF_ARGUMENTS argument(s) was/were expected; $# argument(s) was/were received."
 fi
 
 check_directory "$1"
 
 # THE_COMMAND="df -h"
 # THE_COMMAND="echo 'Hello world!'"
-# THE_COMMAND="echo \"Hello world!\""
-THE_COMMAND="ls /x"
+THE_COMMAND="echo \"Hello world!\""
+#THE_COMMAND="ls /x"
 
 echo_and_eval $THE_COMMAND
 
@@ -149,7 +149,7 @@ EXIT_STATUS=$?
 echo "The command exited with the status $EXIT_STATUS."
 
 if [ $EXIT_STATUS != 0 ]; then
-	echo "The exit statuus indicates an error."
+	echo "The exit status indicates an error."
 fi
 
 clean_up $EXIT_STATUS
