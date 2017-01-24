@@ -191,7 +191,45 @@ check_directory "$SRC_PATH"
 # The quotes around $SRC_PATH and $DEST_PATH are needed to properly handle spaces in those paths.
 # Try --del or --delete in place of --delete-before :
 # -a equals -rlptgoD (no -H,-A,-X); remove -g (preserve group), -o (preserve owner), and maybe -p (preserve permissions).
-RSYNC_COMMAND="rsync -aH${OPTION_N}vz --del --exclude=?RECYCLE.BIN --exclude=System\ Volume\ Information --numeric-ids \"$SRC_PATH\" \"$DEST_PATH\""
+#   - -A, --acls = Preserve ACLs (access control lists) (implies -p)
+#   - -D = Same as --devices --specials
+#   - -E, --executability = Preserve executability
+#   - -H, --hard-links = Preserve hard links
+#   - -K, --keep-dirlinks = Treat symlinked dir on receiver as dir
+#   - -P = Same as --partial --progress
+#   - -X, --xattrs = Preserve extended attributes
+#   - -a, --archive = Archive mode; equals -rlptgoD (no -H,-A,-X)
+#   - -g, --group = Preserve group
+#   - -h, --human-readable = Output numbers in a human-readable format
+#   - -i, --itemize-changes = Output a change-summary for all updates
+#   - -l, --links = Copy symlinks as symlinks
+#   - -n, --dry-run = Perform a trial run with no changes made
+#   - -o, --owner = Preserve owner
+#   - -p, --perms = Preserve permissions
+#   - -r, --recursive = Recurse into directories
+#   - -t, --times = Preserve modification times
+#   - -u, --update = Skip files that are newer on the receiver
+#   - -v, --verbose = Increase verbosity
+#   - -z, --compress = Compress file data during the transfer
+#   - --chown=USER:GROUP = Simple username/groupname mapping
+#   - --devices = Preserve device files (super-user only)
+#   - --groupmap=STRING = Custom groupname mapping
+#   - --numeric-ids = Don't map uid/gid values by user/group name
+#   - --partial = Keep partially transferred files
+#   - --partial-dir=DIR = Put a partially gtransferred file into DIR
+#   - --progress = Show progress during transfer
+#   - --specials = Preserve special files
+#   - --usermap=STRING = Custom username mapping
+#   - -- = 
+#   - - = 
+
+# TW 2017/01/24 : We want to avoid having unwanted entries (e.g. "NULL SID" or "Deny foo") added to the ACL on a Windows receiver. It seems to be problematic at least when the owner names are different on the source and receiver (e.g. tomw vs. tom_w).
+
+#RSYNC_SHORT_OPTIONS="-aH${OPTION_N}vz"
+#RSYNC_SHORT_OPTIONS="-rlptgoDH${OPTION_N}vz"
+RSYNC_SHORT_OPTIONS="-rlptDH${OPTION_N}vz" # = "-aH${OPTION_N}vz" because -a = -rlptgoD
+
+RSYNC_COMMAND="rsync $RSYNC_SHORT_OPTIONS --del --exclude=?RECYCLE.BIN --exclude=System\ Volume\ Information --numeric-ids \"$SRC_PATH\" \"$DEST_PATH\""
 
 echo $RSYNC_COMMAND
 eval $RSYNC_COMMAND
