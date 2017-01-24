@@ -112,8 +112,8 @@ check_directory()
 		error_exit "$1 does not exist."
 	elif ! [ -d "$1" ]; then
 		error_exit "$1 is not a directory."
-	elif ! [ -w "$1" ]; then
-		error_exit "$1 is not writable by the current user."
+	#elif ! [ -w "$1" ]; then
+	#	error_exit "$1 is not writable by the current user."
 	fi
 }
 
@@ -179,7 +179,7 @@ echo "SRC_PATH is $SRC_PATH"
 echo "DEST_PATH is $DEST_PATH"
 
 check_directory "$SRC_PATH"
-check_directory "$DEST_PATH"
+#check_directory "$DEST_PATH"
 
 # The general idea is: rsync -aHvz --delete-before --numeric-ids src/ dest
 # See https://www.cyberciti.biz/faq/linux-unix-apple-osx-bsd-rsync-copy-hard-links/
@@ -190,6 +190,7 @@ check_directory "$DEST_PATH"
 
 # The quotes around $SRC_PATH and $DEST_PATH are needed to properly handle spaces in those paths.
 # Try --del or --delete in place of --delete-before :
+# -a equals -rlptgoD (no -H,-A,-X); remove -g (preserve group), -o (preserve owner), and maybe -p (preserve permissions).
 RSYNC_COMMAND="rsync -aH${OPTION_N}vz --del --exclude=?RECYCLE.BIN --exclude=System\ Volume\ Information --numeric-ids \"$SRC_PATH\" \"$DEST_PATH\""
 
 echo $RSYNC_COMMAND
