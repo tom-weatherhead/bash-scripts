@@ -231,6 +231,13 @@ RSYNC_SHORT_OPTIONS="-rlptDH${OPTION_N}vz" # = "-aH${OPTION_N}vz" because -a = -
 
 RSYNC_COMMAND="rsync $RSYNC_SHORT_OPTIONS --del --exclude=?RECYCLE.BIN --exclude=System\ Volume\ Information --numeric-ids \"$SRC_PATH\" \"$DEST_PATH\""
 
+# Windows NTFS: Ensure that the receiver dir (or its parent dir, if it does not yet exist) has the desired permissions, and that permission inheritance is enabled.
+# TW 2017/01/24 : E.g.
+# rsync -rltDHvz --chmod=ugo=rwX --chown=tomw:tomw --del --numeric-ids /mnt/x/Scripts/ /mnt/c/NoArchiv/ScriptsX
+# See https://superuser.com/questions/69620/rsync-file-permissions-on-windows
+# The following Cygwin example won't work because it doesn't set up the ACL(s) (access control list(s)) on the receiver correctly:
+# rsync -rltDHvz --chmod=ugo=rwX --chown=tomw:tomw --del --numeric-ids /cygdrive/j/Archive/TarBz2/ /cygdrive/c/NoArchiv/TarBz2
+
 echo $RSYNC_COMMAND
 eval $RSYNC_COMMAND
 
