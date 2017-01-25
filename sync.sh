@@ -189,7 +189,10 @@ check_directory "$SRC_PATH"
 # - "System Volume Information"
 
 # The quotes around $SRC_PATH and $DEST_PATH are needed to properly handle spaces in those paths.
+
 # Try --del or --delete in place of --delete-before :
+# --del is a alias for --delete-during
+
 # -a equals -rlptgoD (no -H,-A,-X); remove -g (preserve group), -o (preserve owner), and maybe -p (preserve permissions).
 #   - -A, --acls = Preserve ACLs (access control lists) (implies -p)
 #   - -D = Same as --devices --specials
@@ -225,16 +228,23 @@ check_directory "$SRC_PATH"
 
 # TW 2017/01/24 : We want to avoid having unwanted entries (e.g. "NULL SID" or "Deny foo") added to the ACL on a Windows receiver. It seems to be problematic at least when the owner names are different on the source and receiver (e.g. tomw vs. tom_w).
 
-#RSYNC_SHORT_OPTIONS="-aH${OPTION_N}vz"
-#RSYNC_SHORT_OPTIONS="-rlptgoDH${OPTION_N}vz"
-RSYNC_SHORT_OPTIONS="-rlptDH${OPTION_N}vz" # = "-aH${OPTION_N}vz" because -a = -rlptgoD
-
-RSYNC_COMMAND="rsync $RSYNC_SHORT_OPTIONS --del --exclude=?RECYCLE.BIN --exclude=System\ Volume\ Information --numeric-ids \"$SRC_PATH\" \"$DEST_PATH\""
-
 # Windows NTFS: Ensure that the receiver dir (or its parent dir, if it does not yet exist) has the desired permissions, and that permission inheritance is enabled.
+
 # TW 2017/01/24 : E.g.
 # rsync -rltDHvz --chmod=ugo=rwX --chown=tomw:tomw --del --numeric-ids /mnt/x/Scripts/ /mnt/c/NoArchiv/ScriptsX
+
 # See https://superuser.com/questions/69620/rsync-file-permissions-on-windows
+# avguchenko's answer:
+# (from http://www.samba.org/ftp/rsync/rsync.html)
+#
+# In summary: to give destination files (both old and new) the source permissions, use --perms.
+#
+# To give new files the destination-default permissions (while leaving existing files unchanged), make sure that the --perms option is off and use --chmod=ugo=rwX (which ensures that all non-masked bits get enabled).
+#
+# If you'd care to make this latter behavior easier to type, you could define a popt alias for it, such as putting this line in the file ~/.popt (the following defines the -Z option, and includes --no-g to use the default group of the destination dir):
+#
+#    rsync alias -Z --no-p --no-g --chmod=ugo=rwX
+
 # The following Cygwin example won't work because it doesn't set up the ACL(s) (access control list(s)) on the receiver correctly:
 # rsync -rltDHvz --chmod=ugo=rwX --chown=tomw:tomw --del --numeric-ids /cygdrive/j/Archive/TarBz2/ /cygdrive/c/NoArchiv/TarBz2
 
@@ -244,6 +254,15 @@ RSYNC_COMMAND="rsync $RSYNC_SHORT_OPTIONS --del --exclude=?RECYCLE.BIN --exclude
 # 3) Start up a Windows 10 Bash windows
 # 4) ls -l /mnt
 # 5) ls -l /mnt/x (replace x with the relevant drive letter); verify that you can see the drive's contents
+
+#RSYNC_SHORT_OPTIONS="-aH${OPTION_N}vz"
+#RSYNC_SHORT_OPTIONS="-rlptgoDH${OPTION_N}vz" # = "-aH${OPTION_N}vz" because -a = -rlptgoD
+RSYNC_SHORT_OPTIONS="-rltDH${OPTION_N}vz"
+
+RSYNC_DELETE_OPTION="--del"
+RSYNC_LONG_OPTIONS="--chmod=ugo=rwX --chown=tomw:tomw $RSYNC_DELETE_OPTION --exclude=?RECYCLE.BIN --exclude=System\ Volume\ Information --numeric-ids"
+
+RSYNC_COMMAND="rsync $RSYNC_SHORT_OPTIONS $RSYNC_LONG_OPTIONS \"$SRC_PATH\" \"$DEST_PATH\""
 
 echo $RSYNC_COMMAND
 eval $RSYNC_COMMAND
