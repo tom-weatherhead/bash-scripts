@@ -171,7 +171,7 @@ fi
 
 function _exit()              # Function to run upon exit of shell.
 {
-    echo -e "${BRed}Hasta la vista, baby${NC}"
+    echo -e "${BRed}Be at peace.${NC}"
 }
 
 trap _exit EXIT
@@ -885,6 +885,22 @@ _killall()
 }
 
 complete -F _killall killall killps
+
+# **** Begin additions by TW ****
+
+HOME_BIN_DIR="/home/$(whoami)/bin"
+
+if [ -d "$HOME_BIN_DIR" ]; then
+	PATH="$PATH:$HOME_BIN_DIR"
+fi
+
+if [ -d "/mnt/c/Archive/Git/GitHubSandbox/tom-weatherhead" ]; then
+	alias gh="cd /mnt/c/Archive/Git/GitHubSandbox/tom-weatherhead"
+elif [ -d "/cygdrive/c/Archive/Git/GitHubSandbox/tom-weatherhead" ]; then
+	alias gh="cd /cygdrive/c/Archive/Git/GitHubSandbox/tom-weatherhead"
+fi
+
+# **** End additions by TW ****
 
 # Local Variables:
 # mode:shell-script

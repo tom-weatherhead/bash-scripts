@@ -229,6 +229,14 @@ check_directory "$SRC_PATH"
 # TW 2017/01/24 : We want to avoid having unwanted entries (e.g. "NULL SID" or "Deny foo") added to the ACL on a Windows receiver. It seems to be problematic at least when the owner names are different on the source and receiver (e.g. tomw vs. tom_w).
 
 # Windows NTFS: Ensure that the receiver dir (or its parent dir, if it does not yet exist) has the desired permissions, and that permission inheritance is enabled.
+# - This is best done for a VeraCrypt drive by setting the desired owner and permissions for the root of the drive, and then letting the rest of the items on the drive inherit them.
+# - The usual ACL for a VeraCrypt drive on Windows looks like this:
+#	Type	Principal									Access			Inherited from		Applies to		
+#	Allow	SYSTEM										Full Control	None				This folder, subfolders, and files
+#	Allow	Administrators (HOSTNAME\Administrators)	Full Control	None				This folder, subfolders, and files
+#	Allow	Users (HOSTNAME\Users)						Read & execute	None				This folder, subfolders, and files
+#	Allow	Authenticated Users							Modify			None				This folder, subfolders, and files
+# - Note: The "Modify" permission includes Read and Execute.
 
 # TW 2017/01/24 : E.g.
 # rsync -rltDHvz --chmod=ugo=rwX --chown=tomw:tomw --del --numeric-ids /mnt/x/Scripts/ /mnt/c/NoArchiv/ScriptsX
@@ -267,7 +275,8 @@ RSYNC_SHORT_OPTIONS="-rltDH${OPTION_N}vz"
 RSYNC_DELETE_OPTION="--del" # --del is a alias for --delete-during
 
 # RSYNC_LONG_OPTIONS="--chmod=ugo=rwX --chown=tomw:tomw $RSYNC_DELETE_OPTION --exclude=?RECYCLE.BIN --exclude=System\ Volume\ Information --numeric-ids"
-RSYNC_LONG_OPTIONS="--chmod=ugo=rwX $RSYNC_DELETE_OPTION --exclude=?RECYCLE.BIN --exclude=System\ Volume\ Information --numeric-ids"
+# RSYNC_LONG_OPTIONS="--chmod=ugo=rwX $RSYNC_DELETE_OPTION --exclude=?RECYCLE.BIN --exclude=System\ Volume\ Information --numeric-ids"
+RSYNC_LONG_OPTIONS="--chmod=ugo=rwX $RSYNC_DELETE_OPTION --exclude=\$RECYCLE.BIN --exclude=System\ Volume\ Information --numeric-ids"
 
 RSYNC_COMMAND="rsync $RSYNC_SHORT_OPTIONS $RSYNC_LONG_OPTIONS \"$SRC_PATH\" \"$DEST_PATH\""
 
@@ -286,3 +295,11 @@ case $RSYNC_STATUS in
 esac
 
 exit $RSYNC_STATUS
+
+# On Windows: After this script completes successfully:
+# 1) Right-click on the root directory of the receiver
+# 2) Go to: Properties -> Security -> Advanced
+# 3) Check the box "Replace all child object permission entries with inheritable permission entries from this object"
+# 4) Click on the "Apply" button, and let the permissions propagate
+# 5) Click "OK"
+# 6) Click "OK" again
