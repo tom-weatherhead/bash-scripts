@@ -255,12 +255,19 @@ check_directory "$SRC_PATH"
 # 4) ls -l /mnt
 # 5) ls -l /mnt/x (replace x with the relevant drive letter); verify that you can see the drive's contents
 
+#2017/01/25 : E.g. :
+# rsync -rltDHvz --chmod=ugo=rwX --chown=tomw:tomw --del --numeric-ids /mnt/y/Scripts/ /mnt/c/NoArchiv/ScriptsX
+# rsync -rltDHvz --chmod=ugo=rwX --del --numeric-ids /mnt/y/Scripts/ /mnt/c/NoArchiv/ScriptsX
+# 
+ 
 #RSYNC_SHORT_OPTIONS="-aH${OPTION_N}vz"
 #RSYNC_SHORT_OPTIONS="-rlptgoDH${OPTION_N}vz" # = "-aH${OPTION_N}vz" because -a = -rlptgoD
 RSYNC_SHORT_OPTIONS="-rltDH${OPTION_N}vz"
 
-RSYNC_DELETE_OPTION="--del"
-RSYNC_LONG_OPTIONS="--chmod=ugo=rwX --chown=tomw:tomw $RSYNC_DELETE_OPTION --exclude=?RECYCLE.BIN --exclude=System\ Volume\ Information --numeric-ids"
+RSYNC_DELETE_OPTION="--del" # --del is a alias for --delete-during
+
+# RSYNC_LONG_OPTIONS="--chmod=ugo=rwX --chown=tomw:tomw $RSYNC_DELETE_OPTION --exclude=?RECYCLE.BIN --exclude=System\ Volume\ Information --numeric-ids"
+RSYNC_LONG_OPTIONS="--chmod=ugo=rwX $RSYNC_DELETE_OPTION --exclude=?RECYCLE.BIN --exclude=System\ Volume\ Information --numeric-ids"
 
 RSYNC_COMMAND="rsync $RSYNC_SHORT_OPTIONS $RSYNC_LONG_OPTIONS \"$SRC_PATH\" \"$DEST_PATH\""
 
