@@ -76,7 +76,7 @@ get_windows_drive_mounts_path()
 			echo "/cygdrive"
 			;;
 		GNU/Linux)
-			echo /"mnt"
+			echo "/mnt"
 			;;
 		*)
 			error_exit "Undetected operating system type '$OPTARG'"

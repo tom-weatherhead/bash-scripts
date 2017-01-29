@@ -888,16 +888,54 @@ complete -F _killall killall killps
 
 # **** Begin additions by TW ****
 
-HOME_BIN_DIR="/home/$(whoami)/bin"
+get_windows_drive_mounts_path()
+{
+	case $(uname -o) in
+		Cygwin)
+			echo "/cygdrive"
+			;;
+		GNU/Linux)
+			# TODO: Can we distinguish between 1) Windows Subsystem for Linux, and 2) Other Linux, such as a typical Ubuntu host or guest?
+			echo "/mnt"
+			;;
+		*)
+			# error_exit "Undetected operating system type '$OPTARG'"
+			echo
+			# No ;; is necessary here.
+	esac
+}
 
-if [ -d "$HOME_BIN_DIR" ]; then
+WHO_I_AM="$(whoami)"
+HOME_BIN_DIR="/home/$WHO_I_AM/bin"
+
+#if [ -d "$HOME_BIN_DIR" ] && ! echo $PATH | grep $HOME_BIN_DIR; then
+#	echo "Adding $HOME_BIN_DIR to the path."
+#	PATH="$PATH:$HOME_BIN_DIR"
+#else
+#	echo "$HOME_BIN_DIR is already in the path."
+#fi
+
+! [ -d "$HOME_BIN_DIR" ] && {
+	echo "$HOME_BIN_DIR is not a directory."
+} || echo $PATH | grep $HOME_BIN_DIR && {
+	echo "$HOME_BIN_DIR is already in the path."
+} || {
+	echo "Adding $HOME_BIN_DIR to the path."
 	PATH="$PATH:$HOME_BIN_DIR"
-fi
+}
 
-if [ -d "/mnt/c/Archive/Git/GitHubSandbox/tom-weatherhead" ]; then
-	alias gh="cd /mnt/c/Archive/Git/GitHubSandbox/tom-weatherhead"
-elif [ -d "/cygdrive/c/Archive/Git/GitHubSandbox/tom-weatherhead" ]; then
-	alias gh="cd /cygdrive/c/Archive/Git/GitHubSandbox/tom-weatherhead"
+GITHUB_SANDBOX_RELATIVE_DIR="Archive/Git/GitHubSandbox/tom-weatherhead"
+echo "I am: $WHO_I_AM"
+echo "/home/$WHO_I_AM/$GITHUB_SANDBOX_RELATIVE_DIR"
+
+if [ -d "/mnt/c/$GITHUB_SANDBOX_RELATIVE_DIR" ]; then
+	alias gh="cd /mnt/c/$GITHUB_SANDBOX_RELATIVE_DIR"
+elif [ -d "/cygdrive/c/$GITHUB_SANDBOX_RELATIVE_DIR" ]; then
+	alias gh="cd /cygdrive/c/$GITHUB_SANDBOX_RELATIVE_DIR"
+elif [ -d "/home/$WHO_I_AM/$GITHUB_SANDBOX_RELATIVE_DIR" ]; then
+	alias gh="cd /home/$WHO_I_AM/$GITHUB_SANDBOX_RELATIVE_DIR"
+else
+	echo "GitHub sandbox alias gh not created."
 fi
 
 # **** End additions by TW ****
