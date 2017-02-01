@@ -85,23 +85,22 @@ NEWLINE=$'\n' # See zvezda's solution in https://stackoverflow.com/questions/300
 echo "Duplicate files report for the path $1$NEWLINE" > $REPORT_FILENAME
 echo "Generated on $START_DATETIME UTC$NEWLINE" >> $REPORT_FILENAME
 
-EXITCODE=0
-
 # Use double quotes around $1 (find "$1"...) to protect against any spaces in the path in $1
 # 2016/12/12 : Changed "sort -k1,32" to "sort"
 find "$1" -type f -print0 | xargs --null md5sum | sort | uniq -D -w 32 >> $REPORT_FILENAME
 
 # See https://unix.stackexchange.com/questions/14270/get-exit-status-of-process-thats-piped-to-another
 
-if [ `echo "${PIPESTATUS[@]}" | tr -s ' ' + | bc` -ne 0 ]; then EXITCODE=1; echo_error_message "Error."; fi
+EXITCODE=`echo "${PIPESTATUS[@]}" | tr -s ' ' + | bc`
 
 echo "Done."
 echo "Started on $START_DATETIME"
 echo "Ended on   $(date_time_utc)"
-echo "Exit code: $EXITCODE"
 
-if [ $EXITCODE -eq 0 ]; then
+[ $EXITCODE -eq 0 ] && {
 	echo "Success!"
-fi
+} || {
+	echo "Error; exit code $EXITCODE."
+}
 
 clean_up $EXITCODE

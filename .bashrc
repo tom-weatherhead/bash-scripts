@@ -49,8 +49,12 @@
 # Source global definitions (if any)
 #-------------------------------------------------------------
 
+if [ -f $HOME/.profile ]; then
+	. $HOME/.profile			# --> Read $HOME/.profile, if present.
+fi
+
 if [ -f /etc/bashrc ]; then
-      . /etc/bashrc   # --> Read /etc/bashrc, if present.
+	. /etc/bashrc				# --> Read /etc/bashrc, if present.
 fi
 
 #--------------------------------------------------------------
@@ -162,7 +166,7 @@ NC="\e[m"               # Color Reset
 
 ALERT=${BWhite}${On_Red} # Bold White on red background
 
-echo -e "${BCyan}This is BASH ${BRed}${BASH_VERSION%.*}${BCyan}\
+echo -e "${BCyan}This is BASH ${BRed}${BASH_VERSION%.*}${BCyan} \
 - DISPLAY on ${BRed}$DISPLAY${NC}\n"
 date
 if [ -x /usr/games/fortune ]; then
@@ -334,72 +338,72 @@ export HOSTFILE=$HOME/.hosts    # Put a list of remote hosts in ~/.hosts
 # Personnal Aliases
 #-------------------
 
-alias rm='rm -i'
-alias cp='cp -i'
-alias mv='mv -i'
+# alias rm='rm -i'
+# alias cp='cp -i'
+# alias mv='mv -i'
 # -> Prevents accidentally clobbering files.
-alias mkdir='mkdir -p'
+# alias mkdir='mkdir -p'
 
-alias h='history'
-alias j='jobs -l'
-alias which='type -a'
-alias ..='cd ..'
+# alias h='history'
+# alias j='jobs -l'
+# alias which='type -a'
+# alias ..='cd ..'
 
 # Pretty-print of some PATH variables:
-alias path='echo -e ${PATH//:/\\n}'
-alias libpath='echo -e ${LD_LIBRARY_PATH//:/\\n}'
+# alias path='echo -e ${PATH//:/\\n}'
+# alias libpath='echo -e ${LD_LIBRARY_PATH//:/\\n}'
 
-alias du='du -kh'    # Makes a more readable output.
-alias df='df -kTh'
+# alias du='du -kh'		# Makes a more readable output. (TW: I usually used du -bch)
+# alias df='df -kTh'	# (TW: I usually used df -h)
 
 #-------------------------------------------------------------
 # The 'ls' family (this assumes you use a recent GNU ls).
 #-------------------------------------------------------------
 # Add colors for filetype and  human-readable sizes by default on 'ls':
-alias ls='ls -h --color'
-alias lx='ls -lXB'         #  Sort by extension.
-alias lk='ls -lSr'         #  Sort by size, biggest last.
-alias lt='ls -ltr'         #  Sort by date, most recent last.
-alias lc='ls -ltcr'        #  Sort by/show change time,most recent last.
-alias lu='ls -ltur'        #  Sort by/show access time,most recent last.
+# alias ls='ls -h --color'
+# alias lx='ls -lXB'         #  Sort by extension.
+# alias lk='ls -lSr'         #  Sort by size, biggest last.
+# alias lt='ls -ltr'         #  Sort by date, most recent last.
+# alias lc='ls -ltcr'        #  Sort by/show change time,most recent last.
+# alias lu='ls -ltur'        #  Sort by/show access time,most recent last.
 
 # The ubiquitous 'll': directories first, with alphanumeric sorting:
-alias ll="ls -lv --group-directories-first"
-alias lm='ll |more'        #  Pipe through 'more'
-alias lr='ll -R'           #  Recursive ls.
-alias la='ll -A'           #  Show hidden files.
-alias tree='tree -Csuh'    #  Nice alternative to 'recursive ls' ...
+# alias ll="ls -lv --group-directories-first"
+# alias lm='ll |more'        #  Pipe through 'more'
+# alias lr='ll -R'           #  Recursive ls.
+# alias la='ll -A'           #  Show hidden files.
+# alias tree='tree -Csuh'    #  Nice alternative to 'recursive ls' ...
 
 #-------------------------------------------------------------
 # Tailoring 'less'
 #-------------------------------------------------------------
 
-alias more='less'
-export PAGER=less
-export LESSCHARSET='latin1'
-export LESSOPEN='|/usr/bin/lesspipe.sh %s 2>&-'
+# alias more='less'
+# export PAGER=less
+# export LESSCHARSET='latin1'
+# export LESSOPEN='|/usr/bin/lesspipe.sh %s 2>&-'
                 # Use this if lesspipe.sh exists.
-export LESS='-i -N -w  -z-4 -g -e -M -X -F -R -P%t?f%f \
-:stdin .?pb%pb\%:?lbLine %lb:?bbByte %bb:-...'
+# export LESS='-i -N -w  -z-4 -g -e -M -X -F -R -P%t?f%f \
+# :stdin .?pb%pb\%:?lbLine %lb:?bbByte %bb:-...'
 
 # LESS man page colors (makes Man pages more readable).
-export LESS_TERMCAP_mb=$'\E[01;31m'
-export LESS_TERMCAP_md=$'\E[01;31m'
-export LESS_TERMCAP_me=$'\E[0m'
-export LESS_TERMCAP_se=$'\E[0m'
-export LESS_TERMCAP_so=$'\E[01;44;33m'
-export LESS_TERMCAP_ue=$'\E[0m'
-export LESS_TERMCAP_us=$'\E[01;32m'
+# export LESS_TERMCAP_mb=$'\E[01;31m'
+# export LESS_TERMCAP_md=$'\E[01;31m'
+# export LESS_TERMCAP_me=$'\E[0m'
+# export LESS_TERMCAP_se=$'\E[0m'
+# export LESS_TERMCAP_so=$'\E[01;44;33m'
+# export LESS_TERMCAP_ue=$'\E[0m'
+# export LESS_TERMCAP_us=$'\E[01;32m'
 
 #-------------------------------------------------------------
 # Spelling typos - highly personnal and keyboard-dependent :-)
 #-------------------------------------------------------------
 
-alias xs='cd'
-alias vf='cd'
-alias moer='more'
-alias moew='more'
-alias kk='ll'
+# alias xs='cd'
+# alias vf='cd'
+# alias moer='more'
+# alias moew='more'
+# alias kk='ll'
 
 #-------------------------------------------------------------
 # A few fun ones
@@ -417,8 +421,8 @@ function xtitle()
 }
 
 # Aliases that use xtitle
-alias top='xtitle Processes on $HOST && top'
-alias make='xtitle Making $(basename $PWD) ; make'
+# alias top='xtitle Processes on $HOST && top'
+# alias make='xtitle Making $(basename $PWD) ; make'
 
 # .. and functions
 function man()
@@ -888,6 +892,12 @@ complete -F _killall killall killps
 
 # **** Begin additions by TW ****
 
+# .bash_aliases : See https://askubuntu.com/questions/17536/how-do-i-create-a-permanent-bash-alias
+
+if [ -f ~/.bash_aliases ]; then
+	. ~/.bash_aliases
+fi
+
 get_windows_drive_mounts_path()
 {
 	case $(uname -o) in
@@ -905,38 +915,21 @@ get_windows_drive_mounts_path()
 	esac
 }
 
-WHO_I_AM="$(whoami)"
-HOME_BIN_DIR="/home/$WHO_I_AM/bin"
+# WHO_I_AM="$(whoami)"
+# HOME_BIN_DIR="/home/$WHO_I_AM/bin"
 
-#if [ -d "$HOME_BIN_DIR" ] && ! echo $PATH | grep $HOME_BIN_DIR; then
+# ! [ -d "$HOME_BIN_DIR" ] && {
+#	echo "$HOME_BIN_DIR is not a directory."
+# } || echo $PATH | grep $HOME_BIN_DIR && {
+#	echo "$HOME_BIN_DIR is already in the path."
+# } || {
 #	echo "Adding $HOME_BIN_DIR to the path."
 #	PATH="$PATH:$HOME_BIN_DIR"
-#else
-#	echo "$HOME_BIN_DIR is already in the path."
-#fi
-
-! [ -d "$HOME_BIN_DIR" ] && {
-	echo "$HOME_BIN_DIR is not a directory."
-} || echo $PATH | grep $HOME_BIN_DIR && {
-	echo "$HOME_BIN_DIR is already in the path."
-} || {
-	echo "Adding $HOME_BIN_DIR to the path."
-	PATH="$PATH:$HOME_BIN_DIR"
-}
+# }
 
 GITHUB_SANDBOX_RELATIVE_DIR="Archive/Git/GitHubSandbox/tom-weatherhead"
-echo "I am: $WHO_I_AM"
-echo "/home/$WHO_I_AM/$GITHUB_SANDBOX_RELATIVE_DIR"
-
-if [ -d "/mnt/c/$GITHUB_SANDBOX_RELATIVE_DIR" ]; then
-	alias gh="cd /mnt/c/$GITHUB_SANDBOX_RELATIVE_DIR"
-elif [ -d "/cygdrive/c/$GITHUB_SANDBOX_RELATIVE_DIR" ]; then
-	alias gh="cd /cygdrive/c/$GITHUB_SANDBOX_RELATIVE_DIR"
-elif [ -d "/home/$WHO_I_AM/$GITHUB_SANDBOX_RELATIVE_DIR" ]; then
-	alias gh="cd /home/$WHO_I_AM/$GITHUB_SANDBOX_RELATIVE_DIR"
-else
-	echo "GitHub sandbox alias gh not created."
-fi
+# echo "I am: $WHO_I_AM"
+# echo "/home/$WHO_I_AM/$GITHUB_SANDBOX_RELATIVE_DIR"
 
 # **** End additions by TW ****
 
