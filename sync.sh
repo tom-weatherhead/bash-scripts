@@ -275,8 +275,8 @@ RSYNC_SHORT_OPTIONS="-rltDH${OPTION_N}vz"
 RSYNC_DELETE_OPTION="--del" # --del is a alias for --delete-during
 
 # RSYNC_LONG_OPTIONS="--chmod=ugo=rwX --chown=tomw:tomw $RSYNC_DELETE_OPTION --exclude=?RECYCLE.BIN --exclude=System\ Volume\ Information --numeric-ids"
-# RSYNC_LONG_OPTIONS="--chmod=ugo=rwX $RSYNC_DELETE_OPTION --exclude=?RECYCLE.BIN --exclude=System\ Volume\ Information --numeric-ids"
-RSYNC_LONG_OPTIONS="--chmod=ugo=rwX $RSYNC_DELETE_OPTION --exclude=\$RECYCLE.BIN --exclude=System\ Volume\ Information --numeric-ids"
+# RSYNC_LONG_OPTIONS="--chmod=ugo=rwX $RSYNC_DELETE_OPTION --exclude=\$RECYCLE.BIN --exclude=System\ Volume\ Information --numeric-ids" # This does not exclude the recycle bin: \$ vs. ?
+RSYNC_LONG_OPTIONS="--chmod=ugo=rwX $RSYNC_DELETE_OPTION --exclude=?RECYCLE.BIN --exclude=System\ Volume\ Information --numeric-ids" # The "?" is a wildcard that matches any one character.
 
 RSYNC_COMMAND="rsync $RSYNC_SHORT_OPTIONS $RSYNC_LONG_OPTIONS \"$SRC_PATH\" \"$DEST_PATH\""
 
@@ -299,7 +299,17 @@ exit $RSYNC_STATUS
 # On Windows: After this script completes successfully:
 # 1) Right-click on the root directory of the receiver
 # 2) Go to: Properties -> Security -> Advanced
-# 3) Check the box "Replace all child object permission entries with inheritable permission entries from this object"
-# 4) Click on the "Apply" button, and let the permissions propagate
-# 5) Click "OK"
-# 6) Click "OK" again
+# 3) Ensure that the owner is set correctly (e.g. to buddy.guy@hotmail.com). If you change the owner, propagate the change of ownership to all child objects, then click OK on both dialogs, and go back to step 1.
+# 4) Ensure the ACL (the Access Control List) for this root directory look like this (substitute the correct hostname):
+
+#	Type	Principal									Access			Inherited from		Applies to		
+#	Allow	SYSTEM										Full Control	None				This folder, subfolders, and files
+#	Allow	Administrators (HOSTNAME\Administrators)	Full Control	None				This folder, subfolders, and files
+#	Allow	Users (HOSTNAME\Users)						Read & execute	None				This folder, subfolders, and files
+#	Allow	Authenticated Users							Modify			None				This folder, subfolders, and files
+# - Note: The "Modify" permission includes Read and Execute.
+
+# 5) Check the box "Replace all child object permission entries with inheritable permission entries from this object"
+# 6) Click on the "Apply" button, and let the permissions propagate
+# 7) Click "OK"
+# 8) Click "OK" again
