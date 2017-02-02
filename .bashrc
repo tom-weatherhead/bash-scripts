@@ -16,12 +16,12 @@
 # Last modified: Tue Nov 20 22:04:47 CET 2012
 
 #  This file is normally read by interactive shells only.
-#+ Here is the place to define your aliases, functions and
-#+ other interactive features like your prompt.
+#  Here is the place to define your functions and
+#  other interactive features like your prompt.
 #
 #  The majority of the code here assumes you are on a GNU
-#+ system (most likely a Linux box) and is often based on code
-#+ found on Usenet or Internet.
+#  system (most likely a Linux box) and is often based on code
+#  found on the Internet.
 #
 #  See for instance:
 #  http://tldp.org/LDP/abs/html/index.html
@@ -30,9 +30,9 @@
 #  http://www.dotfiles.org
 #
 #  The choice of colors was done for a shell with a dark background
-#+ (white on black), and this is usually also suited for pure text-mode
-#+ consoles (no X server available). If you use a white background,
-#+ you'll have to do some other choices for readability.
+#  (white on black), and this is usually also suited for pure text-mode
+#  consoles (no X server available). If you use a white background,
+#  you'll have to do some other choices for readability.
 #
 #  This bashrc file is a bit overcrowded.
 #  Remember, it is just just an example.
@@ -69,7 +69,7 @@ fi
 function get_xserver ()
 {
     case $TERM in
-        xterm )
+        xterm)
             XSERVER=$(who am i | awk '{print $NF}' | tr -d ')''(' )
             # Ane-Pieter Wieringa suggests the following alternative:
             #  I_AM=$(who am i)
@@ -77,7 +77,7 @@ function get_xserver ()
             #  SERVER=${SERVER%*)}
             XSERVER=${XSERVER%%:*}
             ;;
-            aterm | rxvt)
+		aterm | rxvt)
             # Find some code that works here. ...
             ;;
     esac
@@ -85,11 +85,10 @@ function get_xserver ()
 
 if [ -z ${DISPLAY:=""} ]; then
     get_xserver
-    if [[ -z ${XSERVER}  || ${XSERVER} == $(hostname) ||
-       ${XSERVER} == "unix" ]]; then
-          DISPLAY=":0.0"          # Display on local host.
+    if [[ -z ${XSERVER} || ${XSERVER} == $(hostname) || ${XSERVER} == "unix" ]]; then
+		DISPLAY=":0.0"          # Display on local host.
     else
-       DISPLAY=${XSERVER}:0.0     # Display on remote host.
+		DISPLAY=${XSERVER}:0.0     # Display on remote host.
     fi
 fi
 
@@ -166,16 +165,9 @@ NC="\e[m"               # Color Reset
 
 ALERT=${BWhite}${On_Red} # Bold White on red background
 
-echo -e "${BCyan}This is BASH ${BRed}${BASH_VERSION%.*}${BCyan} \
-- DISPLAY on ${BRed}$DISPLAY${NC}\n"
-date
-if [ -x /usr/games/fortune ]; then
-    /usr/games/fortune -s     # Makes our day a bit more fun.... :-)
-fi
-
 function _exit()              # Function to run upon exit of shell.
 {
-    echo -e "${BRed}Be at peace.${NC}"
+    echo -e "${Blue}God loves you!${NC}"
 }
 
 trap _exit EXIT
@@ -231,7 +223,7 @@ if [[ ${USER} == "root" ]]; then
 elif [[ ${USER} != $(whoami) ]]; then		# TW 2017/01/20 : Replaced logname with whoami.
     SU=${BRed}          # User is not login user.
 else
-    SU=${BCyan}         # User is normal (well ... most of us are).
+    SU=${BCyan}         # User is normal.
 fi
 
 NCPU=$(grep -c 'processor' /proc/cpuinfo)    # Number of CPUs
@@ -269,8 +261,7 @@ function disk_color()
         echo -en ${Red}
         # No 'write' privilege in the current directory.
     elif [ -s "${PWD}" ] ; then
-        local used=$(command df -P "$PWD" |
-                   awk 'END {print $5} {sub(/%/,"")}')
+        local used=$(command df -P "$PWD" | awk 'END {print $5} {sub(/%/,"")}')
         if [ ${used} -gt 95 ]; then
             echo -en ${ALERT}           # Disk almost full (>95%).
         elif [ ${used} -gt 90 ]; then
@@ -299,7 +290,7 @@ function job_color()
 # Now we construct the prompt.
 PROMPT_COMMAND="history -a"
 case ${TERM} in
-  *term | rxvt | linux)
+	*term | rxvt | linux)
         PS1="\[\$(load_color)\][\A\[${NC}\] "
         # Time of day (with load info):
         PS1="\[\$(load_color)\][\A\[${NC}\] "
@@ -326,53 +317,13 @@ export HOSTFILE=$HOME/.hosts    # Put a list of remote hosts in ~/.hosts
 
 #============================================================
 #
-#  ALIASES AND FUNCTIONS
+#  FUNCTIONS
 #
 #  Arguably, some functions defined here are quite big.
 #  If you want to make this file smaller, these functions can
-#+ be converted into scripts and removed from here.
+#  be converted into scripts and removed from here.
 #
 #============================================================
-
-#-------------------
-# Personnal Aliases
-#-------------------
-
-# alias rm='rm -i'
-# alias cp='cp -i'
-# alias mv='mv -i'
-# -> Prevents accidentally clobbering files.
-# alias mkdir='mkdir -p'
-
-# alias h='history'
-# alias j='jobs -l'
-# alias which='type -a'
-# alias ..='cd ..'
-
-# Pretty-print of some PATH variables:
-# alias path='echo -e ${PATH//:/\\n}'
-# alias libpath='echo -e ${LD_LIBRARY_PATH//:/\\n}'
-
-# alias du='du -kh'		# Makes a more readable output. (TW: I usually used du -bch)
-# alias df='df -kTh'	# (TW: I usually used df -h)
-
-#-------------------------------------------------------------
-# The 'ls' family (this assumes you use a recent GNU ls).
-#-------------------------------------------------------------
-# Add colors for filetype and  human-readable sizes by default on 'ls':
-# alias ls='ls -h --color'
-# alias lx='ls -lXB'         #  Sort by extension.
-# alias lk='ls -lSr'         #  Sort by size, biggest last.
-# alias lt='ls -ltr'         #  Sort by date, most recent last.
-# alias lc='ls -ltcr'        #  Sort by/show change time,most recent last.
-# alias lu='ls -ltur'        #  Sort by/show access time,most recent last.
-
-# The ubiquitous 'll': directories first, with alphanumeric sorting:
-# alias ll="ls -lv --group-directories-first"
-# alias lm='ll |more'        #  Pipe through 'more'
-# alias lr='ll -R'           #  Recursive ls.
-# alias la='ll -A'           #  Show hidden files.
-# alias tree='tree -Csuh'    #  Nice alternative to 'recursive ls' ...
 
 #-------------------------------------------------------------
 # Tailoring 'less'
@@ -396,16 +347,6 @@ export HOSTFILE=$HOME/.hosts    # Put a list of remote hosts in ~/.hosts
 # export LESS_TERMCAP_us=$'\E[01;32m'
 
 #-------------------------------------------------------------
-# Spelling typos - highly personnal and keyboard-dependent :-)
-#-------------------------------------------------------------
-
-# alias xs='cd'
-# alias vf='cd'
-# alias moer='more'
-# alias moew='more'
-# alias kk='ll'
-
-#-------------------------------------------------------------
 # A few fun ones
 #-------------------------------------------------------------
 
@@ -414,15 +355,13 @@ export HOSTFILE=$HOME/.hosts    # Put a list of remote hosts in ~/.hosts
 function xtitle()
 {
     case "$TERM" in
-    *term* | rxvt)
-        echo -en  "\e]0;$*\a" ;;
-    *)  ;;
+		*term* | rxvt)
+			echo -en  "\e]0;$*\a"
+			;;
+		*)
+			;;
     esac
 }
-
-# Aliases that use xtitle
-# alias top='xtitle Processes on $HOST && top'
-# alias make='xtitle Making $(basename $PWD) ; make'
 
 # .. and functions
 function man()
@@ -437,18 +376,18 @@ function man()
 # Make the following commands run in background automatically:
 #-------------------------------------------------------------
 
-function te()  # wrapper around xemacs/gnuserv
-{
-    if [ "$(gnuclient -batch -eval t 2>&-)" == "t" ]; then
-       gnuclient -q "$@";
-    else
-       ( xemacs "$@" &);
-    fi
-}
+# function te()  # wrapper around xemacs/gnuserv
+# {
+#   if [ "$(gnuclient -batch -eval t 2>&-)" == "t" ]; then
+#       gnuclient -q "$@";
+#    else
+#       ( xemacs "$@" &);
+#    fi
+# }
 
-function soffice() { command soffice "$@" & }
-function firefox() { command firefox "$@" & }
-function xpdf() { command xpdf "$@" & }
+# function soffice() { command soffice "$@" & }
+# function firefox() { command firefox "$@" & }
+# function xpdf() { command xpdf "$@" & }
 
 #-------------------------------------------------------------
 # File & strings related functions:
@@ -458,11 +397,10 @@ function xpdf() { command xpdf "$@" & }
 function ff() { find . -type f -iname '*'"$*"'*' -ls ; }
 
 # Find a file with pattern $1 in name and Execute $2 on it:
-function fe() { find . -type f -iname '*'"${1:-}"'*' \
--exec ${2:-file} {} \;  ; }
+function fe() { find . -type f -iname '*'"${1:-}"'*' -exec ${2:-file} {} \;  ; }
 
 #  Find a pattern in a set of files and highlight them:
-#+ (needs a recent version of egrep).
+#  (needs a recent version of egrep).
 function fstr()
 {
     OPTIND=1
@@ -481,13 +419,12 @@ Usage: fstr [-i] \"pattern\" [\"filename pattern\"] "
         echo "$usage"
         return;
     fi
-    find . -type f -name "${2:-*}" -print0 | \
-xargs -0 egrep --color=always -sn ${case} "$1" 2>&- | more
-
+    find . -type f -name "${2:-*}" -print0 | xargs -0 egrep --color=always -sn ${case} "$1" 2>&- | more
 }
 
 function swap()
-{ # Swap 2 filenames around, if they exist (from Uzi's bashrc).
+# Swap 2 filenames around, if they exist. (from Uzi's bashrc).
+{
     local TMPFILE=tmp.$$
 
     [ $# -ne 2 ] && echo "swap: 2 arguments needed" && return 1
@@ -527,7 +464,7 @@ function maketar() { tar cvzf "${1%%/}.tar.gz"  "${1%%/}/"; }
 # Create a ZIP archive of a file or folder.
 function makezip() { zip -r "${1%%/}.zip" "$1" ; }
 
-# Make your directories and files access rights sane.
+# Make your directories' and files' access rights sane.
 function sanitize() { chmod -R u=rwX,g=rX,o= "$@" ;}
 
 #-------------------------------------------------------------
@@ -643,8 +580,7 @@ function corename()   # Get name of app that created a corefile.
 #=========================================================================
 
 if [ "${BASH_VERSION%.*}" \< "3.0" ]; then
-    echo "You will need to upgrade to version 3.0 for full \
-          programmable completion features"
+    echo "You will need to upgrade to version 3.0 for full programmable completion features"
     return
 fi
 
@@ -898,38 +834,30 @@ if [ -f ~/.bash_aliases ]; then
 	. ~/.bash_aliases
 fi
 
-get_windows_drive_mounts_path()
-{
-	case $(uname -o) in
-		Cygwin)
-			echo "/cygdrive"
-			;;
-		GNU/Linux)
-			# TODO: Can we distinguish between 1) Windows Subsystem for Linux, and 2) Other Linux, such as a typical Ubuntu host or guest?
-			echo "/mnt"
-			;;
-		*)
-			# error_exit "Undetected operating system type '$OPTARG'"
-			echo
-			# No ;; is necessary here.
-	esac
+echo -e "${BCyan}This is BASH ${BRed}${BASH_VERSION%.*}${BCyan} - DISPLAY on ${BRed}$DISPLAY${NC}"
+# date --iso-8601=seconds
+date --rfc-2822
+echo -e "Host: $(hostname)" 
+echo -e "Number of CPU cores: $NCPU"
+echo -e "Platform: $(uname -o)"
+
+which free 1>/dev/null 2>&1 && {
+	echo -e "Total memory: $(free -m | grep Mem | awk '{print $2}') MB"
+	echo -e "Free memory: $(free -m | grep Mem | awk '{print $4}') MB"
+	# free -m
 }
 
-# WHO_I_AM="$(whoami)"
-# HOME_BIN_DIR="/home/$WHO_I_AM/bin"
+# To get the amount of free RAM in megabytes:
+# free -m | grep Mem | awk '{print $4}'
+# Safer: which free 1>/dev/null 2>&1 && free -m | grep Mem | awk '{print $4}'
 
-# ! [ -d "$HOME_BIN_DIR" ] && {
-#	echo "$HOME_BIN_DIR is not a directory."
-# } || echo $PATH | grep $HOME_BIN_DIR && {
-#	echo "$HOME_BIN_DIR is already in the path."
-# } || {
-#	echo "Adding $HOME_BIN_DIR to the path."
-#	PATH="$PATH:$HOME_BIN_DIR"
-# }
+echo -e "\nAvailable disk space:\n"
+df -h
+echo -e
 
-GITHUB_SANDBOX_RELATIVE_DIR="Archive/Git/GitHubSandbox/tom-weatherhead"
-# echo "I am: $WHO_I_AM"
-# echo "/home/$WHO_I_AM/$GITHUB_SANDBOX_RELATIVE_DIR"
+# if [ -x /usr/games/fortune ]; then
+#     /usr/games/fortune -s     # Makes our day a bit more fun.
+# fi
 
 # **** End additions by TW ****
 

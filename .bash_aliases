@@ -61,15 +61,29 @@ alias make='xtitle Making $(basename $PWD) ; make'
 
 GITHUB_SANDBOX_RELATIVE_DIR="Archive/Git/GitHubSandbox/tom-weatherhead"
 
-[ -d "/mnt/c/$GITHUB_SANDBOX_RELATIVE_DIR" ] && {
-	alias gh="cd /mnt/c/$GITHUB_SANDBOX_RELATIVE_DIR"
-} || [ -d "/cygdrive/c/$GITHUB_SANDBOX_RELATIVE_DIR" ] && {
+#[ -d "/mnt/c/$GITHUB_SANDBOX_RELATIVE_DIR" ] && {
+#	echo "alias gh=cd /mnt/c/$GITHUB_SANDBOX_RELATIVE_DIR";
+#	alias gh="cd /mnt/c/$GITHUB_SANDBOX_RELATIVE_DIR";
+#} || [ -d "/cygdrive/c/$GITHUB_SANDBOX_RELATIVE_DIR" ] && {
+#	alias gh="cd /cygdrive/c/$GITHUB_SANDBOX_RELATIVE_DIR"
+#} || [ -d "$HOME/$GITHUB_SANDBOX_RELATIVE_DIR" ] && {
+#	echo "alias gh=cd $HOME/$GITHUB_SANDBOX_RELATIVE_DIR"
+#	alias gh="cd $HOME/$GITHUB_SANDBOX_RELATIVE_DIR"
+#} || {
+#	echo "The GitHub sandbox alias 'gh' has not been created."
+#}
+
+if [ -d "/mnt/c/$GITHUB_SANDBOX_RELATIVE_DIR" ]; then
+	# echo "alias gh=cd /mnt/c/$GITHUB_SANDBOX_RELATIVE_DIR";
+	alias gh="cd /mnt/c/$GITHUB_SANDBOX_RELATIVE_DIR";
+elif [ -d "/cygdrive/c/$GITHUB_SANDBOX_RELATIVE_DIR" ]; then
 	alias gh="cd /cygdrive/c/$GITHUB_SANDBOX_RELATIVE_DIR"
-} || [ -d "$HOME/$GITHUB_SANDBOX_RELATIVE_DIR" ] && {
+elif [ -d "$HOME/$GITHUB_SANDBOX_RELATIVE_DIR" ]; then
+	# echo "alias gh=cd $HOME/$GITHUB_SANDBOX_RELATIVE_DIR"
 	alias gh="cd $HOME/$GITHUB_SANDBOX_RELATIVE_DIR"
-} || {
+else
 	echo "The GitHub sandbox alias 'gh' has not been created."
-}
+fi
 
 # ****
 

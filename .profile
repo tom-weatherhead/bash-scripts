@@ -33,6 +33,6 @@ HOME_BIN_DIR="$HOME/bin"
 } || echo $PATH | grep $HOME_BIN_DIR && {
 	echo "$HOME_BIN_DIR is already in the path."
 } || {
-	echo "Adding $HOME_BIN_DIR to the path."
+	# echo "Adding $HOME_BIN_DIR to the path."
 	PATH="$HOME_BIN_DIR:$PATH"
 }
