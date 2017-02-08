@@ -834,6 +834,10 @@ if [ -f ~/.bash_aliases ]; then
 	. ~/.bash_aliases
 fi
 
+if [ -f ~/.bash_aliases_local ]; then
+	. ~/.bash_aliases_local
+fi
+
 echo -e "${BCyan}This is BASH ${BRed}${BASH_VERSION%.*}${BCyan} - DISPLAY on ${BRed}$DISPLAY${NC}"
 # date --iso-8601=seconds
 date --rfc-2822
