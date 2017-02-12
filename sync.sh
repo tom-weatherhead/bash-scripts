@@ -62,16 +62,7 @@
 
 ###
 
-PROGRAM_NAME=$(basename "$0")
-
-echo_error_message()
-{
-	# 1>&2 or 2>&1 ? -> 2>&1 !
-	# https://www.google.ca/search?q=linux+1%3E%262+vs+2%3E%261
-	# https://superuser.com/questions/436586/why-redirect-output-to-21-and-12
-
-	echo $1 2>&1
-}
+. bash_script_include.sh
 
 usage()
 {
@@ -83,30 +74,7 @@ usage()
 	echo_error_message
 }
 
-clean_up()
-{
-	# Perform end-of-execution housekeeping
-	# Optionally accepts an exit status
-	exit $1
-}
-
-error_exit()
-{
-	# Display an error message and exit
-	echo_error_message "$PROGRAM_NAME: Error: ${1:-"Unknown Error"}"
-	clean_up 1
-}
-
-which_test()
-{
-	which $1 1>/dev/null 2>&1 && {
-		echo "Command '$1' found."
-	} || {
-		error_exit "Command '$1' not found; exiting."
-	}
-}
-
-check_directory()
+check_directory_exists()
 {
 	if ! [ -e "$1" ]; then # We need to use "$1" instead of $1 , in case $1 contains whitespace.
 		error_exit "$1 does not exist."
@@ -117,16 +85,24 @@ check_directory()
 	fi
 }
 
-trap clean_up SIGHUP SIGINT SIGTERM
+if [ $(uname -o) == "Cygwin" ]; then
+	error_exit "This script might not preserve Access Control Lists when run from Cygwin; aborting."
+else
+	echo "Cygwin not detected; we may proceed."
+fi
 
 which_test rsync
 
-OPTION_N=""
+RSYNC_DELETE_OPTION=""	# The delete option is turned off by default, for safety.
+RSYNC_DRY_RUN_OPTION=""
 
-while getopts ":n" option; do
+while getopts ":dn" option; do
     case $option in
+		d)
+			RSYNC_DELETE_OPTION="--del" # --del is a alias for --delete-during
+			;;
         n)
-			OPTION_N="n"
+			RSYNC_DRY_RUN_OPTION="n"
             ;;
 		*)
             usage
@@ -139,8 +115,6 @@ shift $((OPTIND -1))
 
 case $# in
 	1)
-		# echo "1 via case"
-		# echo "\$1 is $1"
 
 		[[ $1 =~ ^[a-z]$ ]] || {
 			error_exit "$1 is not a lowercase letter."
@@ -156,10 +130,6 @@ case $# in
 
 		;;
 	2)
-		# echo "2 via case"
-		# echo "\$1 is $1"
-		# echo "\$2 is $2"
-
 		# Use a regex to ensure that $SRC_PATH ends with a /
 
 		[[ $1 =~ /$ ]] && {
@@ -176,10 +146,10 @@ case $# in
 esac
 
 echo "SRC_PATH is $SRC_PATH"
-echo "DEST_PATH is $DEST_PATH"
+echo "DEST_PATH is $DEST_PATH"	
 
-check_directory "$SRC_PATH"
-#check_directory "$DEST_PATH"
+check_directory_exists "$SRC_PATH"
+# check_directory "$DEST_PATH"		# The DEST_PATH does not need to pre-exist; rsync can create it.
 
 # The general idea is: rsync -aHvz --delete-before --numeric-ids src/ dest
 # See https://www.cyberciti.biz/faq/linux-unix-apple-osx-bsd-rsync-copy-hard-links/
@@ -263,25 +233,32 @@ check_directory "$SRC_PATH"
 # 4) ls -l /mnt
 # 5) ls -l /mnt/x (replace x with the relevant drive letter); verify that you can see the drive's contents
 
-#2017/01/25 : E.g. :
-# rsync -rltDHvz --chmod=ugo=rwX --chown=tomw:tomw --del --numeric-ids /mnt/y/Scripts/ /mnt/c/NoArchiv/ScriptsX
-# rsync -rltDHvz --chmod=ugo=rwX --del --numeric-ids /mnt/y/Scripts/ /mnt/c/NoArchiv/ScriptsX
-# 
- 
-#RSYNC_SHORT_OPTIONS="-aH${OPTION_N}vz"
-#RSYNC_SHORT_OPTIONS="-rlptgoDH${OPTION_N}vz" # = "-aH${OPTION_N}vz" because -a = -rlptgoD
-RSYNC_SHORT_OPTIONS="-rltDH${OPTION_N}vz"
+# Note: When this script is run inside Cygwin's Bash, it may copy some files unnecessarily
+# -> This appears to be because of the --chmod=ugo=rwX option.
 
-RSYNC_DELETE_OPTION="--del" # --del is a alias for --delete-during
+# Don't use -a (the "archive" option) (: it doesn't preserve hard links?)
+# Shoud we use the -p option? (copy the source permissions to the destination)
+# - The -p option seems to have no effect in WSL (Windows Subsystem for Linux) + NTFS
+RSYNC_SHORT_OPTIONS="-rltDH${RSYNC_DRY_RUN_OPTION}vz"
 
-# RSYNC_LONG_OPTIONS="--chmod=ugo=rwX --chown=tomw:tomw $RSYNC_DELETE_OPTION --exclude=?RECYCLE.BIN --exclude=System\ Volume\ Information --numeric-ids"
-# RSYNC_LONG_OPTIONS="--chmod=ugo=rwX $RSYNC_DELETE_OPTION --exclude=\$RECYCLE.BIN --exclude=System\ Volume\ Information --numeric-ids" # This does not exclude the recycle bin: \$ vs. ?
-RSYNC_LONG_OPTIONS="--chmod=ugo=rwX $RSYNC_DELETE_OPTION --exclude=?RECYCLE.BIN --exclude=System\ Volume\ Information --numeric-ids" # The "?" is a wildcard that matches any one character.
+# If eval sees $RECYCLE.BIN , it interprets $RECYCLE as an evaluation of the variable RECYCLE.
+# Can we suppress this part of eval's behaviour, or use something else instead of eval?
+# How can we describe a literal dollar sign to eval?
+
+# The "?" is a wildcard that matches any one character.
+RSYNC_EXCLUDE_OPTIONS="--exclude '?RECYCLE.BIN' --exclude '?Recycle.Bin' --exclude 'System Volume Information'"
+
+# The --numeric-ids option is necessary to preserve NTFS hard links.
+
+# Use Occam's Razor to eliminate any unnecessary options.
+
+# RSYNC_LONG_OPTIONS="--chmod=ugo=rwX --chown=tomw:tomw $RSYNC_DELETE_OPTION $RSYNC_EXCLUDE_OPTIONS --numeric-ids"
+# RSYNC_LONG_OPTIONS="--chmod=ugo=rwX $RSYNC_DELETE_OPTION $RSYNC_EXCLUDE_OPTIONS --numeric-ids"
+RSYNC_LONG_OPTIONS="$RSYNC_DELETE_OPTION $RSYNC_EXCLUDE_OPTIONS --numeric-ids"
 
 RSYNC_COMMAND="rsync $RSYNC_SHORT_OPTIONS $RSYNC_LONG_OPTIONS \"$SRC_PATH\" \"$DEST_PATH\""
 
-echo $RSYNC_COMMAND
-eval $RSYNC_COMMAND
+echo_and_eval $RSYNC_COMMAND
 
 RSYNC_STATUS=$?
 echo "rsync returned status code $RSYNC_STATUS"
@@ -294,7 +271,7 @@ case $RSYNC_STATUS in
 		# No ;; is necessary here.
 esac
 
-exit $RSYNC_STATUS
+clean_up $RSYNC_STATUS
 
 # On Windows: After this script completes successfully:
 # 1) Right-click on the root directory of the receiver

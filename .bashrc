@@ -40,10 +40,21 @@
 #
 # =============================================================== #
 
+# **** Begin - From Harmony's .bashrc ****
+
+# If not running interactively, don't do anything
+case $- in
+    *i*) ;;
+	*) return;;
+esac
+
+# **** End - From Harmony's .bashrc ****
+
+
 # --> Comments added by HOWTO author.
 
 # If not running interactively, don't do anything
-[ -z "$PS1" ] && return
+# [ -z "$PS1" ] && return
 
 #-------------------------------------------------------------
 # Source global definitions (if any)
@@ -828,6 +839,23 @@ complete -F _killall killall killps
 
 # **** Begin additions by TW ****
 
+archive_dir_parent()
+{
+	local A="/mnt/c"
+	local B="/cygdrive/c"
+	local C="$HOME"
+
+	if [ -d "$A" ]; then
+		echo "$A"
+	elif [ -d "$B" ]; then
+		echo "$B"
+	elif [ -d "$C" ]; then
+		echo "$C"
+	else
+		error_exit "archive_dir_parent() : Could not find $A, $B, or $C"
+	fi
+}
+
 # .bash_aliases : See https://askubuntu.com/questions/17536/how-do-i-create-a-permanent-bash-alias
 
 if [ -f ~/.bash_aliases ]; then
@@ -841,19 +869,15 @@ fi
 echo -e "${BCyan}This is BASH ${BRed}${BASH_VERSION%.*}${BCyan} - DISPLAY on ${BRed}$DISPLAY${NC}"
 # date --iso-8601=seconds
 date --rfc-2822
-echo -e "Host: $(hostname)" 
+echo -e "Host: $(hostname)"
 echo -e "Number of CPU cores: $NCPU"
 echo -e "Platform: $(uname -o)"
+echo -e "The system has a $(arch_bits)-bit architecture."
 
 which free 1>/dev/null 2>&1 && {
 	echo -e "Total memory: $(free -m | grep Mem | awk '{print $2}') MB"
 	echo -e "Free memory: $(free -m | grep Mem | awk '{print $4}') MB"
-	# free -m
 }
-
-# To get the amount of free RAM in megabytes:
-# free -m | grep Mem | awk '{print $4}'
-# Safer: which free 1>/dev/null 2>&1 && free -m | grep Mem | awk '{print $4}'
 
 echo -e "\nAvailable disk space:\n"
 df -h

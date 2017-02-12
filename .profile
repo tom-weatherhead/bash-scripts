@@ -24,15 +24,15 @@
 
 HOME_BIN_DIR="$HOME/bin"
 
-! [ -e "$HOME_BIN_DIR" ] && {
+if ! [ -e "$HOME_BIN_DIR" ]; then
 	echo "$HOME_BIN_DIR does not exist."
-} || ! [ -d "$HOME_BIN_DIR" ] && {
+elif ! [ -d "$HOME_BIN_DIR" ]; then
 	echo "$HOME_BIN_DIR is not a directory."
-} || ! [ -r "$HOME_BIN_DIR" ] && {
+elif ! [ -r "$HOME_BIN_DIR" ]; then
 	echo "$HOME_BIN_DIR is not readable."
-} || echo $PATH | grep $HOME_BIN_DIR && {
+elif echo $PATH | grep $HOME_BIN_DIR; then
 	echo "$HOME_BIN_DIR is already in the path."
-} || {
+else
 	# echo "Adding $HOME_BIN_DIR to the path."
 	PATH="$HOME_BIN_DIR:$PATH"
-}
+fi

@@ -57,34 +57,6 @@ alias kk='ll'
 alias top='xtitle Processes on $HOST && top'
 alias make='xtitle Making $(basename $PWD) ; make'
 
-# Create the "gh" ("GitHub") alias.
-
-GITHUB_SANDBOX_RELATIVE_DIR="Archive/Git/GitHubSandbox/tom-weatherhead"
-
-#[ -d "/mnt/c/$GITHUB_SANDBOX_RELATIVE_DIR" ] && {
-#	echo "alias gh=cd /mnt/c/$GITHUB_SANDBOX_RELATIVE_DIR";
-#	alias gh="cd /mnt/c/$GITHUB_SANDBOX_RELATIVE_DIR";
-#} || [ -d "/cygdrive/c/$GITHUB_SANDBOX_RELATIVE_DIR" ] && {
-#	alias gh="cd /cygdrive/c/$GITHUB_SANDBOX_RELATIVE_DIR"
-#} || [ -d "$HOME/$GITHUB_SANDBOX_RELATIVE_DIR" ] && {
-#	echo "alias gh=cd $HOME/$GITHUB_SANDBOX_RELATIVE_DIR"
-#	alias gh="cd $HOME/$GITHUB_SANDBOX_RELATIVE_DIR"
-#} || {
-#	echo "The GitHub sandbox alias 'gh' has not been created."
-#}
-
-if [ -d "/mnt/c/$GITHUB_SANDBOX_RELATIVE_DIR" ]; then
-	# echo "alias gh=cd /mnt/c/$GITHUB_SANDBOX_RELATIVE_DIR";
-	alias gh="cd /mnt/c/$GITHUB_SANDBOX_RELATIVE_DIR";
-elif [ -d "/cygdrive/c/$GITHUB_SANDBOX_RELATIVE_DIR" ]; then
-	alias gh="cd /cygdrive/c/$GITHUB_SANDBOX_RELATIVE_DIR"
-elif [ -d "$HOME/$GITHUB_SANDBOX_RELATIVE_DIR" ]; then
-	# echo "alias gh=cd $HOME/$GITHUB_SANDBOX_RELATIVE_DIR"
-	alias gh="cd $HOME/$GITHUB_SANDBOX_RELATIVE_DIR"
-else
-	echo "The GitHub sandbox alias 'gh' has not been created."
-fi
-
 # ****
 
 # From Xavier Damman's .profile : See https://gist.github.com/xdamman/eefcc3a28231b5154e3d
@@ -157,5 +129,16 @@ alias sudo='sudo '
 # Colored up cat!
 # You must install Pygments first - "sudo easy_install Pygments"
 #alias c='pygmentize -O style=monokai -f console256 -g'
+
+# ThAW's Additional Aliases
+
+# Create the "gh" ("GitHub") alias.
+alias gh='cd $(archive_dir_parent); cd Archive/Git/GitHubandbox/tom-weatherhead 1>&/dev/null'
+
+alias pipe_status='echo "${PIPESTATUS[@]}" | tr -s " " + | bc'
+alias arch_bits='uname -m | sed "s/x86_//;s/i[3-6]86/32/"'
+
+# sed:
+# - s : Regular-expression-based substitution : s/regexp/replacement/
 
 # End of .bash_aliases

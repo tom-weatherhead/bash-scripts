@@ -15,37 +15,24 @@
 
 # Praise the LORD for dd. (And for stat, even though it is non-standard Linux/*nix extension. See http://unix.stackexchange.com/questions/16640/how-can-i-get-the-size-of-a-file-in-a-bash-script .)
 
-PROGRAM_NAME=$(basename "$0")
+. bash_script_include.sh
 
 usage()
 {
 	# Output the usage message to the standard error stream.
-	echo 1>&2
-	echo "Usage: $PROGRAM_NAME inputfile [maximum number of 4 KB blocks per slice; default = 1048575]" 1>&2
-	echo 1>&2
-	echo "By default, each slice will be at most 4 GB minus 4 KB; ideal for 32-bit file systems." 1>&2
-	echo 1>&2
-	echo "Examples:" 1>&2
-	echo "  $PROGRAM_NAME Document.pdf 128" 1>&2
-	echo "  $PROGRAM_NAME BigDisk.iso" 1>&2
-	echo 1>&2
+	echo_error_message
+	echo_error_message "Usage: $PROGRAM_NAME inputfile [maximum number of 4 KB blocks per slice; default = 1048575]"
+	echo_error_message
+	echo_error_message "By default, each slice will be at most 4 GB minus 4 KB; ideal for 32-bit file systems."
+	echo_error_message
+	echo_error_message "Examples:"
+	echo_error_message "  $PROGRAM_NAME Document.pdf 128"
+	echo_error_message "  $PROGRAM_NAME BigDisk.iso"
+	echo_error_message
 }
 
-clean_up()
-{
-	# Perform end-of-execution housekeeping
-	# Optionally accepts an exit status
-	exit $1
-}
-
-error_exit()
-{
-	# Display an error message and exit
-	echo "${PROGRAM_NAME}: ${1:-"Unknown Error"}" 1>&2
-	clean_up 1
-}
-
-trap clean_up SIGHUP SIGINT SIGTERM
+which_test awk
+which_test dd
 
 BLOCK_SIZE=4096 # Bytes
 NUM_BLOCKS_PER_SLICE_TO_FIT_WITHIN_4GB=1048575
