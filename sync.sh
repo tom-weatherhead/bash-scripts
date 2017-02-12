@@ -85,7 +85,8 @@ check_directory_exists()
 	fi
 }
 
-if [ $(uname -o) == "Cygwin" ]; then
+# if [ $(uname -o) == "Cygwin" ]; then
+if [ "$(distro_is_cygwin)" ]; then
 	error_exit "This script might not preserve Access Control Lists when run from Cygwin; aborting."
 else
 	echo "Cygwin not detected; we may proceed."

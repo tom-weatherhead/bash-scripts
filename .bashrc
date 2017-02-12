@@ -866,7 +866,9 @@ if [ -f ~/.bash_aliases_local ]; then
 	. ~/.bash_aliases_local
 fi
 
-echo -e "${BCyan}This is BASH ${BRed}${BASH_VERSION%.*}${BCyan} - DISPLAY on ${BRed}$DISPLAY${NC}"
+# [ -z $BASH_VERSION ] || echo "Bash version $BASH_VERSION" # ThAW: Perhaps this is portable enough to be placed in ~/.profile
+
+echo -e "${BCyan}This is Bash version ${BRed}${BASH_VERSION%.*}${BCyan} - Display on ${BRed}$DISPLAY${NC}"
 # date --iso-8601=seconds
 date --rfc-2822
 echo -e "Host: $(hostname)"

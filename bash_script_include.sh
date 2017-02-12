@@ -112,6 +112,54 @@ pipe_status()
 	echo "${PIPESTATUS[@]}" | tr -s ' ' + | bc
 }
 
+# determine_distro() {}
+
+distro_is_cygwin()
+{
+	if [ "$(uname -o)" == "Cygwin" ]; then
+		echo 1
+	else
+		echo
+	fi
+}
+
+# Usage: E.g. : if [ "$(distro_is_linux)" ]; then echo "Y"; else echo "N"; fi
+
+distro_is_linux()
+{
+	if [ "$(uname -o)" == "GNU/Linux" ]; then
+		echo 1
+	else
+		echo
+	fi
+}
+
+print_linux_distro_name()
+{
+	cat /etc/*-release 2>/dev/null | perl -nle 'print $1 if /^DISTRIB_ID=(.*)$/'
+}
+
+distro_is_ubuntu() # Some form of Ubuntu; possibly WSL.
+{
+	if [ "$(print_linux_distro_name)" == "Ubuntu" ]; then
+		echo 1
+	else
+		echo
+	fi
+}
+
+#distro_is_wsl() # WSL == Windows 10 Subsystem for Linux; a variant of Ubuntu
+#{
+#}
+
+#distro_is_ubuntu_not_wsl()
+#{
+#}
+
+# distro_is_fedora() {}
+
+# distro_is_red_hat_family() {}
+
 # This trap command works on bash, but on Ubuntu 16.10, dash (via sh) complains: "trap: SIGHUP: bad trap" ; another reason to use #!/bin/bash instead of #!/bin/sh ?
 # See e.g. https://lists.yoctoproject.org/pipermail/yocto/2013-April/013125.html
 trap clean_up SIGHUP SIGINT SIGTERM
