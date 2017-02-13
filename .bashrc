@@ -43,10 +43,17 @@
 # **** Begin - From Harmony's .bashrc ****
 
 # If not running interactively, don't do anything
-case $- in
-    *i*) ;;
-	*) return;;
-esac
+
+#case $- in
+#    *i*) ;;
+#	*) return;;
+#esac
+
+#if ! [ $(echo $- | grep i) ]; then echo "Not interactive."; fi
+
+#if ! [ $(echo $- | grep i) ]; then echo "Not interactive."; fi
+
+[ $(echo $- | grep i) ] || return # ThAW 2017/02/12. TODO: Use "$-" instead of $- ?
 
 # **** End - From Harmony's .bashrc ****
 

@@ -139,6 +139,18 @@ print_linux_distro_name()
 	cat /etc/*-release 2>/dev/null | perl -nle 'print $1 if /^DISTRIB_ID=(.*)$/'
 }
 
+distro_foo()
+{
+	# Find the Distributor ID:
+	if which lsb_release 1>/dev/null 2>&1; then
+		lsb_release -i -s
+	elif [ -e /etc/os-release ]; then
+		cat /etc/os-release | perl -nle 'print $1 if /^NAME="?(.*?)"?$/'
+	else
+		echo "Unknown distro."
+	fi
+}
+
 distro_is_ubuntu() # Some form of Ubuntu; possibly WSL.
 {
 	if [ "$(print_linux_distro_name)" == "Ubuntu" ]; then
