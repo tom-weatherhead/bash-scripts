@@ -43,13 +43,13 @@ DEFAULT_NUM_BLOCKS_PER_SLICE=$NUM_BLOCKS_PER_SLICE_TO_FIT_WITHIN_4GB
 # Without case: if [ $# -lt 1 ]; then ... elif [ $# -lt 2 ]; then ... else ... fi
 
 case $# in
-	1 )	NUM_BLOCKS_PER_SLICE=$DEFAULT_NUM_BLOCKS_PER_SLICE
+	1)	NUM_BLOCKS_PER_SLICE=$DEFAULT_NUM_BLOCKS_PER_SLICE
 		echo "Using the default NUM_BLOCKS_PER_SLICE=$NUM_BLOCKS_PER_SLICE"
 		;;
-	2 ) NUM_BLOCKS_PER_SLICE=$2
+	2) NUM_BLOCKS_PER_SLICE=$2
 		echo "Using NUM_BLOCKS_PER_SLICE=$NUM_BLOCKS_PER_SLICE"
 		;;
-	* )	usage
+	*)	usage
 		error_exit "Incorrect number of arguments"
 esac
 

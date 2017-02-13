@@ -35,4 +35,5 @@ elif echo $PATH | grep $HOME_BIN_DIR; then
 else
 	# echo "Adding $HOME_BIN_DIR to the path."
 	PATH="$HOME_BIN_DIR:$PATH"
+	# export PATH
 fi

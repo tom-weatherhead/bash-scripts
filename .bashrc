@@ -69,6 +69,7 @@
 
 if [ -f $HOME/.profile ]; then
 	. $HOME/.profile			# --> Read $HOME/.profile, if present.
+	# export PATH
 fi
 
 if [ -f /etc/bashrc ]; then
@@ -244,10 +245,10 @@ else
     SU=${BCyan}         # User is normal.
 fi
 
-NCPU=$(grep -c 'processor' /proc/cpuinfo)    # Number of CPUs
-SLOAD=$(( 100*${NCPU} ))        # Small load
-MLOAD=$(( 200*${NCPU} ))        # Medium load
-XLOAD=$(( 400*${NCPU} ))        # Xlarge load
+NCPU=$(grep -c 'processor' /proc/cpuinfo)	# Number of CPUs
+SLOAD=$(( 100*${NCPU} ))					# Small load
+MLOAD=$(( 200*${NCPU} ))					# Medium load
+XLOAD=$(( 400*${NCPU} ))					# Xlarge load
 
 # Returns system load as percentage, i.e., '40' rather than '0.40)'.
 function load()
@@ -306,6 +307,8 @@ function job_color()
 # Adds some text in the terminal frame (if applicable).
 
 # Now we construct the prompt.
+# See xdamman.profile.txt for ideas about how to integrate the Git branch name and dirty status into the prompt.
+
 PROMPT_COMMAND="history -a"
 case ${TERM} in
 	*term | rxvt | linux)
@@ -859,7 +862,7 @@ archive_dir_parent()
 	elif [ -d "$C" ]; then
 		echo "$C"
 	else
-		error_exit "archive_dir_parent() : Could not find $A, $B, or $C"
+		echo "archive_dir_parent() : Could not find $A, $B, or $C"
 	fi
 }
 
@@ -873,6 +876,14 @@ if [ -f ~/.bash_aliases_local ]; then
 	. ~/.bash_aliases_local
 fi
 
+if [ -f $HOME/bin/bash_script_include.sh ]; then
+	. $HOME/bin/bash_script_include.sh
+fi
+
+# if [ -f bash_script_include.sh ]; then
+#	. bash_script_include.sh
+# fi
+
 # [ -z $BASH_VERSION ] || echo "Bash version $BASH_VERSION" # ThAW: Perhaps this is portable enough to be placed in ~/.profile
 
 echo -e "${BCyan}This is Bash version ${BRed}${BASH_VERSION%.*}${BCyan} - Display on ${BRed}$DISPLAY${NC}"
@@ -881,6 +892,8 @@ date --rfc-2822
 echo -e "Host: $(hostname)"
 echo -e "Number of CPU cores: $NCPU"
 echo -e "Platform: $(uname -o)"
+# which determine_distro 1>/dev/null 2>&1 && echo -e "Distribution: $(determine_distro)"
+echo -e "Distribution: $(determine_distro)"
 echo -e "The system has a $(arch_bits)-bit architecture."
 
 which free 1>/dev/null 2>&1 && {

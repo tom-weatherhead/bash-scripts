@@ -115,21 +115,12 @@ pipe_status()
 
 # Determine which Linux or Linux-like distribution is running on the system.
 
-# For WSL (Windows Subsystem for Linux) vs. genuine Ubuntu:
-# See https://stackoverflow.com/questions/38859145/detect-ubuntu-on-windows-vs-native-ubuntu-from-bash-script
-
-# if grep -q Microsoft /proc/version; then
-  # echo "Ubuntu on Windows"
-# else
-  # echo "native Linux"
-# fi
-
-distro_foo()
+determine_distro()
 {
 	# Find the Distributor ID:
 	if [ "$(uname -o)" == "Cygwin" ]; then
 		echo 'Cygwin'
-	elif grep -q Microsoft /proc/version; then # WSL
+	elif grep -q Microsoft /proc/version; then # WSL; See https://stackoverflow.com/questions/38859145/detect-ubuntu-on-windows-vs-native-ubuntu-from-bash-script
 		echo "Ubuntu on Windows" # This string delibrately starts with Ubuntu, so that both WSL and genuine Ubuntu return results that match the regex /^Ubuntu/
 	elif which lsb_release 1>/dev/null 2>&1; then
 		lsb_release -i -s
@@ -140,18 +131,17 @@ distro_foo()
 	fi
 }
 
-# determine_distro() {}
+# distro_is_* usage: E.g. : if [ "$(distro_is_linux)" ]; then echo "Y"; else echo "N"; fi
 
 distro_is_cygwin()
 {
-	if [ "$(uname -o)" == "Cygwin" ]; then
+	# if [ "$(uname -o)" == "Cygwin" ]; then
+	if [ "$(determine_distro)" == "Cygwin" ]; then
 		echo 1
 	else
 		echo
 	fi
 }
-
-# Usage: E.g. : if [ "$(distro_is_linux)" ]; then echo "Y"; else echo "N"; fi
 
 distro_is_linux()
 {
@@ -167,24 +157,46 @@ print_linux_distro_name()
 	cat /etc/*-release 2>/dev/null | perl -nle 'print $1 if /^DISTRIB_ID=(.*)$/'
 }
 
+# distro_is_debian() {}
+
 distro_is_ubuntu() # Some form of Ubuntu; possibly WSL.
 {
-	if [ "$(print_linux_distro_name)" == "Ubuntu" ]; then
+	# if [ "$(print_linux_distro_name)" == "Ubuntu" ]; then
+	if [[ "$(determine_distro)" =~ ^Ubuntu ]]; then
 		echo 1
 	else
 		echo
 	fi
 }
 
-#distro_is_wsl() # WSL == Windows 10 Subsystem for Linux; a variant of Ubuntu
-#{
-#}
+distro_is_wsl() # WSL == Windows 10 Subsystem for Linux; a variant of Ubuntu
+{
+	if [[ "$(determine_distro)" =~ ^Ubuntu[[:space:]] ]]; then
+		echo 1
+	else
+		echo
+	fi
+}
 
-#distro_is_ubuntu_not_wsl()
-#{
-#}
+distro_is_ubuntu_not_wsl()
+{
+	if [ "$(determine_distro)" == 'Ubuntu' ]; then
+		echo 1
+	else
+		echo
+	fi
+}
 
-# distro_is_fedora() {}
+distro_is_fedora()
+{
+	if [ "$(determine_distro)" == 'Fedora' ]; then
+		echo 1
+	else
+		echo
+	fi
+}
+
+# distro_is_centos() {}
 
 # distro_is_red_hat_family() {}
 

@@ -40,9 +40,11 @@ fi
 REPORT_FILENAME=duplicate_files_report_$(date --utc +%Y%m%d_%H%M%S).txt
 START_DATETIME=$(date_time_utc)
 
-NEWLINE=$'\n' # See zvezda's solution in https://stackoverflow.com/questions/3005963/how-can-i-have-a-newline-in-a-string-in-sh
-echo "Duplicate files report for the path $1$NEWLINE" > $REPORT_FILENAME
-echo "Generated on $START_DATETIME UTC$NEWLINE" >> $REPORT_FILENAME
+# NEWLINE=$'\n' # See zvezda's solution in https://stackoverflow.com/questions/3005963/how-can-i-have-a-newline-in-a-string-in-sh
+# Use echo with the -e option so that \n is correctly interpeted as a newline.
+# Compare e.g. echo "Foo.\nBar."; echo -e "Foo.\nBar."
+echo -e "Duplicate files report for the path $1\n" > $REPORT_FILENAME
+echo -e "Generated on $START_DATETIME UTC\n" >> $REPORT_FILENAME
 
 # Use double quotes around $1 (find "$1"...) to protect against any spaces in the path in $1
 # 2016/12/12 : Changed "sort -k1,32" to "sort"
