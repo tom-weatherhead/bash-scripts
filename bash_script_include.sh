@@ -1,6 +1,7 @@
 # bash_script_include.sh
 
-PROGRAM_NAME=$(basename "$0")
+# PROGRAM_NAME=$(basename "$0")
+PROGRAM_NAME=$(basename "$0" 2>/dev/null)
 
 echo_error_message()
 {
@@ -112,6 +113,33 @@ pipe_status()
 	echo "${PIPESTATUS[@]}" | tr -s ' ' + | bc
 }
 
+# Determine which Linux or Linux-like distribution is running on the system.
+
+# For WSL (Windows Subsystem for Linux) vs. genuine Ubuntu:
+# See https://stackoverflow.com/questions/38859145/detect-ubuntu-on-windows-vs-native-ubuntu-from-bash-script
+
+# if grep -q Microsoft /proc/version; then
+  # echo "Ubuntu on Windows"
+# else
+  # echo "native Linux"
+# fi
+
+distro_foo()
+{
+	# Find the Distributor ID:
+	if [ "$(uname -o)" == "Cygwin" ]; then
+		echo 'Cygwin'
+	elif grep -q Microsoft /proc/version; then # WSL
+		echo "Ubuntu on Windows" # This string delibrately starts with Ubuntu, so that both WSL and genuine Ubuntu return results that match the regex /^Ubuntu/
+	elif which lsb_release 1>/dev/null 2>&1; then
+		lsb_release -i -s
+	elif [ -e /etc/os-release ]; then
+		cat /etc/os-release | perl -nle 'print $1 if /^NAME="?(.*?)"?$/'
+	else
+		echo "Unknown distribution"
+	fi
+}
+
 # determine_distro() {}
 
 distro_is_cygwin()
@@ -137,18 +165,6 @@ distro_is_linux()
 print_linux_distro_name()
 {
 	cat /etc/*-release 2>/dev/null | perl -nle 'print $1 if /^DISTRIB_ID=(.*)$/'
-}
-
-distro_foo()
-{
-	# Find the Distributor ID:
-	if which lsb_release 1>/dev/null 2>&1; then
-		lsb_release -i -s
-	elif [ -e /etc/os-release ]; then
-		cat /etc/os-release | perl -nle 'print $1 if /^NAME="?(.*?)"?$/'
-	else
-		echo "Unknown distro."
-	fi
 }
 
 distro_is_ubuntu() # Some form of Ubuntu; possibly WSL.
