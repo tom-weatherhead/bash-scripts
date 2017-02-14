@@ -66,13 +66,7 @@
 #
 # ffmpeg -i input -c:v libx264 -preset veryslow -crf 0 output.mkv
 
-PROGRAM_NAME=$(basename "$0")
-
-echo_error_message()
-{
-	# echo $1 1>&2
-	echo $1 2>&1
-}
+. bash_script_include.sh
 
 usage()
 {
@@ -90,7 +84,7 @@ usage()
 	echo_error_message
 }
 
-clean_up()
+clean_up() # ? Will this definition of "clean_up" replace the one included from bash_script_include.sh ?
 {
 	# Perform end-of-execution housekeeping
 	# Optionally accepts an exit status
@@ -99,28 +93,6 @@ clean_up()
 	rm -f ffmpeg2pass-*.log*
 	exit $1
 }
-
-error_exit()
-{
-	# Display an error message and exit
-	echo_error_message "${PROGRAM_NAME}: Error: ${1:-"Unknown Error"}"
-	clean_up 1
-}
-
-which_test()
-{
-	which $1 1>/dev/null 2>&1 && {
-		echo "Command '$1' found."
-	} || {
-		echo_error_message
-		echo_error_message "The command '$1' was not found in the path."
-		echo_error_message "To view the path, execute this command: echo \$PATH"
-		echo_error_message
-		error_exit "Command '$1' not found; exiting."
-	}
-}
-
-trap clean_up SIGHUP SIGINT SIGTERM
 
 which_test ffmpeg
 
@@ -187,10 +159,11 @@ case $MODE in
 		# See https://stackoverflow.com/questions/3466166/how-to-check-if-running-in-cygwin-mac-or-linux
 
 		# OS_TYPE=$(uname -a | awk '{print $NF}')
-		OS_TYPE=$(uname -o)
-		echo "OS_TYPE is $OS_TYPE"
+		# OS_TYPE=$(uname -o)
+		# echo "OS_TYPE is $OS_TYPE"
 		
-		if [ $OS_TYPE == "Cygwin" ]; then
+		# if [ $OS_TYPE == "Cygwin" ]; then
+		if [ $(distro_is_cygwin) ]; then
 			NULL_DEVICE="NUL" # "NUL" on Windows; "/dev/null" on Linux, etc.
 		else
 			NULL_DEVICE="/dev/null"

@@ -24,9 +24,13 @@ clean_up()
 {
 	# Perform end-of-execution housekeeping
 	# Optionally accepts an exit status
-	echo "Cleaning up: Exiting with status $1."
+	echo_error_message "Cleaning up: Exiting with status $1."
 	exit $1
 }
+
+# This trap command works on bash, but on Ubuntu 16.10, dash (via sh) complains: "trap: SIGHUP: bad trap" ; another reason to use #!/bin/bash instead of #!/bin/sh ?
+# See e.g. https://lists.yoctoproject.org/pipermail/yocto/2013-April/013125.html
+trap clean_up SIGHUP SIGINT SIGTERM
 
 error_exit()
 {
@@ -123,7 +127,7 @@ determine_distro()
 	elif grep -q Microsoft /proc/version; then # WSL; See https://stackoverflow.com/questions/38859145/detect-ubuntu-on-windows-vs-native-ubuntu-from-bash-script
 		echo "Ubuntu on Windows" # This string delibrately starts with Ubuntu, so that both WSL and genuine Ubuntu return results that match the regex /^Ubuntu/
 	elif which lsb_release 1>/dev/null 2>&1; then
-		lsb_release -i -s
+		lsb_release -is
 	elif [ -e /etc/os-release ]; then
 		cat /etc/os-release | perl -nle 'print $1 if /^NAME="?(.*?)"?$/'
 	else
@@ -199,9 +203,5 @@ distro_is_fedora()
 # distro_is_centos() {}
 
 # distro_is_red_hat_family() {}
-
-# This trap command works on bash, but on Ubuntu 16.10, dash (via sh) complains: "trap: SIGHUP: bad trap" ; another reason to use #!/bin/bash instead of #!/bin/sh ?
-# See e.g. https://lists.yoctoproject.org/pipermail/yocto/2013-April/013125.html
-trap clean_up SIGHUP SIGINT SIGTERM
 
 # End of bash_script_include.sh

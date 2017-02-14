@@ -3,20 +3,20 @@
 # git-archive.sh - November 29, 2016
 # Create encrypted and unencrypted archives of a local Git repository.
 
-# source bash_script_includes.sh
-# ... or:
-# . bash_script_includes.sh
+. bash_script_include.sh
 
 tar_bz2_writing_function()
 {
-	echo "git archive --format=tar -- HEAD | bzip2 -9 - > $1"
-	git archive --format=tar HEAD | bzip2 -9 - > $1
+	# echo "git archive --format=tar -- HEAD | bzip2 -9 - > $1"
+	# git archive --format=tar HEAD | bzip2 -9 - > $1
+	echo_and_eval git archive --format=tar HEAD | bzip2 -9 - > $1
 }
 
 tar_gpg_gpg_writing_function()
 {
-	echo "git archive --format=tar HEAD | gpg -r tomw3 -e | gpg -r tomw2 -e -o $1"
-	git archive --format=tar HEAD | gpg -r tomw3 -e | gpg -r tomw2 -e -o $1
+	# echo "git archive --format=tar HEAD | gpg -r tomw3 -e | gpg -r tomw2 -e -o $1"
+	# git archive --format=tar HEAD | gpg -r tomw3 -e | gpg -r tomw2 -e -o $1
+	echo_and_eval git archive --format=tar HEAD | gpg -r tomw3 -e | gpg -r tomw2 -e -o $1
 }
 
 find_available_filename_and_write()
@@ -63,22 +63,21 @@ find_available_filename_and_write()
 	echo $RESULT_OF_WRITE
 }
 
+# Alterntively: [ -d .git ] || error_exit "No .git directory was found."
 if [ -d .git ]; then
 	echo "A .git directory was found."
 else
-	echo "No .git directory was found; exiting."
-	exit 1
+	error_exit "No .git directory was found."
 fi
 
 #ARCHIVEDIR="../../Archive" # If $# == 0 then ARCHIVEDIR="../../Archive" elif $# == 1 then ARCHIVEDIR="$1" else error fi
-ARCHIVEDIR="/cygdrive/c/NoArchiv/GitArchiveTest"
+ARCHIVEDIR="/cygdrive/c/NoArchiv/GitArchiveTest" # This dir must pass the tests -e (exists), -d (is a directory), and -w (is writable by the current user).
 
+# Alterntively: [ -d $ARCHIVEDIR ] || error_exit "The Archive directory was not found."
 if [ -d $ARCHIVEDIR ]; then
-	echo "The Archive directory was found.";
+	echo "The Archive directory was found."
 else
-	# Use error_exit
-	echo "The Archive directory was not found; exiting.";
-	exit 1
+	error_exit "The Archive directory was not found."
 fi
 
 echo
@@ -101,4 +100,4 @@ fi
 
 echo $RESULT_MESSAGE
 echo
-exit $RESULT_CODE
+clean_up $RESULT_CODE

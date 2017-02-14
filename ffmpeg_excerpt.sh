@@ -1,12 +1,6 @@
 #!/bin/bash
 
-PROGRAM_NAME=$(basename "$0")
-
-echo_error_message()
-{
-	# echo $1 1>&2
-	echo $1 2>&1
-}
+. bash_script_include.sh
 
 usage()
 {
@@ -18,37 +12,15 @@ usage()
 	echo_error_message
 }
 
-clean_up()
-{
-	# Perform end-of-execution housekeeping
-	# Optionally accepts an exit status
-	# TEMP_FILES="ffmpeg2pass-*.log*"
-	# rm -f $TEMP_FILES
-	# rm -f ffmpeg2pass-*.log*
-	exit $1
-}
-
-error_exit()
-{
-	# Display an error message and exit
-	echo_error_message "${PROGRAM_NAME}: Error: ${1:-"Unknown Error"}"
-	clean_up 1
-}
-
-which_test()
-{
-	which $1 1>/dev/null 2>&1 && {
-		echo "Command '$1' found."
-	} || {
-		echo_error_message
-		echo_error_message "The command '$1' was not found in the path."
-		echo_error_message "To view the path, execute this command: echo \$PATH"
-		echo_error_message
-		error_exit "Command '$1' not found; exiting."
-	}
-}
-
-trap clean_up SIGHUP SIGINT SIGTERM
+# clean_up()
+# {
+	# # Perform end-of-execution housekeeping
+	# # Optionally accepts an exit status
+	# # TEMP_FILES="ffmpeg2pass-*.log*"
+	# # rm -f $TEMP_FILES
+	# # rm -f ffmpeg2pass-*.log*
+	# exit $1
+# }
 
 which_test ffmpeg
 
@@ -129,9 +101,10 @@ FILENAME=$(basename -s ."$EXTENSION" "$1")
 
 OUTPUT_FILENAME="${FILENAME}_${START_TIME_STRING}_${END_TIME_STRING}.$EXTENSION"
 
-echo "ffmpeg -i $1 -ss $START_TIME -to $END_TIME -c copy $OUTPUT_FILENAME"
+# echo "ffmpeg -i $1 -ss $START_TIME -to $END_TIME -c copy $OUTPUT_FILENAME"
+# ffmpeg -i "$1" -ss $START_TIME -to $END_TIME -c copy "$OUTPUT_FILENAME"
 
-ffmpeg -i "$1" -ss $START_TIME -to $END_TIME -c copy "$OUTPUT_FILENAME"
+echo_and_eval ffmpeg -i "$1" -ss $START_TIME -to $END_TIME -c copy "$OUTPUT_FILENAME"
 
 EXIT_STATUS=$?
 

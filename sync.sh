@@ -74,14 +74,25 @@ usage()
 	echo_error_message
 }
 
-check_directory_exists()
+check_directory_exists_and_is_readable()
 {
 	if ! [ -e "$1" ]; then # We need to use "$1" instead of $1 , in case $1 contains whitespace.
 		error_exit "$1 does not exist."
 	elif ! [ -d "$1" ]; then
 		error_exit "$1 is not a directory."
-	#elif ! [ -w "$1" ]; then
-	#	error_exit "$1 is not writable by the current user."
+	elif ! [ -r "$1" ]; then
+		error_exit "$1 is not readable by the current user."
+	fi
+}
+
+check_directory_is_writable_if_it_exists()
+{
+	if [ -e "$1" ]; then
+		if ! [ -d "$1" ]; then
+			error_exit "$1 is not a directory."
+		elif ! [ -w "$1" ]; then
+			error_exit "$1 is not writable by the current user."
+		fi
 	fi
 }
 
@@ -149,8 +160,8 @@ esac
 echo "SRC_PATH is $SRC_PATH"
 echo "DEST_PATH is $DEST_PATH"	
 
-check_directory_exists "$SRC_PATH"
-# check_directory "$DEST_PATH"		# The DEST_PATH does not need to pre-exist; rsync can create it.
+check_directory_exists_and_is_readable "$SRC_PATH"
+check_directory_is_writable_if_it_exists "$DEST_PATH"	# The DEST_PATH does not need to pre-exist; rsync can create it.
 
 # The general idea is: rsync -aHvz --delete-before --numeric-ids src/ dest
 # See https://www.cyberciti.biz/faq/linux-unix-apple-osx-bsd-rsync-copy-hard-links/
