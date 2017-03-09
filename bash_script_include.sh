@@ -204,4 +204,34 @@ distro_is_fedora()
 
 # distro_is_red_hat_family() {}
 
+get_windows_drive_mounts_path()
+{
+	case $(determine_distro) in
+		"Cygwin")
+			echo "/cygdrive"
+			;;
+
+		"Ubuntu on Windows")
+			echo "/mnt"
+			;;
+
+		*)
+			echo
+			# Test the return of this function with [ -z ... ] ?
+			# Or: error_exit "No Windows drives on this distro: $OPTARG"
+			# No ;; is necessary for the last case.
+	esac
+}
+
+get_null_device_name()
+{
+    if [ $(determine_distro) == 'Cygwin' ]; then
+        echo 'NUL'
+    elif [ -e /dev/null ]; then
+        echo '/dev/null'
+    else
+        error_exit 'Unable to determine the null device for this system'
+    fi
+}
+
 # End of bash_script_include.sh

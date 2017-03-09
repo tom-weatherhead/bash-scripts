@@ -1,0 +1,91 @@
+Tom awk Sample Code
+
+From https://en.wikipedia.org/wiki/AWK
+
+Hello, World!
+
+BEGIN { print "Hello, world!" }
+
+
+Print number of lines, words, and characters (like wc) :
+
+{
+
+    w += NF
+
+    c += length + 1
+
+}
+
+END { print NR, w, c }
+
+
+Match a range of input lines:
+
+NR % 4 == 1, NR % 4 == 3 { printf "%6d % s\n", NR, $0 }
+
+
+Calculate word frequencies using associative arrays:
+
+BEGIN { FS="[^a-zA-Z]+" }
+
+{
+
+    for (i=1; i<=NF; i++)
+
+        words[tolower($i)]++
+
+}
+
+END {
+
+    for (i in words)
+
+        print i, words[i]
+
+}
+
+
+Match pattern from command line:
+
+#!/bin/sh
+
+pattern="$1"
+
+shift
+
+awk '/'"$pattern"'/ { print FILENAME ":" $0 }' "$@"
+
+
+... or:
+
+
+#!/bin/sh
+
+export pattern="$1"
+
+shift
+
+awk '$0 ~ ENVIRON["pattern"] { print FILENAME ":" $0 }' "$@"
+
+
+... or:
+
+
+#!/bin/sh
+
+pattern="$0"
+
+shift
+
+awk '$0 ~ pattern { print FILENAME ":" $0 }' "pattern=$pattern" "$@"
+
+
+print.awk : Print the contents of a given file:
+
+#!/usr/bin/awk -f
+
+{ print $0 }
+
+
+Usage: ./print.awk <filename>

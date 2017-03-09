@@ -1,0 +1,73 @@
+Tom sed Sample Code
+
+
+Substitution:
+
+sed 's/regexp/replacement/g' inputFileName > outputFileName
+
+(In some versions of sed, use the -e option right after the "sed".)
+
+
+Delete all empty or whitespace-only lines:
+
+sed '/^ *$/d' inputFileName
+
+
+sed used as a filter: E.g.:
+
+echo xyz xyz | sed 's/x/y/g'
+
+
+... or, if subst.sed contains:
+
+#!/bin/sed -f
+
+s/x/y/g
+
+
+... then we can execute:
+
+
+subst.sed inputFileName > outputFileName
+
+
+In-place editing in GNU sed:
+
+sed -i 's/abc/def/' fileName
+
+
+Hello, World! Example:
+
+
+# Convert the input text stream to "Hello, world!" :
+
+s/.*/Hello, world!/
+
+q
+
+
+Remove your password from a log file: (Use global subst flag g?) (Use single quotes?)
+
+sed -i s/yourpassword/REDACTED/ ./status.freenode.log
+
+
+Delete all occurrences of two words:
+
+sed "s/firstword//g; s//secondword//g" inputFileName
+
+
+Remove newlines from sentences where the second line starts with one space:
+
+N
+
+s/\n / /
+
+P
+
+D
+
+
+... or:
+
+sed 'N; s/\n / /; P; D' inputFileName
+
