@@ -101,10 +101,8 @@ FILENAME=$(basename -s ."$EXTENSION" "$1")
 
 OUTPUT_FILENAME="${FILENAME}_${START_TIME_STRING}_${END_TIME_STRING}.$EXTENSION"
 
-# echo "ffmpeg -i $1 -ss $START_TIME -to $END_TIME -c copy $OUTPUT_FILENAME"
-# ffmpeg -i "$1" -ss $START_TIME -to $END_TIME -c copy "$OUTPUT_FILENAME"
-
-echo_and_eval ffmpeg -i "$1" -ss $START_TIME -to $END_TIME -c copy "$OUTPUT_FILENAME"
+# Bash's printf %q escapes the special characters in the file paths.
+echo_and_eval $(printf "ffmpeg -i %q -ss $START_TIME -to $END_TIME -c copy %q" "$1" "$OUTPUT_FILENAME")
 
 EXIT_STATUS=$?
 

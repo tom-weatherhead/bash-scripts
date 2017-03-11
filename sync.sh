@@ -256,9 +256,14 @@ RSYNC_SHORT_OPTIONS="-rltDH${RSYNC_DRY_RUN_OPTION}vz"
 # If eval sees $RECYCLE.BIN , it interprets $RECYCLE as an evaluation of the variable RECYCLE.
 # Can we suppress this part of eval's behaviour, or use something else instead of eval?
 # How can we describe a literal dollar sign to eval?
+# -> ? The dollar sign must be escaped with '$' : See https://unix.stackexchange.com/questions/23111/what-is-the-eval-command-in-bash
+#   -> But will this work when the rsync is executed by eval?
+#   -> Or can we use Bash's printf %q to escape the $ for us?
 
-# The "?" is a wildcard that matches any one character.
+# We match the "$" by using a "?". The "?" is a wildcard that matches any one character.
+# ThAW 2017/03/11 : I have not yet found a way to make an rsync exclude pattern case-insensitive other that the ugly [Rr][Ee][Cc][Yy][Cc][Ll][Ee]...
 RSYNC_EXCLUDE_OPTIONS="--exclude '?RECYCLE.BIN' --exclude '?Recycle.Bin' --exclude 'System Volume Information'"
+# Try this: RSYNC_EXCLUDE_OPTIONS="--exclude '?'[Rr][Ee][Cc][Yy][Cc][Ll][Ee].[Bb][Ii][Nn] --exclude 'System Volume Information'"
 
 # The --numeric-ids option is necessary to preserve NTFS hard links.
 
@@ -268,7 +273,10 @@ RSYNC_EXCLUDE_OPTIONS="--exclude '?RECYCLE.BIN' --exclude '?Recycle.Bin' --exclu
 # RSYNC_LONG_OPTIONS="--chmod=ugo=rwX $RSYNC_DELETE_OPTION $RSYNC_EXCLUDE_OPTIONS --numeric-ids"
 RSYNC_LONG_OPTIONS="$RSYNC_DELETE_OPTION $RSYNC_EXCLUDE_OPTIONS --numeric-ids"
 
-RSYNC_COMMAND="rsync $RSYNC_SHORT_OPTIONS $RSYNC_LONG_OPTIONS \"$SRC_PATH\" \"$DEST_PATH\""
+# RSYNC_COMMAND="rsync $RSYNC_SHORT_OPTIONS $RSYNC_LONG_OPTIONS \"$SRC_PATH\" \"$DEST_PATH\""
+
+# See https://stackoverflow.com/questions/2854655/command-to-escape-a-string-in-bash
+RSYNC_COMMAND=$(printf "rsync $RSYNC_SHORT_OPTIONS $RSYNC_LONG_OPTIONS %q %q" "$SRC_PATH" "$DEST_PATH")
 
 echo_and_eval $RSYNC_COMMAND
 
