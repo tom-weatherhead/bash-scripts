@@ -234,4 +234,21 @@ get_null_device_name()
     fi
 }
 
+safe_eval()
+{
+	CMD=$(echo $1 | awk '{print $1}')
+	
+	# if which $CMD 1>/dev/null 2>&1; then
+	if which $CMD >/dev/null 2>&1; then
+		eval $1
+	# else
+		# echo_error_message
+		# echo_error_message "The command '$CMD' was not found in the path."
+		# echo_error_message "To view the path, execute this command: echo \$PATH"
+		# clean_up 1
+	fi
+}
+
+# safe_eval "$1"
+
 # End of bash_script_include.sh

@@ -262,8 +262,8 @@ RSYNC_SHORT_OPTIONS="-rltDH${RSYNC_DRY_RUN_OPTION}vz"
 
 # We match the "$" by using a "?". The "?" is a wildcard that matches any one character.
 # ThAW 2017/03/11 : I have not yet found a way to make an rsync exclude pattern case-insensitive other that the ugly [Rr][Ee][Cc][Yy][Cc][Ll][Ee]...
-RSYNC_EXCLUDE_OPTIONS="--exclude '?RECYCLE.BIN' --exclude '?Recycle.Bin' --exclude 'System Volume Information'"
-# Try this: RSYNC_EXCLUDE_OPTIONS="--exclude '?'[Rr][Ee][Cc][Yy][Cc][Ll][Ee].[Bb][Ii][Nn] --exclude 'System Volume Information'"
+# RSYNC_EXCLUDE_OPTIONS="--exclude '?RECYCLE.BIN' --exclude '?Recycle.Bin' --exclude 'System Volume Information'"
+RSYNC_EXCLUDE_OPTIONS="--exclude '?'[Rr][Ee][Cc][Yy][Cc][Ll][Ee].[Bb][Ii][Nn] --exclude 'System Volume Information'"
 
 # The --numeric-ids option is necessary to preserve NTFS hard links.
 
@@ -276,9 +276,7 @@ RSYNC_LONG_OPTIONS="$RSYNC_DELETE_OPTION $RSYNC_EXCLUDE_OPTIONS --numeric-ids"
 # RSYNC_COMMAND="rsync $RSYNC_SHORT_OPTIONS $RSYNC_LONG_OPTIONS \"$SRC_PATH\" \"$DEST_PATH\""
 
 # See https://stackoverflow.com/questions/2854655/command-to-escape-a-string-in-bash
-RSYNC_COMMAND=$(printf "rsync $RSYNC_SHORT_OPTIONS $RSYNC_LONG_OPTIONS %q %q" "$SRC_PATH" "$DEST_PATH")
-
-echo_and_eval $RSYNC_COMMAND
+echo_and_eval $(printf "rsync $RSYNC_SHORT_OPTIONS $RSYNC_LONG_OPTIONS %q %q" "$SRC_PATH" "$DEST_PATH")
 
 RSYNC_STATUS=$?
 echo "rsync returned status code $RSYNC_STATUS"

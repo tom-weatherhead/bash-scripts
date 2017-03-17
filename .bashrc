@@ -876,19 +876,26 @@ if [ -f ~/.bash_aliases_local ]; then
 	. ~/.bash_aliases_local
 fi
 
-if [ -f $HOME/bin/bash_script_include.sh ]; then
-	. $HOME/bin/bash_script_include.sh
-fi
+# If bash_script_include.sh is in the PATH:
 
 # if [ -f bash_script_include.sh ]; then
 #	. bash_script_include.sh
 # fi
 
+# If not:
+
+if [ -f $HOME/bin/bash_script_include.sh ]; then
+	. $HOME/bin/bash_script_include.sh
+fi
+
 # [ -z $BASH_VERSION ] || echo "Bash version $BASH_VERSION" # ThAW: Perhaps this is portable enough to be placed in ~/.profile
 
 echo -e "${BCyan}This is Bash version ${BRed}${BASH_VERSION%.*}${BCyan} - Display on ${BRed}$DISPLAY${NC}"
+echo -e "You are: $(whoami)"
 # date --iso-8601=seconds
 date --rfc-2822
+# which uptime 1>/dev/null 2>&1 && uptime
+safe_eval uptime
 echo -e "Host: $(hostname)"
 echo -e "Number of CPU cores: $NCPU"
 echo -e "Platform: $(uname -o)"
@@ -903,7 +910,7 @@ which free 1>/dev/null 2>&1 && {
 
 echo -e "\nAvailable disk space:\n"
 df -h
-echo -e
+echo
 
 # if [ -x /usr/games/fortune ]; then
 #     /usr/games/fortune -s     # Makes our day a bit more fun.
