@@ -2,18 +2,46 @@
 
 # Using rsync to mirror a file system subtree.
 
+# See https://www.cyberciti.biz/faq/linux-unix-apple-osx-bsd-rsync-copy-hard-links/
+
+# Exclude the system directories at the root of the drive:
+# - $RECYCLE.BIN
+# - $Recycle.Bin
+# - "System Volume Information"
+
 # rsync
-#   -a : Archive mode; equals -rlptgoD (no -H, -A, -X)
-#   -c : Skip based on checksum, not mod-time & size
-#   -E : Preserve executability
-#   -h : Output numbers in a human-readable format
-#   -H : Preserve hard links
-#   -n : Perform a trial run with no changes made (dry run)
-#   -p : Preserve permissions
-#   -r : Recursive
-#   -u : Skip files that are newer on the receiver
-#   -v : Verbose
-#   -W : Copy files whole (w/o delta-xfer algorithm)
+# -a equals -rlptgoD (no -H, -A, -X); remove -g (preserve group), -o (preserve owner), and maybe -p (preserve permissions).
+#   - -A, --acls = Preserve ACLs (access control lists) (implies -p)
+#   - -D = Same as --devices --specials
+#   - -E, --executability = Preserve executability
+#   - -H, --hard-links = Preserve hard links
+#   - -K, --keep-dirlinks = Treat symlinked dir on receiver as dir
+#   - -P = Same as --partial --progress
+#   - -W = Copy files whole (w/o delta-xfer algorithm)
+#   - -X, --xattrs = Preserve extended attributes
+#   - -a, --archive = Archive mode; equals -rlptgoD (no -H,-A,-X)
+#   - -c = Skip based on checksum, not mod-time & size
+#   - -g, --group = Preserve group
+#   - -h, --human-readable = Output numbers in a human-readable format
+#   - -i, --itemize-changes = Output a change-summary for all updates
+#   - -l, --links = Copy symlinks as symlinks
+#   - -n, --dry-run = Perform a trial run with no changes made
+#   - -o, --owner = Preserve owner
+#   - -p, --perms = Preserve permissions
+#   - -r, --recursive = Recurse into directories
+#   - -t, --times = Preserve modification times
+#   - -u, --update = Skip files that are newer on the receiver
+#   - -v, --verbose = Increase verbosity
+#   - -z, --compress = Compress file data during the transfer
+#   - --chown=USER:GROUP = Simple username/groupname mapping
+#   - --devices = Preserve device files (super-user only)
+#   - --groupmap=STRING = Custom groupname mapping
+#   - --numeric-ids = Don't map uid/gid values by user/group name
+#   - --partial = Keep partially transferred files
+#   - --partial-dir=DIR = Put a partially gtransferred file into DIR
+#   - --progress = Show progress during transfer
+#   - --specials = Preserve special files
+#   - --usermap=STRING = Custom username mapping
 
 # Examples from: man rsync
 
@@ -46,18 +74,8 @@
 
 ###
 
-# From https://sanctum.geek.nz/arabesque/testing-exit-values-bash/ :
-
-# rsync --archive --delete --max-delete=5 source destination
-# if (($? == 25)); then
-#     printf '%s\n' 'Deletion limit was reached' >"$logfile"
-# fi
-
-###
-
 # Ideas:
 # --prune-empty-dirs
-# --exclude=PATTERN
 # --exclude-from=FILE
 
 ###
@@ -69,52 +87,40 @@ usage()
 	# Output the usage message to the standard error stream.
 	echo_error_message
 	echo_error_message "$PROGRAM_NAME takes either one or two arguments; i.e.:"
-	echo_error_message "$PROGRAM_NAME [-n] destination_drive_letter"
-	echo_error_message "$PROGRAM_NAME [-n] /path/to/src/ /path/to/dest"
+	echo_error_message "$PROGRAM_NAME [-d] [-n] destination_drive_letter"
+	echo_error_message "$PROGRAM_NAME [-d] [-n] /path/to/src/ /path/to/dest"
+	echo_error_message '-d = Delete (during the transfer) files that are in the destination but not in the source'
+	echo_error_message '-n = Perform a trial run with no changes made'
 	echo_error_message
 }
 
-check_directory_exists_and_is_readable()
-{
-	if ! [ -e "$1" ]; then # We need to use "$1" instead of $1 , in case $1 contains whitespace.
-		error_exit "$1 does not exist."
-	elif ! [ -d "$1" ]; then
-		error_exit "$1 is not a directory."
-	elif ! [ -r "$1" ]; then
-		error_exit "$1 is not readable by the current user."
-	fi
-}
-
-check_directory_is_writable_if_it_exists()
-{
-	if [ -e "$1" ]; then
-		if ! [ -d "$1" ]; then
-			error_exit "$1 is not a directory."
-		elif ! [ -w "$1" ]; then
-			error_exit "$1 is not writable by the current user."
-		fi
-	fi
-}
-
-# if [ $(uname -o) == "Cygwin" ]; then
 if [ "$(distro_is_cygwin)" ]; then
-	error_exit "This script might not preserve Access Control Lists when run from Cygwin; aborting."
+	# We want to avoid having unwanted entries (e.g. "NULL SID" or "Deny foo") added to the ACL on a Windows receiver; this problem occurs when this script is run within Cygwin, but it apparently does not occur under the Windows Subsystem for Linux.
+	error_exit 'This script might not preserve Access Control Lists when run from Cygwin; aborting.'
 else
-	echo "Cygwin not detected; we may proceed."
+	echo 'Cygwin not detected; we may proceed.'
 fi
 
 which_test rsync
 
-RSYNC_DELETE_OPTION=""	# The delete option is turned off by default, for safety.
-RSYNC_DRY_RUN_OPTION=""
+RSYNC_DELETE_OPTION=''	# The delete option is turned off by default, for safety.
+RSYNC_DRY_RUN_OPTION=''
 
-while getopts ":dn" option; do
+while getopts ':dn' option; do
     case $option in
 		d)
-			RSYNC_DELETE_OPTION="--del" # --del is a alias for --delete-during
+			# --del is a alias for --delete-during
+			# Other rsync delete possibilities are:
+			# --delete = Delete extraneous files from dest dirs
+			# --delete-before = Receiver deletes before xfer, not during
+			# --delete-during = Receiver deletes during the transfer
+			# --delete-delay = Find deletions during, delete after
+			# --delete-after = Receiver deletes after transfer, not during
+			# --delete-excluded = Also delete excluded files from dest dirs
+			RSYNC_DELETE_OPTION='--del'
 			;;
         n)
-			RSYNC_DRY_RUN_OPTION="n"
+			RSYNC_DRY_RUN_OPTION='n'
             ;;
 		*)
             usage
@@ -160,55 +166,9 @@ esac
 echo "SRC_PATH is $SRC_PATH"
 echo "DEST_PATH is $DEST_PATH"	
 
+# The quotes around $SRC_PATH and $DEST_PATH are needed to properly handle spaces in those paths.
 check_directory_exists_and_is_readable "$SRC_PATH"
 check_directory_is_writable_if_it_exists "$DEST_PATH"	# The DEST_PATH does not need to pre-exist; rsync can create it.
-
-# The general idea is: rsync -aHvz --delete-before --numeric-ids src/ dest
-# See https://www.cyberciti.biz/faq/linux-unix-apple-osx-bsd-rsync-copy-hard-links/
-
-# Exclude the system directories at the root of the drive:
-# - $RECYCLE.BIN
-# - "System Volume Information"
-
-# The quotes around $SRC_PATH and $DEST_PATH are needed to properly handle spaces in those paths.
-
-# Try --del or --delete in place of --delete-before :
-# --del is a alias for --delete-during
-
-# -a equals -rlptgoD (no -H,-A,-X); remove -g (preserve group), -o (preserve owner), and maybe -p (preserve permissions).
-#   - -A, --acls = Preserve ACLs (access control lists) (implies -p)
-#   - -D = Same as --devices --specials
-#   - -E, --executability = Preserve executability
-#   - -H, --hard-links = Preserve hard links
-#   - -K, --keep-dirlinks = Treat symlinked dir on receiver as dir
-#   - -P = Same as --partial --progress
-#   - -X, --xattrs = Preserve extended attributes
-#   - -a, --archive = Archive mode; equals -rlptgoD (no -H,-A,-X)
-#   - -g, --group = Preserve group
-#   - -h, --human-readable = Output numbers in a human-readable format
-#   - -i, --itemize-changes = Output a change-summary for all updates
-#   - -l, --links = Copy symlinks as symlinks
-#   - -n, --dry-run = Perform a trial run with no changes made
-#   - -o, --owner = Preserve owner
-#   - -p, --perms = Preserve permissions
-#   - -r, --recursive = Recurse into directories
-#   - -t, --times = Preserve modification times
-#   - -u, --update = Skip files that are newer on the receiver
-#   - -v, --verbose = Increase verbosity
-#   - -z, --compress = Compress file data during the transfer
-#   - --chown=USER:GROUP = Simple username/groupname mapping
-#   - --devices = Preserve device files (super-user only)
-#   - --groupmap=STRING = Custom groupname mapping
-#   - --numeric-ids = Don't map uid/gid values by user/group name
-#   - --partial = Keep partially transferred files
-#   - --partial-dir=DIR = Put a partially gtransferred file into DIR
-#   - --progress = Show progress during transfer
-#   - --specials = Preserve special files
-#   - --usermap=STRING = Custom username mapping
-#   - -- = 
-#   - - = 
-
-# TW 2017/01/24 : We want to avoid having unwanted entries (e.g. "NULL SID" or "Deny foo") added to the ACL on a Windows receiver. It seems to be problematic at least when the owner names are different on the source and receiver (e.g. tomw vs. tom_w).
 
 # Windows NTFS: Ensure that the receiver dir (or its parent dir, if it does not yet exist) has the desired permissions, and that permission inheritance is enabled.
 # - This is best done for a VeraCrypt drive by setting the desired owner and permissions for the root of the drive, and then letting the rest of the items on the drive inherit them.
@@ -219,9 +179,6 @@ check_directory_is_writable_if_it_exists "$DEST_PATH"	# The DEST_PATH does not n
 #	Allow	Users (HOSTNAME\Users)						Read & execute	None				This folder, subfolders, and files
 #	Allow	Authenticated Users							Modify			None				This folder, subfolders, and files
 # - Note: The "Modify" permission includes Read and Execute.
-
-# TW 2017/01/24 : E.g.
-# rsync -rltDHvz --chmod=ugo=rwX --chown=tomw:tomw --del --numeric-ids /mnt/x/Scripts/ /mnt/c/NoArchiv/ScriptsX
 
 # See https://superuser.com/questions/69620/rsync-file-permissions-on-windows
 # avguchenko's answer:
@@ -235,9 +192,6 @@ check_directory_is_writable_if_it_exists "$DEST_PATH"	# The DEST_PATH does not n
 #
 #    rsync alias -Z --no-p --no-g --chmod=ugo=rwX
 
-# The following Cygwin example won't work because it doesn't set up the ACL(s) (access control list(s)) on the receiver correctly:
-# rsync -rltDHvz --chmod=ugo=rwX --chown=tomw:tomw --del --numeric-ids /cygdrive/j/Archive/TarBz2/ /cygdrive/c/NoArchiv/TarBz2
-
 # Note: In order to see a VeraCrypt-mounted NTFS drive under /mnt in Windows 10 Bash:
 # 1) Configure VeraCrypt to *not* mount drives as removable media
 # 2) Use VeraCrypt to mount the NTFS drive
@@ -245,11 +199,8 @@ check_directory_is_writable_if_it_exists "$DEST_PATH"	# The DEST_PATH does not n
 # 4) ls -l /mnt
 # 5) ls -l /mnt/x (replace x with the relevant drive letter); verify that you can see the drive's contents
 
-# Note: When this script is run inside Cygwin's Bash, it may copy some files unnecessarily
-# -> This appears to be because of the --chmod=ugo=rwX option.
-
-# Don't use -a (the "archive" option) (: it doesn't preserve hard links?)
-# Shoud we use the -p option? (copy the source permissions to the destination)
+# Don't use -a (the "archive" option) (: it doesn't preserve hard links : no -H)
+# Should we use the -p option? (copy the source permissions to the destination)
 # - The -p option seems to have no effect in WSL (Windows Subsystem for Linux) + NTFS
 RSYNC_SHORT_OPTIONS="-rltDH${RSYNC_DRY_RUN_OPTION}vz"
 
@@ -257,10 +208,8 @@ RSYNC_SHORT_OPTIONS="-rltDH${RSYNC_DRY_RUN_OPTION}vz"
 # Can we suppress this part of eval's behaviour, or use something else instead of eval?
 # How can we describe a literal dollar sign to eval?
 # -> ? The dollar sign must be escaped with '$' : See https://unix.stackexchange.com/questions/23111/what-is-the-eval-command-in-bash
-#   -> But will this work when the rsync is executed by eval?
-#   -> Or can we use Bash's printf %q to escape the $ for us?
+#   -> We also use Bash's printf %q to escape special characters in file paths for us
 
-# We match the "$" by using a "?". The "?" is a wildcard that matches any one character.
 # ThAW 2017/03/11 : I have not yet found a way to make an rsync exclude pattern case-insensitive other that the ugly [Rr][Ee][Cc][Yy][Cc][Ll][Ee]...
 # RSYNC_EXCLUDE_OPTIONS="--exclude '?RECYCLE.BIN' --exclude '?Recycle.Bin' --exclude 'System Volume Information'"
 RSYNC_EXCLUDE_OPTIONS="--exclude '?'[Rr][Ee][Cc][Yy][Cc][Ll][Ee].[Bb][Ii][Nn] --exclude 'System Volume Information'"
@@ -270,10 +219,7 @@ RSYNC_EXCLUDE_OPTIONS="--exclude '?'[Rr][Ee][Cc][Yy][Cc][Ll][Ee].[Bb][Ii][Nn] --
 # Use Occam's Razor to eliminate any unnecessary options.
 
 # RSYNC_LONG_OPTIONS="--chmod=ugo=rwX --chown=tomw:tomw $RSYNC_DELETE_OPTION $RSYNC_EXCLUDE_OPTIONS --numeric-ids"
-# RSYNC_LONG_OPTIONS="--chmod=ugo=rwX $RSYNC_DELETE_OPTION $RSYNC_EXCLUDE_OPTIONS --numeric-ids"
 RSYNC_LONG_OPTIONS="$RSYNC_DELETE_OPTION $RSYNC_EXCLUDE_OPTIONS --numeric-ids"
-
-# RSYNC_COMMAND="rsync $RSYNC_SHORT_OPTIONS $RSYNC_LONG_OPTIONS \"$SRC_PATH\" \"$DEST_PATH\""
 
 # See https://stackoverflow.com/questions/2854655/command-to-escape-a-string-in-bash
 echo_and_eval $(printf "rsync $RSYNC_SHORT_OPTIONS $RSYNC_LONG_OPTIONS %q %q" "$SRC_PATH" "$DEST_PATH")
@@ -290,6 +236,10 @@ case $RSYNC_STATUS in
 esac
 
 clean_up $RSYNC_STATUS
+
+###
+
+# The following steps are probably not necessary, but users who like to practice applied paranoia may want to follow them to ensure that the file system ACLs on the receiver are sane and rational.
 
 # On Windows: After this script completes successfully:
 # 1) Right-click on the root directory of the receiver
@@ -308,3 +258,5 @@ clean_up $RSYNC_STATUS
 # 6) Click on the "Apply" button, and let the permissions propagate
 # 7) Click "OK"
 # 8) Click "OK" again
+
+### The End. ###

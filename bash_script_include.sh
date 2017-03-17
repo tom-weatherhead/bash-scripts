@@ -62,7 +62,29 @@ echo_option_info()
 	}
 }
 
-check_directory()
+check_directory_exists_and_is_readable()
+{
+	if ! [ -e "$1" ]; then # We need to use "$1" instead of $1 , in case $1 contains whitespace.
+		error_exit "$1 does not exist."
+	elif ! [ -d "$1" ]; then
+		error_exit "$1 is not a directory."
+	elif ! [ -r "$1" ]; then
+		error_exit "$1 is not readable by the current user."
+	fi
+}
+
+check_directory_is_writable_if_it_exists()
+{
+	if [ -e "$1" ]; then
+		if ! [ -d "$1" ]; then
+			error_exit "$1 is not a directory."
+		elif ! [ -w "$1" ]; then
+			error_exit "$1 is not writable by the current user."
+		fi
+	fi
+}
+
+check_directory_exists_and_is_writable()
 {
 	[ -e "$1" ] || { # We need to use "$1" instead of $1 , in case $1 contains whitespace.
 		error_exit "$1 does not exist."
@@ -72,7 +94,7 @@ check_directory()
 		error_exit "$1 is not writable by the current user."
 	}
 	
-	# The above structure works, but somthing like this:
+	# The above structure works, but something like this:
 	
 	# [ test1 ] && {
 	#    command1
@@ -81,8 +103,13 @@ check_directory()
 	# ...
 	# }
 	
-	# ... can result in all of the commandN's being run...
+	# ... can result in all of the commands being run...
 	# due to the relative precedence of the && and || operators?
+}
+
+check_directory()
+{
+	check_directory_exists_and_is_writable "$1"
 }
 
 echo_and_eval()
