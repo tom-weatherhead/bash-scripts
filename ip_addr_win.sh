@@ -20,6 +20,10 @@
 #     - WSL's "netstat can't find the devices it expects under /proc, so it doesn't report much."
 #   - "Everything You Can Do With Windows 10's New Bash Shell" on www.howtogeek.com
 
+# ThAW 2017/03/18 : Regular expressions: Instead of ending with (.+)$ , I now prefer to end with (.+?)[\r]?$ to accommodate a possible carriage return (\r) just before the newline (\n). The ipconfig line used to be:
+
+# ipconfig /all | grep -e Description -e Physical -e IPv4 | perl -nle 'sub word_up { my $A=shift; print "$A = $P = $D"; $P=$D=""; } word_up $1 if /^ +IPv4 Address.+: (.+)[$(]/ ; $D=$1 if /^ +Description.+: (.+)$/ ; $P=$1 if /^ +Physical.+: (.+)\r$/' | grep $line
+
 netstat -rn | perl -nle 'print "$1 = $2 = $5" if /^( {1,2}[0-9]{1,2})\.{3}(([[:xdigit:]]{2} ){5}([[:xdigit:]]{2})) \.+(.+)$/' | sort -k1,3 | perl -nle 'print $1 if /^.{6}(.{17})/' | tr [a-f\ ] [A-F-] | while read -r line; do
-	ipconfig /all | grep -e Description -e Physical -e IPv4 | perl -nle 'sub word_up { my $A=shift; print "$A = $P = $D"; $P=$D=""; } word_up $1 if /^ +IPv4 Address.+: (.+)[$(]/ ; $D=$1 if /^ +Description.+: (.+)$/ ; $P=$1 if /^ +Physical.+: (.+)$/' | grep $line
+	ipconfig /all | grep -e Description -e Physical -e IPv4 | perl -nle 'sub word_up { my $A=shift; print "$A = $P = $D"; $P=$D=""; } word_up $1 if /^ +IPv4 Address.+: (.+?)[\r]?[$(]/ ; $D=$1 if /^ +Description.+: (.+?)[\r]?$/ ; $P=$1 if /^ +Physical.+: (.+?)[\r]?$/' | grep $line
 done
