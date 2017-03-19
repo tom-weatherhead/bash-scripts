@@ -24,26 +24,35 @@
 
 # ipconfig /all | grep -e Description -e Physical -e IPv4 | perl -nle 'sub word_up { my $A=shift; print "$A = $P = $D"; $P=$D=""; } word_up $1 if /^ +IPv4 Address.+: (.+)[$(]/ ; $D=$1 if /^ +Description.+: (.+)$/ ; $P=$1 if /^ +Physical.+: (.+)\r$/' | grep $line
 
+###
+
 # ThAW 2017/03/18 : Use tr to remove carriage returns (\r) : See https://stackoverflow.com/questions/800030/remove-carriage-return-in-unix
 
-echo 'Using tr:'
+# echo 'Using tr:'
 
-netstat -rn | perl -nle 'print "$1 = $2 = $5" if /^( {1,2}[0-9]{1,2})\.{3}(([[:xdigit:]]{2} ){5}([[:xdigit:]]{2})) \.+(.+)$/' | sort -k1,3 | perl -nle 'print $1 if /^.{6}(.{17})/' | tr [a-f\ ] [A-F-] | while read -r line; do
-	ipconfig /all | grep -e Description -e Physical -e IPv4 | tr -d '\r' | perl -nle 'sub word_up { my $A=shift; print "$A = $P = $D"; $P=$D=""; } word_up $1 if /^ +IPv4 Address.+: (.+?)[$(]/ ; $D=$1 if /^ +Description.+: (.+)$/ ; $P=$1 if /^ +Physical.+: (.+)$/' | grep $line
-done
+# netstat -rn | perl -nle 'print "$1 = $2 = $5" if /^( {1,2}[0-9]{1,2})\.{3}(([[:xdigit:]]{2} ){5}([[:xdigit:]]{2})) \.+(.+)$/' | sort -k1,3 | perl -nle 'print $1 if /^.{6}(.{17})/' | tr [a-f\ ] [A-F-] | while read -r line; do
+	# ipconfig /all | grep -e Description -e Physical -e IPv4 | tr -d '\r' | perl -nle 'sub word_up { my $A=shift; print "$A = $P = $D"; $P=$D=""; } word_up $1 if /^ +IPv4 Address.+: (.+?)[$(]/ ; $D=$1 if /^ +Description.+: (.+)$/ ; $P=$1 if /^ +Physical.+: (.+)$/' | grep $line
+# done
 
 # ... or: Replace tr -d '\r' with sed 's/\r//g' : See https://unix.stackexchange.com/questions/170665/remove-a-carriage-return-with-sed
 
-echo
-echo 'Using sed:'
+# echo
+# echo 'Using sed:'
 
-netstat -rn | perl -nle 'print "$1 = $2 = $5" if /^( {1,2}[0-9]{1,2})\.{3}(([[:xdigit:]]{2} ){5}([[:xdigit:]]{2})) \.+(.+)$/' | sort -k1,3 | perl -nle 'print $1 if /^.{6}(.{17})/' | tr [a-f\ ] [A-F-] | while read -r line; do
-	ipconfig /all | grep -e Description -e Physical -e IPv4 | sed 's/\r//g' | perl -nle 'sub word_up { my $A=shift; print "$A = $P = $D"; $P=$D=""; } word_up $1 if /^ +IPv4 Address.+: (.+?)[$(]/ ; $D=$1 if /^ +Description.+: (.+)$/ ; $P=$1 if /^ +Physical.+: (.+)$/' | grep $line
-done
+# netstat -rn | perl -nle 'print "$1 = $2 = $5" if /^( {1,2}[0-9]{1,2})\.{3}(([[:xdigit:]]{2} ){5}([[:xdigit:]]{2})) \.+(.+)$/' | sort -k1,3 | perl -nle 'print $1 if /^.{6}(.{17})/' | tr [a-f\ ] [A-F-] | while read -r line; do
+	# ipconfig /all | grep -e Description -e Physical -e IPv4 | sed 's/\r//g' | perl -nle 'sub word_up { my $A=shift; print "$A = $P = $D"; $P=$D=""; } word_up $1 if /^ +IPv4 Address.+: (.+?)[$(]/ ; $D=$1 if /^ +Description.+: (.+)$/ ; $P=$1 if /^ +Physical.+: (.+)$/' | grep $line
+# done
 
-echo
-echo 'With tr and no perl subroutine:'
+# echo
+# echo 'With tr and no perl subroutine:'
 
-netstat -rn | perl -nle 'print "$1 = $2 = $5" if /^( {1,2}[0-9]{1,2})\.{3}(([[:xdigit:]]{2} ){5}([[:xdigit:]]{2})) \.+(.+)$/' | sort -k1,3 | perl -nle 'print $1 if /^.{6}(.{17})/' | tr [a-f\ ] [A-F-] | while read -r line; do
-	ipconfig /all | grep -e Description -e "Physical Address" -e "IPv4 Address" | tr -d '\r' | perl -nle 'if (/^ +IPv4 Address.+: (.+?)[$(]/) { print "$1 = $P = $D"; $P = $D = ""; }; if (/^ +Description.+: (.+)$/) { $D = $1; } ; if (/^ +Physical.+: (.+)$/) { $P = $1; };' | grep $line
+# netstat -rn | perl -nle 'print "$1 = $2 = $5" if /^( {1,2}[0-9]{1,2})\.{3}(([[:xdigit:]]{2} ){5}([[:xdigit:]]{2})) \.+(.+)$/' | sort -k1,3 | perl -nle 'print $1 if /^.{6}(.{17})/' | tr [a-f\ ] [A-F-] | while read -r line; do
+	# ipconfig /all | grep -e Description -e "Physical Address" -e "IPv4 Address" | tr -d '\r' | perl -nle 'if (/^ +IPv4 Address.+: (.+?)[$(]/) { print "$1 = $P = $D"; $P = $D = ""; }; if (/^ +Description.+: (.+)$/) { $D = $1; } ; if (/^ +Physical.+: (.+)$/) { $P = $1; };' | grep $line
+# done
+
+# echo
+# echo 'No tr or sed; just perl:'
+
+netstat -rn | perl -nle 'print "$1 = $2 = $5" if /^( {1,2}[0-9]{1,2})\.{3}(([[:xdigit:]]{2} ){5}([[:xdigit:]]{2})) \.+(.+)$/' | sort -k1,3 | perl -nle 'print $1 if /^.{6}([0-9a-fA-F ]{17})/' | tr [a-f\ ] [A-F-] | while read -r line; do
+	ipconfig /all | grep -e Description -e "Physical Address" -e "IPv4 Address" | perl -nle 's/\r//g; if (/^ +IPv4 Address.+: (.+)[$(]/) { print "$1 = $P = $D"; $P = $D = ""; } elsif (/^ +Description.+: (.+)$/) { $D = $1; } elsif (/^ +Physical.+: (.+)$/) { $P = $1; }' | grep $line
 done
