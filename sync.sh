@@ -17,14 +17,15 @@
 #   - -H, --hard-links = Preserve hard links
 #   - -K, --keep-dirlinks = Treat symlinked dir on receiver as dir
 #   - -P = Same as --partial --progress
-#   - -W = Copy files whole (w/o delta-xfer algorithm)
+#   - -W, --whole-file = Copy files whole (w/o delta-xfer algorithm)
 #   - -X, --xattrs = Preserve extended attributes
 #   - -a, --archive = Archive mode; equals -rlptgoD (no -H,-A,-X)
-#   - -c = Skip based on checksum, not mod-time & size
+#   - -c, --checksum = Skip based on checksum, not mod-time & size
 #   - -g, --group = Preserve group
 #   - -h, --human-readable = Output numbers in a human-readable format
 #   - -i, --itemize-changes = Output a change-summary for all updates
 #   - -l, --links = Copy symlinks as symlinks
+#	- -m, --prune-empty-dirs = Prune empty directory chains from file-list
 #   - -n, --dry-run = Perform a trial run with no changes made
 #   - -o, --owner = Preserve owner
 #   - -p, --perms = Preserve permissions
@@ -75,7 +76,7 @@
 ###
 
 # Ideas:
-# --prune-empty-dirs
+# -m, --prune-empty-dirs
 # --exclude-from=FILE
 
 ###
@@ -213,6 +214,11 @@ RSYNC_SHORT_OPTIONS="-rltDH${RSYNC_DRY_RUN_OPTION}vz"
 # ThAW 2017/03/11 : I have not yet found a way to make an rsync exclude pattern case-insensitive other that the ugly [Rr][Ee][Cc][Yy][Cc][Ll][Ee]...
 # RSYNC_EXCLUDE_OPTIONS="--exclude '?RECYCLE.BIN' --exclude '?Recycle.Bin' --exclude 'System Volume Information'"
 RSYNC_EXCLUDE_OPTIONS="--exclude '?'[Rr][Ee][Cc][Yy][Cc][Ll][Ee].[Bb][Ii][Nn] --exclude 'System Volume Information'"
+
+[[ $SRC_PATH =~ iTunes || $(pwd) =~ iTunes ]] && {
+	echo 'iTunes backup: Not backing up Home Videos...'
+	RSYNC_EXCLUDE_OPTIONS="$RSYNC_EXCLUDE_OPTIONS --exclude 'Home Videos'"
+}
 
 # The --numeric-ids option is necessary to preserve NTFS hard links.
 

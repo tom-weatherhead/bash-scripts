@@ -385,13 +385,13 @@ function xtitle()
 }
 
 # .. and functions
-function man()
-{
-    for i ; do
-        xtitle The $(basename $1|tr -d .[:digit:]) manual
-        command man -a "$i"
-    done
-}
+# function man()
+# {
+    # for i ; do
+        # xtitle The $(basename $1|tr -d .[:digit:]) manual
+        # command man -a "$i"
+    # done
+# }
 
 #-------------------------------------------------------------
 # Make the following commands run in background automatically:
