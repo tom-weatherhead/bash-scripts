@@ -19,6 +19,8 @@ fi
 
 safe_eval()
 {
+	# TODO: ThAW 2017/03/28 : Take an optional argument $2, and set CMD=$2 if $2 is not empty. Otherwise, run the CMD=... line below.
+	# Or: $2 could be an array of command names (strings) to check with "which".
 	CMD=$(echo $1 | awk '{print $1}')
 	
 	# if which $CMD 1>/dev/null 2>&1; then

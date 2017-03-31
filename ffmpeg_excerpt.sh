@@ -30,9 +30,9 @@ parse_time()
 {
 	if [[ $1 =~ ^([0-9]{1,2}):([0-9]{2}):([0-9]{2}(\.[0-9]{1,3})?)$ ]]; then
 		echo ${BASH_REMATCH[1]}h${BASH_REMATCH[2]}m${BASH_REMATCH[3]}s
-	elif [[ $1 =~ ^([0-9]{1,2}):([0-9]{2}}(\.[0-9]{1,3})?)$ ]]; then
+	elif [[ $1 =~ ^([0-9]{1,2}):([0-9]{2}(\.[0-9]{1,3})?)$ ]]; then
 		echo ${BASH_REMATCH[1]}m${BASH_REMATCH[2]}s
-	elif [[ $1 =~ ^([0-9]{1,2}}(\.[0-9]{1,3})?)$ ]]; then
+	elif [[ $1 =~ ^([0-9]{1,2}(\.[0-9]{1,3})?)$ ]]; then
 		echo ${BASH_REMATCH[1]}s
 	else
 		error_exit "No regex match for $1"
