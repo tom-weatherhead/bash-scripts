@@ -7,15 +7,11 @@
 
 tar_bz2_writing_function()
 {
-	# echo "git archive --format=tar -- HEAD | bzip2 -9 - > $1"
-	# git archive --format=tar HEAD | bzip2 -9 - > $1
 	echo_and_eval git archive --format=tar HEAD | bzip2 -9 - > $1
 }
 
 tar_gpg_gpg_writing_function()
 {
-	# echo "git archive --format=tar HEAD | gpg -r tomw3 -e | gpg -r tomw2 -e -o $1"
-	# git archive --format=tar HEAD | gpg -r tomw3 -e | gpg -r tomw2 -e -o $1
 	echo_and_eval git archive --format=tar HEAD | gpg -r tomw3 -e | gpg -r tomw2 -e -o $1
 }
 
@@ -42,7 +38,6 @@ find_available_filename_and_write()
 			echo "$ARCHIVE_PATH_NAME already exists."
 		} || {
 			echo "Creating $ARCHIVE_PATH_NAME ..."
-			# git archive --format=tar HEAD | bzip2 -9 - > $BZ2NAME
 			echo "$WRITING_FUNCTION $ARCHIVE_PATH_NAME"
 			$WRITING_FUNCTION $ARCHIVE_PATH_NAME
 			RESULT_OF_WRITE=$?
@@ -56,7 +51,6 @@ find_available_filename_and_write()
 			break
 		fi
 
-		# ADDENDUM="_$i"
 		ADDENDUM=$(printf "_%03d" $i) # Use exactly three digits, with leading zeroes; e.g. 1 -> 001; 13 -> 013
 	done
 
@@ -70,19 +64,30 @@ else
 	error_exit "No .git directory was found."
 fi
 
-#ARCHIVEDIR="../../Archive" # If $# == 0 then ARCHIVEDIR="../../Archive" elif $# == 1 then ARCHIVEDIR="$1" else error fi
-ARCHIVEDIR="/cygdrive/c/NoArchiv/GitArchiveTest" # This dir must pass the tests -e (exists), -d (is a directory), and -w (is writable by the current user).
+case $# in
+	0)
+		ARCHIVEDIR=".."
+		;;
+	1)
+		ARCHIVEDIR="$1"
+		;;
+	*)
+		error_exit "0 or 1 argument(s) expected; $# arguments received."
+		# No ;; is necessary here because fallthrough is not a problem.
+esac
 
-# Alterntively: [ -d $ARCHIVEDIR ] || error_exit "The Archive directory was not found."
-if [ -d $ARCHIVEDIR ]; then
-	echo "The Archive directory was found."
+check_directory_exists_and_is_writable "$ARCHIVEDIR"
+
+echo "The Archive directory '$ARCHIVEDIR' exists and is writable by the current user '$(whoami)'."
+
+BASENAME="${ARCHIVEDIR}/$(basename $(pwd))"
+DATETIME="$(date --utc +%Y%m%d_%H%M%S)"
+
+if [[ $BASENAME =~ [0-9]$ ]]; then
+	BASENAME="${BASENAME}_$DATETIME"
 else
-	error_exit "The Archive directory was not found."
+	BASENAME="$BASENAME$DATETIME"
 fi
-
-echo
-
-BASENAME="${ARCHIVEDIR}/$(basename $(pwd))$(date +%Y%m%d)"
 
 find_available_filename_and_write $BASENAME ".tar.bz2" tar_bz2_writing_function
 RESULT_BZ2=$?
@@ -99,5 +104,4 @@ else
 fi
 
 echo $RESULT_MESSAGE
-echo
 clean_up $RESULT_CODE

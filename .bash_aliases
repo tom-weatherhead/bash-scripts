@@ -10,7 +10,7 @@ alias lb='ls -al ~/.bash*'
 # Avoid accidentally clobbering files:
 alias rm='rm -i'
 alias cp='cp -i'
-alias mv='mv -i'
+# alias mv='mv -i'
 
 alias mkdir='mkdir -p'
 
@@ -30,7 +30,8 @@ alias df='df -kTh'
 # The 'ls' family (this assumes you use a recent GNU ls).
 #-------------------------------------------------------------
 # Add colors for filetype and human-readable sizes by default on 'ls':
-alias ls='ls -h --color'
+# alias ls='ls -h --color'
+alias ls='ls -h'
 alias lx='ls -lXB'         #  Sort by extension.
 alias lk='ls -lSr'         #  Sort by size, biggest last.
 alias lt='ls -ltr'         #  Sort by date, most recent last.
@@ -133,7 +134,8 @@ alias sudo='sudo '
 # ThAW's Additional Aliases
 
 # Create the "gh" ("GitHub") alias.
-alias gh='cd $(archive_dir_parent); cd Archive/Git/GitHubandbox/tom-weatherhead 1>&/dev/null'
+alias gh='cd $(archive_dir_parent); cd Archive/Git/GitHubSandbox/tom-weatherhead 1>&/dev/null'
+alias m='cd $(archive_dir_parent); cd Archive/Git/LocalSandbox/MEAN 1>&/dev/null'
 
 alias pipe_status='echo "${PIPESTATUS[@]}" | tr -s " " + | bc'
 alias arch_bits='uname -m | sed "s/x86_//;s/i[3-6]86/32/"'
