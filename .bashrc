@@ -394,34 +394,34 @@ function xtitle()
     # done
 # }
 
-function mv()
-{
+# function mv()
+# {
 	# On Windows Subsystem for Linux (Bash on Windows), the kernel will hang if "mv" is given a source path that ends with a /
 	# See https://github.com/Microsoft/BashOnWindows/issues/765
 
 	# TODO: Properly handle options passed to mv; e.g. -i
-	SRC="$1"
-	DST="$2"
-	echo "mv: SRC is initially $SRC"
-	echo "mv: DST is initially $DST"
+	# SRC="$1"
+	# DST="$2"
+	# echo "mv: SRC is initially $SRC"
+	# echo "mv: DST is initially $DST"
 	
-	[[ $SRC =~ (.*)/$ ]] && {
-		SRC=${BASH_REMATCH[1]}
-		echo "mv() : Changed SRC to $SRC"
-	}
+	# [[ $SRC =~ (.*)/$ ]] && {
+		# SRC=${BASH_REMATCH[1]}
+		# echo "mv() : Changed SRC to $SRC"
+	# }
 	
-	echo $(printf "About to: mv %q %q" "$SRC" "$DST")
+	# echo $(printf "About to: mv %q %q" "$SRC" "$DST")
 	# command mv "$@"
-	XXX=$(printf "%q" "$SRC")
-	YYY=$(printf "%q" "$DST")
-	command mv "$XXX" "$YYY"
-}
+	# XXX=$(printf "%q" "$SRC")
+	# YYY=$(printf "%q" "$DST")
+	# command mv "$XXX" "$YYY"
+# }
 
-function mv2()
-{
-	echo "mv2() : command mv $@"
-	command mv "$@"
-}
+# function mv2()
+# {
+	# echo "mv2() : command mv $@"
+	# command mv "$@"
+# }
 
 #-------------------------------------------------------------
 # Make the following commands run in background automatically:

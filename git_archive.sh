@@ -1,18 +1,18 @@
 #!/bin/bash
 
-# git-archive.sh - November 29, 2016
+# git_archive.sh - November 29, 2016
 # Create encrypted and unencrypted archives of a local Git repository.
 
 . bash_script_include.sh
 
 tar_bz2_writing_function()
 {
-	echo_and_eval git archive --format=tar HEAD | bzip2 -9 - > $1
+	echo_and_eval "git archive --format=tar HEAD | bzip2 -9 - > $1"
 }
 
 tar_gpg_gpg_writing_function()
 {
-	echo_and_eval git archive --format=tar HEAD | gpg -r tomw3 -e | gpg -r tomw2 -e -o $1
+	echo_and_eval "git archive --format=tar HEAD | gpg -r tomw3 -e | gpg -r tomw2 -e -o $1"
 }
 
 find_available_filename_and_write()
