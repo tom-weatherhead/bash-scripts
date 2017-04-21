@@ -8,7 +8,6 @@
 # source script_template.sh
 
 PROGRAM_NAME=$(basename "$0")
-PARTIAL_PATH_TO_GIT_REPO="c/Archive/Git/GitHubSandbox/tom-weatherhead/bash-scripts"
 
 echo_error_message()
 {
@@ -86,47 +85,51 @@ if [ $# != $EXPECTED_NUMBER_OF_ARGUMENTS ]; then # Using != instead of -ne
 	error_exit "$EXPECTED_NUMBER_OF_ARGUMENTS argument(s) was/were expected; $# argument(s) was/were received"
 fi
 
-#check_directory "$1"
+determine_distro()
+{
+	# Find the Distributor ID:
+	if [ "$(uname -o)" == 'Cygwin' ]; then
+		echo 'Cygwin'
+	elif grep -q Microsoft /proc/version; then # WSL; See https://stackoverflow.com/questions/38859145/detect-ubuntu-on-windows-vs-native-ubuntu-from-bash-script
+		echo 'Ubuntu on Windows' # This string delibrately starts with Ubuntu, so that both WSL and genuine Ubuntu return results that match the regex /^Ubuntu/
+	elif [ "$(uname -o)" == 'GNU/Linux' ]; then
+		echo 'Linux'
+	# elif which lsb_release 1>/dev/null 2>&1; then
+		# lsb_release -is
+	# elif [ -e /etc/os-release ]; then
+		# cat /etc/os-release | perl -nle 'print $1 if /^NAME="?(.*?)"?$/'
+	else
+		echo 'Unknown distribution'
+	fi
+}
 
-#THE_COMMAND="ls /x"
-#THE_COMMAND="df -h"
-#THE_COMMAND="echo 'Hello world!'"
-#THE_COMMAND="echo \"Hello world!\""
-
-#echo_and_eval $THE_COMMAND
-
-#[[ $(pwd) =~ ^/([a-z]+)/ ]] && {
-#	MOUNTS_DIR=${BASH_REMATCH[1]}
-#} || {
-#	error_exit "Failed to find the Linux directory where the Windows drives are mounted; exiting."
-#}
-
-case $(uname -o) in
+case $(determine_distro) in
 	Cygwin)
-		echo "Detected Cygwin; using /cygdrive/"
-		MOUNTS_DIR="cygdrive"
+		echo 'Detected Cygwin'
+		PREFIX_PATH_TO_GIT_REPO='/cygdrive/c'
 		;;
-	GNU/Linux)
-		echo "Detected GNU/Linux; using /mnt/"
-		MOUNTS_DIR="mnt"
+	'Ubuntu on Windows')
+		echo 'Detected Ubuntu on Windows'
+		PREFIX_PATH_TO_GIT_REPO='/mnt/c'
+		;;
+	Linux)
+		echo 'Detected GNU/Linux'
+		PREFIX_PATH_TO_GIT_REPO="/home/$(whoami)"
 		;;
 	*)
 		error_exit "Undetected operating system type '$OPTARG'"
 		# No ;; is necessary here.
 esac
 
-FULL_PATH_TO_GIT_REPO="/$MOUNTS_DIR/$PARTIAL_PATH_TO_GIT_REPO"
+FULL_PATH_TO_GIT_REPO="$PREFIX_PATH_TO_GIT_REPO/Archive/Git/GitHubSandbox/tom-weatherhead/bash-scripts"
+
 echo "FULL_PATH_TO_GIT_REPO = $FULL_PATH_TO_GIT_REPO"
 echo
 
 # Use "find" to print the absolute paths of the matching files.
 # See https://askubuntu.com/questions/444551/get-absolute-path-of-files-using-find-command
-# E.g. :
-# find "$(cd Pictures; pwd)" -iname "*.jpg"
-# find "$(cd Pictures; pwd)" -iname "*.jpg" -print
-# find "$(cd Pictures; pwd)" -iname "*.jpg" -print0
 
-find "$(cd $FULL_PATH_TO_GIT_REPO; pwd)" -iname "*.sh" -print | while read -r script_path; do
+find "$(cd $FULL_PATH_TO_GIT_REPO; pwd)" -iname '*.sh' -print | while read -r script_path; do
 	# Get file extension: see http://tecadmin.net/how-to-extract-filename-extension-in-shell-script/
 	FILENAME_WITH_EXTENSION=$(basename "$script_path")
 	EXTENSION="${FILENAME_WITH_EXTENSION##*.}" # If FILENAME_WITH_EXTENSION contains one or more dots, this expression evaluates to the substring after the last dot; otherwise, it evaluates to all of FILENAME_WITH_EXTENSION
@@ -156,7 +159,7 @@ EXIT_STATUS=$?
 echo "The command exited with the status $EXIT_STATUS."
 
 if [ $EXIT_STATUS != 0 ]; then
-	echo "The exit status indicates an error."
+	echo 'The exit status indicates an error.'
 fi
 
 clean_up $EXIT_STATUS
