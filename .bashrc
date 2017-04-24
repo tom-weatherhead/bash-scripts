@@ -311,7 +311,8 @@ function job_color()
 
 PROMPT_COMMAND="history -a"
 case ${TERM} in
-	*term | rxvt | linux)
+#	*term | rxvt | linux)
+	*term | xterm-256color | rxvt)
 		# ThAW 2017/04/04 : Can we add "$(arch_bits)-bit " into the prompt somewhere? (So we don't confuse 32-bit and 64-bit Cygwin Terminals)
         # PS1="\[\$(load_color)\][\A\[${NC}\] "
         # Time of day (with load info):
