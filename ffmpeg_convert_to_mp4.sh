@@ -141,7 +141,14 @@ EXTENSION="${FILENAME_WITH_EXTENSION##*.}" # If FILENAME_WITH_EXTENSION contains
 # To get the filename without the extension, see https://stackoverflow.com/questions/965053/extract-filename-and-extension-in-bash
 FILENAME=$(basename -s ."$EXTENSION" "$1")
 
+# AUDIO_CODEC could be:
+# - copy
+# - aac
+# - libmp3lame
+
+# AUDIO_CODEC="libmp3lame"
 AUDIO_CODEC="aac"
+
 VIDEO_CODEC="libx264"
 
 case $MODE in
@@ -182,7 +189,11 @@ case $MODE in
 		fi
 		
 		# echo "ffmpeg -i $1 -c:v $VIDEO_CODEC -preset slow -crf $CRF -c:a copy $FILENAME.mp4"
-		ffmpeg -i "$1" -c:v $VIDEO_CODEC -preset slow -crf $CRF -c:a copy "$FILENAME.mp4" # || error_exit "ffmpeg returned an error: $?"
+		# ffmpeg -i "$1" -c:v $VIDEO_CODEC -preset slow -crf $CRF -c:a copy "$FILENAME.mp4" # || error_exit "ffmpeg returned an error: $?"
+
+		# See https://stackoverflow.com/questions/2854655/command-to-escape-a-string-in-bash
+		echo_and_eval $(printf "ffmpeg -i %q -c:v $VIDEO_CODEC -preset slow -crf $CRF -c:a $AUDIO_CODEC %q" "$1" "$FILENAME.mp4")
+
 		;;
 	*)
 		usage
