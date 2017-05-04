@@ -208,6 +208,8 @@ case $MODE in
 				echo_and_eval $(printf "ffmpeg -i %q -c:v libx264 -preset slow -crf $CRF -c:a $AUDIO_CODEC %q" "$1" "$FILENAME.h264.mp4")
 				;;
 			libx265)
+				# See https://trac.ffmpeg.org/wiki/Encode/H.265
+				
 				# - From https://unix.stackexchange.com/questions/230800/re-encoding-video-library-in-x265-hevc-with-no-quality-loss :
 
 				# ffmpeg -i INPUT.mkv -c:v libx265 -preset ultrafast -x265-params lossless=1 OUTPUT.mkv
@@ -217,7 +219,41 @@ case $MODE in
 
 				# WARNING: We didn't mention the audio stream conversion settings.
 				# -preset slow ?
-				echo_and_eval $(printf "ffmpeg -i %q -c:v libx265 -preset ultrafast -x265-params lossless=1 %q" "$1" "$FILENAME.h265.mp4")
+
+				# echo_and_eval $(printf "ffmpeg -i %q -c:v libx265 -preset ultrafast -x265-params lossless=1 %q" "$1" "$FILENAME.h265.mp4")
+
+				# -c:v libx265 -preset ultrafast -c:a aac 
+				
+				# PRESET="ultrafast"
+				# PRESET="superfast"
+				# PRESET="veryfast"
+				# PRESET="faster"
+				# PRESET="fast"
+				# PRESET="medium"
+				# PRESET="slow"
+				PRESET="slower"
+				# PRESET="veryslow"
+				# PRESET="placebo" # Don't use this.
+				
+				# The number of CPU cores is:
+				NUM_CPU_CORES=$(grep -c 'processor' /proc/cpuinfo)
+				# So divide it by 2 and use it as the value of the "-threads" argument, but ensure that it is at least 1.
+				NUM_THREADS=$(( ${NUM_CPU_CORES}/2 ))
+				echo "Suggested number of threads: $NUM_THREADS"
+				
+				# THREADS_OPTION=""
+				THREADS_OPTION="-threads 1"
+				# THREADS_OPTION="-threads 2"
+				# THREADS_OPTION="-threads 4"
+				# THREADS_OPTION="-threads $NUM_THREADS"
+				
+				# echo $(printf "ffmpeg -i %q -c:v libx265 -preset $PRESET -c:a aac $THREADS_OPTION %q" "$1" "$FILENAME.h265.aac.$PRESET.mp4")
+
+				echo_and_eval $(printf "ffmpeg -i %q -c:v libx265 -preset $PRESET -c:a aac $THREADS_OPTION %q" "$1" "$FILENAME.h265.aac.$PRESET.mp4")
+				
+				# ... And then, to verify the result:
+				# ffmpeg -i filename.mp4 | grep hevc
+				# ffmpeg -i filename.mp4 | grep aac
 				;;
 			*)
 				error_exit "Unrecognized video codec: -$OPTARG"
