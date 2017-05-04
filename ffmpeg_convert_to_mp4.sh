@@ -96,16 +96,30 @@ clean_up() # ? Will this definition of "clean_up" replace the one included from 
 
 which_test ffmpeg
 
-# Using getopts to detect and handle command-line options : See https://stackoverflow.com/questions/16483119/example-of-how-to-use-getopts-in-bash
+# AUDIO_CODEC could be:
+# - copy
+# - aac
+# - libmp3lame
+
+# AUDIO_CODEC="libmp3lame"
+AUDIO_CODEC="aac"
+
+VIDEO_CODEC="libx264"
 
 MODE="c"
 CRF=22
 
-while getopts ":2:c:" option; do
+# Using getopts to detect and handle command-line options : See https://stackoverflow.com/questions/16483119/example-of-how-to-use-getopts-in-bash
+
+#while getopts ":2:c:" option; do
+while getopts ":2:5c:" option; do
     case $option in
         2)
 			MODE="2"
             ;;
+		5)
+			VIDEO_CODEC="libx265"
+			;;
         c)
 			MODE="c"
 			# If $OPTARG is not empty (-z), ensure that $OPTARG is an integer in the range [17, 27]
@@ -140,16 +154,6 @@ EXTENSION="${FILENAME_WITH_EXTENSION##*.}" # If FILENAME_WITH_EXTENSION contains
 
 # To get the filename without the extension, see https://stackoverflow.com/questions/965053/extract-filename-and-extension-in-bash
 FILENAME=$(basename -s ."$EXTENSION" "$1")
-
-# AUDIO_CODEC could be:
-# - copy
-# - aac
-# - libmp3lame
-
-# AUDIO_CODEC="libmp3lame"
-AUDIO_CODEC="aac"
-
-VIDEO_CODEC="libx264"
 
 case $MODE in
 	2)
