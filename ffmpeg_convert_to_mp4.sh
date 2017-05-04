@@ -105,6 +105,7 @@ which_test ffmpeg
 AUDIO_CODEC="aac"
 
 VIDEO_CODEC="libx264"
+#H265_PARAMS=""
 
 MODE="c"
 CRF=22
@@ -118,7 +119,9 @@ while getopts ":2:5c:" option; do
 			MODE="2"
             ;;
 		5)
+			# See https://superuser.com/questions/785528/how-to-generate-an-mp4-with-h-265-codec-using-ffmpeg
 			VIDEO_CODEC="libx265"
+			#H265_PARAMS="-an -x265-params crf=25 "
 			;;
         c)
 			MODE="c"
@@ -196,7 +199,29 @@ case $MODE in
 		# ffmpeg -i "$1" -c:v $VIDEO_CODEC -preset slow -crf $CRF -c:a copy "$FILENAME.mp4" # || error_exit "ffmpeg returned an error: $?"
 
 		# See https://stackoverflow.com/questions/2854655/command-to-escape-a-string-in-bash
-		echo_and_eval $(printf "ffmpeg -i %q -c:v $VIDEO_CODEC -preset slow -crf $CRF -c:a $AUDIO_CODEC %q" "$1" "$FILENAME.mp4")
+		# echo_and_eval $(printf "ffmpeg -i %q -c:v $VIDEO_CODEC -preset slow -crf $CRF -c:a $AUDIO_CODEC $H265_PARAMS %q" "$1" "$FILENAME.mp4")
+
+		# ThAW 2017/05/04 TODO: Limit ffmpeg's CPU usage via e.g.: -threads 2 (for a 4-core CPU).
+		
+		case $VIDEO_CODEC in
+			libx264)
+				echo_and_eval $(printf "ffmpeg -i %q -c:v libx264 -preset slow -crf $CRF -c:a $AUDIO_CODEC %q" "$1" "$FILENAME.h264.mp4")
+				;;
+			libx265)
+				# - From https://unix.stackexchange.com/questions/230800/re-encoding-video-library-in-x265-hevc-with-no-quality-loss :
+
+				# ffmpeg -i INPUT.mkv -c:v libx265 -preset ultrafast -x265-params lossless=1 OUTPUT.mkv
+
+				# echo_and_eval $(printf "ffmpeg -i %q -c:v libx265 -preset slow -c:a $AUDIO_CODEC -an -x265-params crf=$CRF %q" "$1" "$FILENAME.h265.mp4")
+				# echo_and_eval $(printf "ffmpeg -i %q -c:v libx265 -preset slow -c:a $AUDIO_CODEC -an -x265-params crf=25 %q" "$1" "$FILENAME.h265.mp4")
+
+				# WARNING: We didn't mention the audio stream conversion settings.
+				# -preset slow ?
+				echo_and_eval $(printf "ffmpeg -i %q -c:v libx265 -preset ultrafast -x265-params lossless=1 %q" "$1" "$FILENAME.h265.mp4")
+				;;
+			*)
+				error_exit "Unrecognized video codec: -$OPTARG"
+		esac
 
 		;;
 	*)
