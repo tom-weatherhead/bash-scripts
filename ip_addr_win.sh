@@ -28,7 +28,7 @@
 
 # ThAW 2017/03/18 : Use tr to remove carriage returns (\r) : See https://stackoverflow.com/questions/800030/remove-carriage-return-in-unix
 
-# echo 'Using tr:'
+# echo 'Using tr to remove carriage returns:'
 
 # netstat -rn | perl -nle 'print "$1 = $2 = $5" if /^( {1,2}[0-9]{1,2})\.{3}(([[:xdigit:]]{2} ){5}([[:xdigit:]]{2})) \.+(.+)$/' | sort -k1,3 | perl -nle 'print $1 if /^.{6}(.{17})/' | tr [a-f\ ] [A-F-] | while read -r line; do
 	# ipconfig /all | grep -e Description -e Physical -e IPv4 | tr -d '\r' | perl -nle 'sub word_up { my $A=shift; print "$A = $P = $D"; $P=$D=""; } word_up $1 if /^ +IPv4 Address.+: (.+?)[$(]/ ; $D=$1 if /^ +Description.+: (.+)$/ ; $P=$1 if /^ +Physical.+: (.+)$/' | grep $line
@@ -37,7 +37,7 @@
 # ... or: Replace tr -d '\r' with sed 's/\r//g' : See https://unix.stackexchange.com/questions/170665/remove-a-carriage-return-with-sed
 
 # echo
-# echo 'Using sed:'
+# echo 'Using sed to remove carriage returns:'
 
 # netstat -rn | perl -nle 'print "$1 = $2 = $5" if /^( {1,2}[0-9]{1,2})\.{3}(([[:xdigit:]]{2} ){5}([[:xdigit:]]{2})) \.+(.+)$/' | sort -k1,3 | perl -nle 'print $1 if /^.{6}(.{17})/' | tr [a-f\ ] [A-F-] | while read -r line; do
 	# ipconfig /all | grep -e Description -e Physical -e IPv4 | sed 's/\r//g' | perl -nle 'sub word_up { my $A=shift; print "$A = $P = $D"; $P=$D=""; } word_up $1 if /^ +IPv4 Address.+: (.+?)[$(]/ ; $D=$1 if /^ +Description.+: (.+)$/ ; $P=$1 if /^ +Physical.+: (.+)$/' | grep $line
