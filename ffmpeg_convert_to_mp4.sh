@@ -105,9 +105,9 @@ which_test ffmpeg
 AUDIO_CODEC="aac"
 
 VIDEO_CODEC="libx264"
+CRF=22
 
 MODE="c"
-CRF=22
 
 # Using getopts to detect and handle command-line options : See https://stackoverflow.com/questions/16483119/example-of-how-to-use-getopts-in-bash
 
@@ -118,10 +118,12 @@ while getopts "245c:" option; do
             ;;
 		4)
 			VIDEO_CODEC="libx264"
+			CRF=22
 			;;
 		5)
 			# See https://superuser.com/questions/785528/how-to-generate-an-mp4-with-h-265-codec-using-ffmpeg
 			VIDEO_CODEC="libx265"
+			CRF=28
 			;;
         c)
 			MODE="c"
@@ -151,13 +153,16 @@ fi
 
 # In order to handle spaces in $1, wrap it in quotes: "$1"
 
+INPUT_FILENAME="$1"
+
 # Get file extension: see http://tecadmin.net/how-to-extract-filename-extension-in-shell-script/
-FILENAME_WITH_EXTENSION=$(basename "$1")
-EXTENSION="${FILENAME_WITH_EXTENSION##*.}" # If FILENAME_WITH_EXTENSION contains one or more dots, this expression evaluates to the substring after the last dot; otherwise, it evaluates to all of FILENAME_WITH_EXTENSION
+INPUT_FILENAME_WITH_EXTENSION=$(basename "$INPUT_FILENAME")
+INPUT_EXTENSION="${INPUT_FILENAME_WITH_EXTENSION##*.}" # If INPUT_FILENAME_WITH_EXTENSION contains one or more dots, this expression evaluates to the substring after the last dot; otherwise, it evaluates to all of INPUT_FILENAME_WITH_EXTENSION
 
 # To get the filename without the extension, see https://stackoverflow.com/questions/965053/extract-filename-and-extension-in-bash
-FILENAME=$(basename -s ."$EXTENSION" "$1")
-START_TIME=$(date --utc +'%F at %H:%M:%S')
+BASE_FILENAME=$(basename -s ."$INPUT_EXTENSION" "$INPUT_FILENAME")
+
+START_TIME=$(date_time_utc)
 
 case $MODE in
 	2)
@@ -165,19 +170,7 @@ case $MODE in
 		echo "Two-pass"
 		AUDIO_BITRATE="128k"
 		VIDEO_BITRATE="555k"
-		# Are we running on Windows or *nix? "uname -a" and "awk" should be able to tell us:
-		# - On Win10 Cygwin: "uname -a" generates: CYGWIN_NT-10.0 ... 2.6.0(0.304/5/3) 2016-08-31 14:32 x86_64 Cygwin
-		#   - uname -a | awk '{print $NF}' -> "Cygwin"
-		# - On Win10 Bash: "uname -a" generates: Linux ... 3.4.0+ #1 PREEMPT Thu Aug 1 17:06:05 CST 2013 x86_64 x86_64 x86_64 GNU/Linux
-		#   - uname -a | awk '{print $NF}' -> "GNU/Linux"
-		#
-		# See https://stackoverflow.com/questions/3466166/how-to-check-if-running-in-cygwin-mac-or-linux
 
-		# OS_TYPE=$(uname -a | awk '{print $NF}')
-		# OS_TYPE=$(uname -o)
-		# echo "OS_TYPE is $OS_TYPE"
-		
-		# if [ $OS_TYPE == "Cygwin" ]; then
 		if [ $(distro_is_cygwin) ]; then
 			NULL_DEVICE="NUL" # "NUL" on Windows; "/dev/null" on Linux, etc.
 		else
@@ -185,17 +178,13 @@ case $MODE in
 		fi
 
 		echo "NULL_DEVICE is $NULL_DEVICE"
-		# Here:
+
 		ffmpeg -y -i "$1" -c:v $VIDEO_CODEC -preset medium -b:v $VIDEO_BITRATE -pass 1 -c:a $AUDIO_CODEC -b:a $AUDIO_BITRATE -f mp4 $NULL_DEVICE && \
 			ffmpeg -i "$1" -c:v $VIDEO_CODEC -preset medium -b:v $VIDEO_BITRATE -pass 2 -c:a $AUDIO_CODEC -b:a $AUDIO_BITRATE "$FILENAME.mp4"
 		;;
 	c)
 		echo "Constant Rate Factor (CRF)"
-		
-		if [ $CRF != 22 ]; then
-			FILENAME="${FILENAME}_crf$CRF"
-		fi
-		
+
 		# Using printf %q to escape paths: See https://stackoverflow.com/questions/2854655/command-to-escape-a-string-in-bash
 
 		# PRESET="ultrafast"
@@ -203,9 +192,9 @@ case $MODE in
 		# PRESET="veryfast"
 		# PRESET="faster"
 		# PRESET="fast"
-		# PRESET="medium"
+		PRESET="medium"
 		# PRESET="slow"
-		PRESET="slower"
+		# PRESET="slower"
 		# PRESET="veryslow"
 		# PRESET="placebo" # Don't use this.
 
@@ -213,9 +202,8 @@ case $MODE in
 		NUM_CPU_CORES=$(grep -c processor /proc/cpuinfo)
 		# So divide it by 2 and use it as the value of the "-threads" argument, but ensure that it is at least 1.
 		NUM_THREADS=$(( ${NUM_CPU_CORES}/2 ))
+		# NUM_THREADS=$(( ${NUM_CPU_CORES}/4 ))
 		echo "Suggested number of threads: $NUM_THREADS"
-
-		# ThAW 2017/05/04 TODO: Limit ffmpeg's CPU usage via e.g.: -threads 2 (for a 4-core CPU).
 
 		# THREADS_OPTION=""
 		THREADS_OPTION="-threads 1"
@@ -231,10 +219,23 @@ case $MODE in
 			libx264)
 				# See https://trac.ffmpeg.org/wiki/Encode/H.264
 
-				EXTRA_OPTIONS="-crf $CRF" # Should this be called EXTRA_VIDEO_OPTIONS? When passing options to ffmpeg, the order of the options matters! We may want to separate EXTRA_OPTIONS into EXTRA_VIDEO_OPTIONS and EXTRA_AUDIO_OPTIONS.
-				OUTPUT_FILENAME="$FILENAME.h264.$AUDIO_CODEC.$PRESET.mp4"
+				# EXTRA_OPTIONS="-crf $CRF" # Should this be called EXTRA_VIDEO_OPTIONS? When passing options to ffmpeg, the order of the options matters! We may want to separate EXTRA_OPTIONS into EXTRA_VIDEO_OPTIONS and EXTRA_AUDIO_OPTIONS.
+				OUTPUT_FILENAME="$BASE_FILENAME.h264.$AUDIO_CODEC.$PRESET.crf${CRF}.mp4"
 
-				echo_and_eval $(printf "ffmpeg -i %q -c:v libx264 -preset $PRESET $EXTRA_OPTIONS -c:a $AUDIO_CODEC $THREADS_OPTION %q" "$1" "$OUTPUT_FILENAME")
+				echo_and_eval $(printf "ffmpeg -hide_banner \
+					-i %q \
+					-map_metadata 0 \
+					-map_chapters 0 \
+					-metadata title=\"Title\" \
+					-map 0:0 -metadata:s:v:0 language=eng \
+					-map 0:1 -metadata:s:a:0 language=eng -metadata:s:a:0 title=\"Advanced Audio Coding (AAC)\" \
+					-map 0:2? -metadata:s:s:0 language=eng -metadata:s:s:0 title=\"English\" \
+					-c:v libx264 -preset $PRESET \
+					-crf ${CRF} \
+					-c:a $AUDIO_CODEC \
+					-c:s copy \
+					$THREADS_OPTION \
+					%q" "$INPUT_FILENAME" "$OUTPUT_FILENAME")
 				;;
 
 			libx265)
@@ -248,43 +249,39 @@ case $MODE in
 				# CRF_PARAM=""
 				# CRF_PARAM="-x265-params crf=25"
 				# CRF_PARAM="-x265-params crf=$CRF"
-				# E.g. echo_and_eval $(printf "ffmpeg -i %q -c:v libx265 -preset slow -c:a $AUDIO_CODEC -an -x265-params crf=25 %q" "$1" "$FILENAME.h265.mp4") # What does -an do?
+				# E.g. echo_and_eval $(printf "ffmpeg -i %q -c:v libx265 -preset slow -c:a $AUDIO_CODEC -an -x265-params crf=25 %q" "$1" "$FILENAME.h265.mp4") # What does -an do? -> Disable the selection of a default audio stream? See https://ffmpeg.org/ffmpeg.html
 
-				OUTPUT_FILENAME="$FILENAME.h265.$AUDIO_CODEC.$PRESET.mp4"
-
-				# echo_and_eval $(printf "ffmpeg -i %q -c:v libx265 -preset $PRESET -c:a $AUDIO_CODEC $THREADS_OPTION %q" "$1" "$OUTPUT_FILENAME")
-
-				# crf=22:qcomp=0.8:aq-mode=1:aq_strength=1.0:qg-size=16:psy-rd=0.7:psy-rdoq=5.0:rdoq-level=1:merange=44
-
-				# crf=$(CRF}:qcomp=0.8:aq-mode=1:aq_strength=1.0:qg-size=16:psy-rd=0.7:psy-rdoq=5.0:rdoq-level=1:merange=44
+				OUTPUT_FILENAME="$BASE_FILENAME.h265.$AUDIO_CODEC.$PRESET.crf${CRF}.mp4"
 
 				# To minimize CPU usage and fan noise, use -threads 1 and pools=1
-
+				# POOLS=1
+				POOLS=2
+				# POOLS=4
+				
 				# Based on Yifeng Mu's answer in https://unix.stackexchange.com/questions/230800/re-encoding-video-library-in-x265-hevc-with-no-quality-loss :
 				# Here:
 				echo_and_eval $(printf "ffmpeg -hide_banner \
 					-i %q \
 					-map_metadata 0 \
 					-map_chapters 0 \
-					-metadata title="Title" \
+					-metadata title=\"Title\" \
 					-map 0:0 -metadata:s:v:0 language=eng \
-					-map 0:1 -metadata:s:a:0 language=eng -metadata:s:a:0 title="Advanced Audio Compression (AAC)" \
-					-map 0:2? -metadata:s:s:0 language=eng -metadata:s:s:0 title="English" \
+					-map 0:1 -metadata:s:a:0 language=eng -metadata:s:a:0 title=\"Advanced Audio Coding (AAC)\" \
+					-map 0:2? -metadata:s:s:0 language=eng -metadata:s:s:0 title=\"English\" \
 					-c:v libx265 -preset $PRESET -x265-params \
-					crf=$(CRF}:pools=1:qcomp=0.8:aq-mode=1:aq_strength=1.0:qg-size=16:psy-rd=0.7:psy-rdoq=5.0:rdoq-level=1:merange=44 \
+					crf=${CRF}:pools=${POOLS}:qcomp=0.8:aq-mode=1:aq_strength=1.0:qg-size=16:psy-rd=0.7:psy-rdoq=5.0:rdoq-level=1:merange=44 \
 					-c:a $AUDIO_CODEC \
 					-c:s copy \
-					-threads 1 \
-					%q" "$1" "$OUTPUT_FILENAME")
-
-				
+					$THREADS_OPTION \
+					%q" "$INPUT_FILENAME" "$OUTPUT_FILENAME")
+					
 				# ... And then, to verify the result:
-				# ffmpeg -i filename.mp4 | grep hevc
-				# ffmpeg -i filename.mp4 | grep aac
+				# ffmpeg -i "$OUTPUT_FILENAME" | grep hevc
+				# ffmpeg -i "$OUTPUT_FILENAME" | grep aac
 				
-				# Or:
-				# ffmpeg -i filename.mp4 2>&1 | perl -nle 'print $1 if /Video: (\S+)\s/'
-				# ffmpeg -i filename.mp4 2>&1 | perl -nle 'print $1 if /Audio: (\S+)\s/'
+				# Or: (We might need to use $NULL_DEVICE from the two-pass case above in place of /dev/null in order to support Cygwin)
+				# ffmpeg -i "$OUTPUT_FILENAME" 1>/dev/null | perl -nle 'print $1 if /Video: (\S+)\s/'
+				# ffmpeg -i "$OUTPUT_FILENAME" 1>/dev/null | perl -nle 'print $1 if /Audio: (\S+)\s/'
 
 				# **** BEGIN Useful post 1 ****
 
@@ -349,23 +346,10 @@ case $MODE in
 					
 				# answered Dec 11 '15 at 5:28
 				# Yifeng Mu
-				# 38135
 					
-				# 1 	 
+				# Q: Does this option generate the smallest possible file size for truly losless h265 encoding? If not, is there a way I can do this? – TheBitByte Nov 8 '16 at 17:02
 					
-				# Exactly what I was looking for! Nice coverage of options. Do you know if ffmpeg will balk at c:s copy if there is no subtitle content? – Elder Geek Feb 23 '16 at 20:44
-				# 1 	 
-					
-				# @ElderGeek No, ffmpeg will only say something if that option has any effect. – Yifeng Mu Mar 7 '16 at 11:02
-					 
-					
-				# Thank you for the clarification. – Elder Geek Mar 8 '16 at 3:03
-					 
-					
-				# Does this option generate the smallest possible file size for truly losless h265 encoding? If not, is there a way I can do this? – TheBitByte Nov 8 '16 at 17:02
-					 
-					
-				# @TheBitByte Yes and no, I think. You don't want lossless h265 files. It's just raw bit stream without any kind of compression. It's huge. From what I understand about h265 or specifically x265 implementation, it is not a lossless compression method. Any degree of compression will result in loss of information, but not necessarily loss of viewing quality. But I'm not an expert on h265 topics, so it's possible that I missed something – Yifeng Mu Dec 4 '16 at 3:55 					
+				# A: @TheBitByte Yes and no, I think. You don't want lossless h265 files. It's just raw bit stream without any kind of compression. It's huge. From what I understand about h265 or specifically x265 implementation, it is not a lossless compression method. Any degree of compression will result in loss of information, but not necessarily loss of viewing quality. But I'm not an expert on h265 topics, so it's possible that I missed something – Yifeng Mu Dec 4 '16 at 3:55 					
 
 				# **** END Useful post 1 ****
 
@@ -383,7 +367,7 @@ esac
 
 EXIT_STATUS=$?
 
-FINISH_TIME=$(date --utc +'%F at %H:%M:%S')
+FINISH_TIME=$(date_time_utc)
 
 echo "Started at:  $START_TIME"
 echo "Finished at: $FINISH_TIME"
