@@ -135,6 +135,7 @@ alias sudo='sudo '
 
 # Create the "gh" ("GitHub") alias.
 alias gh='cd $(archive_dir_parent); cd Archive/Git/GitHubSandbox/tom-weatherhead 1>&/dev/null'
+alias lg='cd $(archive_dir_parent); cd Archive/Git/LocalSandbox 1>&/dev/null'
 alias m='cd $(archive_dir_parent); cd Archive/Git/LocalSandbox/MEAN 1>&/dev/null'
 
 alias pipe_status='echo "${PIPESTATUS[@]}" | tr -s " " + | bc'
