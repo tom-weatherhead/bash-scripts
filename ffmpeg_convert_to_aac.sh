@@ -2,6 +2,8 @@
 
 # Convert the audio track of an .mp4 file to an .m4a AAC file via ffmpeg - As a *nix shell script - May 16, 2017
 
+# See https://trac.ffmpeg.org/wiki/Encode/AAC
+
 . bash_script_include.sh
 
 PROGRAM_NAME=$(basename "$0")
@@ -111,22 +113,28 @@ FILENAME=$(basename -s ."$EXTENSION" "$1")
 # -vn : Don't copy or transcode the source video stream.
 # -sn : Don't copy or transcode the source subtitle stream.
 
-[[ $(ffmpeg -i "$1") =~ Audio:\ aac ]] && {
+FFMPEG_INFO_OUTPUT=$(ffmpeg -i "$1" 2>&1)
+
+[[ "$FFMPEG_INFO_OUTPUT" =~ Audio:\ aac ]] && {
 	# The source audio stream is already encoded as AAC; just copy it.
+	echo "The source audio stream is encoded as AAC; copying..."
 	CODEC="copy"
 
-	echo_and_eval $(printf "ffmpeg -i %q -vn -sn -a:c $CODEC %q" "%1" "$FILENAME.m4a")
+	echo_and_eval $(printf "ffmpeg -i %q -vn -sn -c:a $CODEC %q" "$1" "$FILENAME.m4a")
 } || {
 	# The source audio stream is not encoded as AAC; Use the libfdk_aac codec to encode it as AAC.
+	echo "The source audio stream is not encoded as AAC; transcoding to AAC..."
 
-	[[ $(ffmpeg -i 2>&1) =~ libfdk_aac ]] && {
+	[[ "$FFMPEG_INFO_OUTPUT" =~ libfdk_aac ]] && {
 		# The libfdk_aac codec is availale.
 		CODEC="libfdk_aac"
 	} || {
 		CODEC="aac"
 	}
 
-	echo_and_eval $(printf "ffmpeg -i %q -vn -sn -a:c $CODEC -b:a 128k %q" "%1" "$FILENAME.m4a")
+	echo "Using the $CODEC codec to transcode the audio stream to AAC..."
+	KBPS_OUT="128"
+	echo_and_eval $(printf "ffmpeg -i %q -vn -sn -c:a $CODEC -b:a ${KBPS_OUT}k %q" "$1" "$FILENAME.m4a")
 }
 
 EXIT_STATUS=$?
@@ -137,5 +145,12 @@ if [ $EXIT_STATUS != 0 ]; then
 	echo "ffmpeg experienced an error."
 	# Call get_ffmpeg_error_message($EXIT_STATUS) in bash_script_include ?
 fi
+
+echo "SOURCE_FILE_PATH is $SOURCE_FILE_PATH"
+echo "SOURCE_FILENAME_WITH_EXTENSION is $SOURCE_FILENAME_WITH_EXTENSION"
+echo "SOURCE_EXTENSION is $SOURCE_EXTENSION"
+
+# Is this SOURCE_FILENAME_BASE or is it all of SOURCE_FILE_PATH minus the extension?
+echo "SOURCE_FILENAME_BASE is $SOURCE_FILENAME_BASE"
 
 clean_up $EXIT_STATUS
