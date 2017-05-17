@@ -278,4 +278,11 @@ safe_eval()
 
 # safe_eval "$1"
 
+SOURCE_FILE_PATH="$1"
+SOURCE_FILENAME_WITH_EXTENSION=$(basename "$SOURCE_FILE_PATH")
+SOURCE_EXTENSION="${SOURCE_FILENAME_WITH_EXTENSION##*.}" # If SOURCE_FILENAME_WITH_EXTENSION contains one or more dots, this expression evaluates to the substring after the last dot; otherwise, it evaluates to all of SOURCE_FILENAME_WITH_EXTENSION
+
+# Is this SOURCE_FILENAME_BASE or is it all of SOURCE_FILE_PATH minus the extension?
+SOURCE_FILENAME_BASE=$(basename -s ."$SOURCE_EXTENSION" "$SOURCE_FILE_PATH")
+
 # End of bash_script_include.sh

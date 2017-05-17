@@ -14,4 +14,4 @@ echo "$SOURCE_STRING" | awk '{ match($0, /Key:\ (.*)$/, arr); if(arr[1] != "") {
 # Sed
 
 # See https://stackoverflow.com/questions/2777579/how-to-output-only-captured-groups-with-sed
-echo "$SOURCE_STRING" | sed -rn 's/^.*Key: (.*)$/Sed regex match:  \1/p'
+echo "$SOURCE_STRING" | sed -rn 's/^.*Key: (.*)$/Sed regex match: \1/p'

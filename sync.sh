@@ -98,9 +98,9 @@ usage()
 if [ "$(distro_is_cygwin)" ]; then
 	# We want to avoid having unwanted entries (e.g. "NULL SID" or "Deny foo") added to the ACL on a Windows receiver; this problem occurs when this script is run within Cygwin, but it apparently does not occur under the Windows Subsystem for Linux.
 	error_exit 'This script might not preserve Access Control Lists when run from Cygwin; aborting.'
-else
-	echo 'Cygwin not detected; we may proceed.'
 fi
+
+echo 'Cygwin not detected; we may proceed.'
 
 which_test rsync
 
