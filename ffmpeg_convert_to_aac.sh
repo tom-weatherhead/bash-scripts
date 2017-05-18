@@ -21,38 +21,6 @@ usage()
 
 which_test ffmpeg
 
-# Using getopts to detect and handle options such as -c and -v : See https://stackoverflow.com/questions/16483119/example-of-how-to-use-getopts-in-bash
-
-CONSTANT_BITRATE=1 # Our default.
-AUDIO_TEMPO_FACTOR_SET=0 # Use this variable so that "bc" does not need to be present unless the user wishes to change the audio tempo.
-AUDIO_TEMPO_FACTOR=0
-
-while getopts ":c:v:t:" option; do
-    case $option in
-        c)
-			# echo "-c detected"
-            ;;
-        v)
-            # If an option value followed the -v, it would be in $OPTARG or ${OPTARG}; e.g. if -vABC was passed in, $OPTARG would be ABC. There is no need to use = ; e.g. -v=ABC
-			# echo "-v detected $OPTARG ${OPTARG}"
-			CONSTANT_BITRATE=0
-            ;;
-        t)
-			AUDIO_TEMPO_FACTOR_SET=1
-			AUDIO_TEMPO_FACTOR=$OPTARG
-			echo "AUDIO_TEMPO_FACTOR = $AUDIO_TEMPO_FACTOR"
-            ;;
-        *)
-            usage
-			error_exit "Unrecognized option: -$OPTARG"
-            # No ;; is necessary here.
-    esac
-done
-
-shift $((OPTIND -1))
-
-#echo "\$* is $*" # I saw $* metioned in https://unix.stackexchange.com/questions/156223/bash-how-to-remove-options-from-parameters-after-processing
-
 if [ $# != 1 ]; then # Using != instead of -ne
 	usage
 	error_exit "Exactly one file to convert must be specified as a command-line argument."
@@ -75,33 +43,20 @@ fi
 # To get the filename without the extension, see https://stackoverflow.com/questions/965053/extract-filename-and-extension-in-bash
 FILENAME=$(basename -s ."$EXTENSION" "$1")
 
-# if [ $CONSTANT_BITRATE != 0 ]; then
-	# echo "Constant Bitrate Encoding (CBR)"
-	# BITRATE_SETTING="-ab 160k"
-# else
-	# echo "Variable Bitrate Encoding (VBR)"
-	# echo "Using settings with a target bitrate of 165 Kbits/s and a bitrate range of 140...185"
-	# BITRATE_SETTING="-qscale:a 4"
-# fi
+SOURCE_FILE_PATH="$1"
+SOURCE_FILENAME_WITH_EXTENSION=$(basename "$SOURCE_FILE_PATH")
+SOURCE_EXTENSION="${SOURCE_FILENAME_WITH_EXTENSION##*.}" # If SOURCE_FILENAME_WITH_EXTENSION contains one or more dots, this expression evaluates to the substring after the last dot; otherwise, it evaluates to all of SOURCE_FILENAME_WITH_EXTENSION
 
-# if [ $AUDIO_TEMPO_FACTOR_SET != 0 ]; then
-	# bash cannot handle floating-point numbers, so invoke bc to do the floating-point comparisons.
-	# See https://stackoverflow.com/questions/15224581/floating-point-comparison-with-variable-in-bash
+# Is this SOURCE_FILENAME_BASE or is it all of SOURCE_FILE_PATH minus the extension? -> The former: Just the filename base. E.g. If SOURCE_FILE_PATH is /dir1/dir2/dir3/filename.ext, then SOURCE_FILENAME_BASE is just "filename".
+SOURCE_FILENAME_BASE=$(basename -s ."$SOURCE_EXTENSION" "$SOURCE_FILE_PATH")
 
-	# which_test bc
+DEST_FILENAME_WITH_EXTENSION="$SOURCE_FILENAME_BASE.m4a"
 
-	# if (( $(bc <<< "$AUDIO_TEMPO_FACTOR < 0.5") || $(bc <<< "$AUDIO_TEMPO_FACTOR > 2.0"))); then
-		# error_exit "The audio tempo factor is not in the range [0.5, 2.0]; exiting."
-	# fi
-
-	# echo "The audio tempo will be adjusted by a factor of $AUDIO_TEMPO_FACTOR"
-	# echo "ffmpeg -i \"$1\" -vn -acodec libmp3lame -ac 2 $BITRATE_SETTING -filter:a \"atempo=$AUDIO_TEMPO_FACTOR\" -ar 48000 \"$FILENAME.mp3\""
-	# ffmpeg -i "$1" -vn -acodec libmp3lame -ac 2 $BITRATE_SETTING -filter:a "atempo=$AUDIO_TEMPO_FACTOR" -ar 48000 "$FILENAME.mp3" || error_exit "ffmpeg returned an error: $?" # I believe that $? will contain the error code that ffmpeg returned.
-# else
-	# echo "No valid AUDIO_TEMPO_FACTOR detected - the audio tempo will not be changed."
-	# echo "ffmpeg -i \"$1\" -vn -acodec libmp3lame -ac 2 $BITRATE_SETTING -ar 48000 \"$FILENAME.mp3\""
-	# ffmpeg -i "$1" -vn -acodec libmp3lame -ac 2 $BITRATE_SETTING -ar 48000 "$FILENAME.mp3" || error_exit "ffmpeg returned an error: $?" # I believe that $? will contain the error code that ffmpeg returned.
-# fi
+echo "SOURCE_FILE_PATH is $SOURCE_FILE_PATH"
+echo "SOURCE_FILENAME_WITH_EXTENSION is $SOURCE_FILENAME_WITH_EXTENSION"
+echo "SOURCE_EXTENSION is $SOURCE_EXTENSION"
+echo "SOURCE_FILENAME_BASE is $SOURCE_FILENAME_BASE"
+echo "DEST_FILENAME_WITH_EXTENSION is $DEST_FILENAME_WITH_EXTENSION"
 
 # [[ $SOURCE_STRING =~ Key:\ (.*)$ ]] && echo "Bash regex match: ${BASH_REMATCH[1]}"
 
@@ -120,7 +75,8 @@ FFMPEG_INFO_OUTPUT=$(ffmpeg -i "$1" 2>&1)
 	echo "The source audio stream is encoded as AAC; copying..."
 	CODEC="copy"
 
-	echo_and_eval $(printf "ffmpeg -i %q -vn -sn -c:a $CODEC %q" "$1" "$FILENAME.m4a")
+	# ? Should we redirect stderr to stdout here with 2>&1, or should we not? Might the process invoking this script want to distinguish between stdout and stderr?
+	echo_and_eval $(printf "ffmpeg -i %q -vn -sn -c:a $CODEC %q 2>&1" "$SOURCE_FILE_PATH" "$DEST_FILENAME_WITH_EXTENSION")
 } || {
 	# The source audio stream is not encoded as AAC; Use the libfdk_aac codec to encode it as AAC.
 	echo "The source audio stream is not encoded as AAC; transcoding to AAC..."
@@ -134,7 +90,7 @@ FFMPEG_INFO_OUTPUT=$(ffmpeg -i "$1" 2>&1)
 
 	echo "Using the $CODEC codec to transcode the audio stream to AAC..."
 	KBPS_OUT="128"
-	echo_and_eval $(printf "ffmpeg -i %q -vn -sn -c:a $CODEC -b:a ${KBPS_OUT}k %q" "$1" "$FILENAME.m4a")
+	echo_and_eval $(printf "ffmpeg -i %q -vn -sn -c:a $CODEC -b:a ${KBPS_OUT}k %q 2>&1" "$SOURCE_FILE_PATH" "$DEST_FILENAME_WITH_EXTENSION")
 }
 
 EXIT_STATUS=$?
@@ -145,12 +101,5 @@ if [ $EXIT_STATUS != 0 ]; then
 	echo "ffmpeg experienced an error."
 	# Call get_ffmpeg_error_message($EXIT_STATUS) in bash_script_include ?
 fi
-
-echo "SOURCE_FILE_PATH is $SOURCE_FILE_PATH"
-echo "SOURCE_FILENAME_WITH_EXTENSION is $SOURCE_FILENAME_WITH_EXTENSION"
-echo "SOURCE_EXTENSION is $SOURCE_EXTENSION"
-
-# Is this SOURCE_FILENAME_BASE or is it all of SOURCE_FILE_PATH minus the extension?
-echo "SOURCE_FILENAME_BASE is $SOURCE_FILENAME_BASE"
 
 clean_up $EXIT_STATUS
