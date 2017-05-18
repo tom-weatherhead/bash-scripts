@@ -141,6 +141,8 @@ alias m='cd $(archive_dir_parent); cd Archive/Git/LocalSandbox/MEAN 1>&/dev/null
 alias pipe_status='echo "${PIPESTATUS[@]}" | tr -s " " + | bc'
 alias arch_bits='uname -m | sed "s/x86_//;s/i[3-6]86/32/"'
 
+alias shhi="history | awk '{a[\$4]++ } END{for(i in a){print a[i], i}}' | sort -rn | head"
+
 # sed:
 # - s : Regular-expression-based substitution : s/regexp/replacement/
 
