@@ -76,7 +76,7 @@ FFMPEG_INFO_OUTPUT=$(ffmpeg -i "$1" 2>&1)
 	CODEC="copy"
 
 	# ? Should we redirect stderr to stdout here with 2>&1, or should we not? Might the process invoking this script want to distinguish between stdout and stderr?
-	echo_and_eval $(printf "ffmpeg -i %q -vn -sn -c:a $CODEC %q 2>&1" "$SOURCE_FILE_PATH" "$DEST_FILENAME_WITH_EXTENSION")
+	# echo_and_eval $(printf "ffmpeg -i %q -vn -sn -c:a $CODEC %q 2>&1" "$SOURCE_FILE_PATH" "$DEST_FILENAME_WITH_EXTENSION")
 } || {
 	# The source audio stream is not encoded as AAC; Use the libfdk_aac codec to encode it as AAC.
 	echo "The source audio stream is not encoded as AAC; transcoding to AAC..."
@@ -90,8 +90,12 @@ FFMPEG_INFO_OUTPUT=$(ffmpeg -i "$1" 2>&1)
 
 	echo "Using the $CODEC codec to transcode the audio stream to AAC..."
 	KBPS_OUT="128"
-	echo_and_eval $(printf "ffmpeg -i %q -vn -sn -c:a $CODEC -b:a ${KBPS_OUT}k %q 2>&1" "$SOURCE_FILE_PATH" "$DEST_FILENAME_WITH_EXTENSION")
+	CODEC="$CODEC -b:a ${KBPS_OUT}k"
+	# echo_and_eval $(printf "ffmpeg -i %q -vn -sn -c:a $CODEC -b:a ${KBPS_OUT}k %q 2>&1" "$SOURCE_FILE_PATH" "$DEST_FILENAME_WITH_EXTENSION")
 }
+
+# ? Should we redirect stderr to stdout here with 2>&1, or should we not? Might the process invoking this script want to distinguish between stdout and stderr?
+echo_and_eval $(printf "ffmpeg -i %q -vn -sn -c:a $CODEC %q 2>&1" "$SOURCE_FILE_PATH" "$DEST_FILENAME_WITH_EXTENSION")
 
 EXIT_STATUS=$?
 
