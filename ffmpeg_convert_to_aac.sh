@@ -49,8 +49,11 @@ SOURCE_FILENAME_BASE=$(basename -s ."$SOURCE_EXTENSION" "$SOURCE_FILE_PATH")
 # echo "SOURCE_FILENAME_BASE is $SOURCE_FILENAME_BASE"
 
 FFMPEG_INFO_OUTPUT=$(ffmpeg -i "$SOURCE_FILE_PATH" 2>&1)
+# FFMPEG_INFO_OUTPUT=$(ffmpeg -i "$SOURCE_FILE_PATH" 2>&1 -c copy /dev/null)
 
-[[ "$FFMPEG_INFO_OUTPUT" =~ Audio:\ aac ]] && {
+# [[ "$FFMPEG_INFO_OUTPUT" =~ Audio:\ aac ]] && { # TODO: Use grep -q : ffmpeg -i Radiohead\ -\ Creep.m4a 2>&1 | grep -q "Audio: aac" && echo "Yay!" || echo "Non."
+# echo "$FFMPEG_INFO_OUTPUT" | grep -q "Audio: aac" && {
+echo "$FFMPEG_INFO_OUTPUT" | grep -q Audio:\ aac && {
 	# The source audio stream is already encoded as AAC; just copy it.
 	echo "The source audio stream is encoded as AAC; copying..."
 	CODEC="copy"
@@ -58,8 +61,10 @@ FFMPEG_INFO_OUTPUT=$(ffmpeg -i "$SOURCE_FILE_PATH" 2>&1)
 	# The source audio stream is not encoded as AAC; Use the libfdk_aac codec to encode it as AAC.
 	echo "The source audio stream is not encoded as AAC; transcoding to AAC..."
 
-	[[ "$FFMPEG_INFO_OUTPUT" =~ libfdk_aac ]] && {
+	# [[ "$FFMPEG_INFO_OUTPUT" =~ libfdk_aac ]] && {
+	echo "$FFMPEG_INFO_OUTPUT" | grep -q libfdk_aac && {
 		# The libfdk_aac codec is available.
+		echo "libfdk_aac detected. Yay!"
 		CODEC="libfdk_aac"
 	} || {
 		CODEC="aac"
@@ -81,7 +86,8 @@ echo "DEST_FILENAME_WITH_EXTENSION is $DEST_FILENAME_WITH_EXTENSION"
 # -sn : Don't copy or transcode the source subtitle stream.
 
 # ? Should we redirect stderr to stdout here with 2>&1, or should we not? Might the process invoking this script want to distinguish between stdout and stderr?
-echo_and_eval $(printf "ffmpeg -i %q -vn -sn -c:a $CODEC %q 2>&1" "$SOURCE_FILE_PATH" "$DEST_FILENAME_WITH_EXTENSION")
+printf "ffmpeg -i %q -vn -sn -c:a $CODEC %q 2>&1" "$SOURCE_FILE_PATH" "$DEST_FILENAME_WITH_EXTENSION"
+# echo_and_eval $(printf "ffmpeg -i %q -vn -sn -c:a $CODEC %q 2>&1" "$SOURCE_FILE_PATH" "$DEST_FILENAME_WITH_EXTENSION")
 
 EXIT_STATUS=$?
 
@@ -93,3 +99,9 @@ if [ $EXIT_STATUS != 0 ]; then
 fi
 
 clean_up $EXIT_STATUS
+
+# ***
+
+# ffmpeg -i 2>&1 | grep -q ffmpeg && echo "Yay!" || echo "Non."
+# ffmpeg -i 2>&1 | grep -q 264 && echo "Yay!" || echo "Non."
+# ffmpeg -i 2>&1 | grep -q 265 && echo "Yay!" || echo "Non."

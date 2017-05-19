@@ -101,6 +101,8 @@ which_test ffmpeg
 # - aac
 # - libmp3lame
 
+# TODO: If the source audio is already encoded as AAC, just use the "copy" codec rather than re-encoding.
+
 # AUDIO_CODEC="libmp3lame"
 AUDIO_CODEC="aac"
 
@@ -109,9 +111,15 @@ CRF=22
 
 MODE="c"
 
+# To minimize CPU usage and fan noise, use -threads 1 and pools=1
+# POOLS=1
+POOLS=2
+# POOLS=4
+				
 # Using getopts to detect and handle command-line options : See https://stackoverflow.com/questions/16483119/example-of-how-to-use-getopts-in-bash
 
-while getopts "245c:" option; do
+# while getopts "245c:" option; do
+while getopts "245c:p:" option; do
     case $option in
         2)
 			MODE="2"
@@ -137,6 +145,11 @@ while getopts "245c:" option; do
 				CRF=$OPTARG
 			fi
             ;;
+		p) # Number of pools to use during x265 encoding
+			# TODO: Verify that $OPTARG is a positive integer no greater than the system's number of CPU cores?
+			# NUM_CPU_CORES=$(grep -c processor /proc/cpuinfo)
+			POOLS=$OPTARG
+			;;
         *)
             usage
 			error_exit "Unrecognized option: -$OPTARG"
@@ -151,16 +164,65 @@ if [ $# != 1 ]; then # Using != instead of -ne
 	error_exit "Exactly one file to convert must be specified as a command-line argument."
 fi
 
-# In order to handle spaces in $1, wrap it in quotes: "$1"
+# ***
 
-INPUT_FILENAME="$1"
+# In order to handle spaces in $1, wrap it in quotes: "$1"
+# See https://unix.stackexchange.com/questions/151807/how-to-pass-argument-with-spaces-to-a-shell-script-function
+# See also https://www.google.ca/search?q=bash+script+parameter+with+spaces
+
+SOURCE_FILE_PATH="$1"
 
 # Get file extension: see http://tecadmin.net/how-to-extract-filename-extension-in-shell-script/
-INPUT_FILENAME_WITH_EXTENSION=$(basename "$INPUT_FILENAME")
-INPUT_EXTENSION="${INPUT_FILENAME_WITH_EXTENSION##*.}" # If INPUT_FILENAME_WITH_EXTENSION contains one or more dots, this expression evaluates to the substring after the last dot; otherwise, it evaluates to all of INPUT_FILENAME_WITH_EXTENSION
+SOURCE_FILENAME_WITH_EXTENSION=$(basename "$SOURCE_FILE_PATH")
+
+SOURCE_EXTENSION="${SOURCE_FILENAME_WITH_EXTENSION##*.}" # If SOURCE_FILENAME_WITH_EXTENSION contains one or more dots, this expression evaluates to the substring after the last dot; otherwise, it evaluates to all of SOURCE_FILENAME_WITH_EXTENSION
 
 # To get the filename without the extension, see https://stackoverflow.com/questions/965053/extract-filename-and-extension-in-bash
-BASE_FILENAME=$(basename -s ."$INPUT_EXTENSION" "$INPUT_FILENAME")
+# Is this SOURCE_FILENAME_BASE or is it all of SOURCE_FILE_PATH minus the extension? -> The former: Just the filename base. E.g. If SOURCE_FILE_PATH is /dir1/dir2/dir3/filename.ext, then SOURCE_FILENAME_BASE is just "filename".
+SOURCE_FILENAME_BASE=$(basename -s ."$SOURCE_EXTENSION" "$SOURCE_FILE_PATH")
+
+# echo "SOURCE_FILE_PATH is $SOURCE_FILE_PATH"
+# echo "SOURCE_FILENAME_WITH_EXTENSION is $SOURCE_FILENAME_WITH_EXTENSION"
+# echo "SOURCE_EXTENSION is $SOURCE_EXTENSION"
+# echo "SOURCE_FILENAME_BASE is $SOURCE_FILENAME_BASE"
+
+FFMPEG_INFO_OUTPUT=$(ffmpeg -i "$SOURCE_FILE_PATH" 2>&1)
+
+echo "$FFMPEG_INFO_OUTPUT" | grep -q Audio:\ aac && {
+	# The source audio stream is already encoded as AAC; just copy it.
+	echo "The source audio stream is encoded as AAC; copying..."
+	AUDIO_CODEC="copy"
+} || {
+	echo "The source audio stream is not encoded as AAC; transcoding to AAC..."
+
+	# [[ "$FFMPEG_INFO_OUTPUT" =~ libfdk_aac ]] && {
+	echo "$FFMPEG_INFO_OUTPUT" | grep -q libfdk_aac && {
+		# The libfdk_aac codec is available.
+		echo "libfdk_aac detected. Yay!"
+		AUDIO_CODEC="libfdk_aac"
+	} || {
+		AUDIO_CODEC="aac"
+	}
+
+	echo "Using the $CODEC codec to transcode the audio stream to AAC..."
+	# AUDIO_KBPS_OUT="128"
+	# AUDIO_KBPS_OUT="192"
+	# AUDIO_KBPS_OUT="256"
+	# AUDIO_CODEC="$AUDIO_CODEC -b:a ${AUDIO_KBPS_OUT}k"
+}
+
+# ***
+
+# In order to handle spaces in $1, wrap it in quotes: "$1"
+
+# INPUT_FILENAME="$1"
+
+# Get file extension: see http://tecadmin.net/how-to-extract-filename-extension-in-shell-script/
+# INPUT_FILENAME_WITH_EXTENSION=$(basename "$INPUT_FILENAME")
+# INPUT_EXTENSION="${INPUT_FILENAME_WITH_EXTENSION##*.}" # If INPUT_FILENAME_WITH_EXTENSION contains one or more dots, this expression evaluates to the substring after the last dot; otherwise, it evaluates to all of INPUT_FILENAME_WITH_EXTENSION
+
+# To get the filename without the extension, see https://stackoverflow.com/questions/965053/extract-filename-and-extension-in-bash
+# BASE_FILENAME=$(basename -s ."$INPUT_EXTENSION" "$INPUT_FILENAME")
 
 START_TIME=$(date_time_utc)
 
@@ -179,8 +241,13 @@ case $MODE in
 
 		echo "NULL_DEVICE is $NULL_DEVICE"
 
-		ffmpeg -y -i "$1" -c:v $VIDEO_CODEC -preset medium -b:v $VIDEO_BITRATE -pass 1 -c:a $AUDIO_CODEC -b:a $AUDIO_BITRATE -f mp4 $NULL_DEVICE && \
-			ffmpeg -i "$1" -c:v $VIDEO_CODEC -preset medium -b:v $VIDEO_BITRATE -pass 2 -c:a $AUDIO_CODEC -b:a $AUDIO_BITRATE "$FILENAME.mp4"
+		# DEST_FILENAME_WITH_EXTENSION="$SOURCE_FILENAME_BASE.h264.$AUDIO_CODEC.2pass.mp4"
+
+		# ?: c:v libx264 -preset $PRESET 
+		DEST_FILENAME_WITH_EXTENSION="$SOURCE_FILENAME_BASE.$AUDIO_CODEC.2pass.mp4"
+
+		ffmpeg -y -i "$SOURCE_FILE_PATH" -c:v $VIDEO_CODEC -preset medium -b:v $VIDEO_BITRATE -pass 1 -c:a $AUDIO_CODEC -b:a $AUDIO_BITRATE -f mp4 $NULL_DEVICE && \
+			ffmpeg -i "$SOURCE_FILE_PATH" -c:v $VIDEO_CODEC -preset medium -b:v $VIDEO_BITRATE -pass 2 -c:a $AUDIO_CODEC -b:a $AUDIO_BITRATE "$DEST_FILENAME_WITH_EXTENSION"
 		;;
 	c)
 		echo "Constant Rate Factor (CRF)"
@@ -199,11 +266,11 @@ case $MODE in
 		# PRESET="placebo" # Don't use this.
 
 		# The number of CPU cores is:
-		NUM_CPU_CORES=$(grep -c processor /proc/cpuinfo)
+		# NUM_CPU_CORES=$(grep -c processor /proc/cpuinfo)
 		# So divide it by 2 and use it as the value of the "-threads" argument, but ensure that it is at least 1.
-		NUM_THREADS=$(( ${NUM_CPU_CORES}/2 ))
+		# NUM_THREADS=$(( ${NUM_CPU_CORES}/2 ))
 		# NUM_THREADS=$(( ${NUM_CPU_CORES}/4 ))
-		echo "Suggested number of threads: $NUM_THREADS"
+		# echo "Suggested number of threads: $NUM_THREADS"
 
 		# THREADS_OPTION=""
 		THREADS_OPTION="-threads 1"
@@ -213,29 +280,43 @@ case $MODE in
 
 		# Possible ffmpeg options:
 		# - -map 0 : Map all streams from the first input file to output (from the ffmpeg man page)
-		# - -c:s copy : Copy the subtitle stream
 
 		case $VIDEO_CODEC in
 			libx264)
 				# See https://trac.ffmpeg.org/wiki/Encode/H.264
 
 				# EXTRA_OPTIONS="-crf $CRF" # Should this be called EXTRA_VIDEO_OPTIONS? When passing options to ffmpeg, the order of the options matters! We may want to separate EXTRA_OPTIONS into EXTRA_VIDEO_OPTIONS and EXTRA_AUDIO_OPTIONS.
-				OUTPUT_FILENAME="$BASE_FILENAME.h264.$AUDIO_CODEC.$PRESET.crf${CRF}.mp4"
+				DEST_FILENAME_WITH_EXTENSION="$SOURCE_FILENAME_BASE.h264.$AUDIO_CODEC.$PRESET.crf${CRF}.mp4"
+
+				# TODO: Write code to detect the stream numbers of the audio, video, and subtitle streams; don't assume that video=0:0, audio=0:1, and subtitles=0:2. Use regexes to search the output of "ffmpeg -i".
+				# Or... do not indicate the stream numbers of the source audio, video, and subtitle streams; e.g. :
 
 				echo_and_eval $(printf "ffmpeg -hide_banner \
 					-i %q \
 					-map_metadata 0 \
 					-map_chapters 0 \
 					-metadata title=\"Title\" \
-					-map 0:0 -metadata:s:v:0 language=eng \
-					-map 0:1 -metadata:s:a:0 language=eng -metadata:s:a:0 title=\"Advanced Audio Coding (AAC)\" \
-					-map 0:2? -metadata:s:s:0 language=eng -metadata:s:s:0 title=\"English\" \
 					-c:v libx264 -preset $PRESET \
-					-crf ${CRF} \
+					-crf $CRF \
 					-c:a $AUDIO_CODEC \
 					-c:s copy \
 					$THREADS_OPTION \
-					%q" "$INPUT_FILENAME" "$OUTPUT_FILENAME")
+					%q 2>&1" "$SOURCE_FILE_PATH" "$DEST_FILENAME_WITH_EXTENSION")
+
+				# echo_and_eval $(printf "ffmpeg -hide_banner \
+					# -i %q \
+					# -map_metadata 0 \
+					# -map_chapters 0 \
+					# -metadata title=\"Title\" \
+					# -map 0:0 -metadata:s:v:0 language=eng \
+					# -map 0:1 -metadata:s:a:0 language=eng -metadata:s:a:0 title=\"Advanced Audio Coding (AAC)\" \
+					# -map 0:2? -metadata:s:s:0 language=eng -metadata:s:s:0 title=\"English\" \
+					# -c:v libx264 -preset $PRESET \
+					# -crf $CRF \
+					# -c:a $AUDIO_CODEC \
+					# -c:s copy \
+					# $THREADS_OPTION \
+					# %q 2>&1" "$SOURCE_FILE_PATH" "$DEST_FILENAME_WITH_EXTENSION")
 				;;
 
 			libx265)
@@ -251,29 +332,39 @@ case $MODE in
 				# CRF_PARAM="-x265-params crf=$CRF"
 				# E.g. echo_and_eval $(printf "ffmpeg -i %q -c:v libx265 -preset slow -c:a $AUDIO_CODEC -an -x265-params crf=25 %q" "$1" "$FILENAME.h265.mp4") # What does -an do? -> Disable the selection of a default audio stream? See https://ffmpeg.org/ffmpeg.html
 
-				OUTPUT_FILENAME="$BASE_FILENAME.h265.$AUDIO_CODEC.$PRESET.crf${CRF}.mp4"
+				DEST_FILENAME_WITH_EXTENSION="$SOURCE_FILENAME_BASE.h265.$AUDIO_CODEC.$PRESET.crf${CRF}.mp4"
 
-				# To minimize CPU usage and fan noise, use -threads 1 and pools=1
-				# POOLS=1
-				POOLS=2
-				# POOLS=4
-				
-				# Based on Yifeng Mu's answer in https://unix.stackexchange.com/questions/230800/re-encoding-video-library-in-x265-hevc-with-no-quality-loss :
-				# Here:
+				# TODO: Write code to detect the stream numbers of the audio, video, and subtitle streams; don't assume that video=0:0, audio=0:1, and subtitles=0:2. Use regexes to search the output of "ffmpeg -i".
+				# Or... do not indicate the stream numbers of the source audio, video, and subtitle streams; e.g. :
+
 				echo_and_eval $(printf "ffmpeg -hide_banner \
 					-i %q \
 					-map_metadata 0 \
 					-map_chapters 0 \
 					-metadata title=\"Title\" \
-					-map 0:0 -metadata:s:v:0 language=eng \
-					-map 0:1 -metadata:s:a:0 language=eng -metadata:s:a:0 title=\"Advanced Audio Coding (AAC)\" \
-					-map 0:2? -metadata:s:s:0 language=eng -metadata:s:s:0 title=\"English\" \
 					-c:v libx265 -preset $PRESET -x265-params \
 					crf=${CRF}:pools=${POOLS}:qcomp=0.8:aq-mode=1:aq_strength=1.0:qg-size=16:psy-rd=0.7:psy-rdoq=5.0:rdoq-level=1:merange=44 \
 					-c:a $AUDIO_CODEC \
 					-c:s copy \
 					$THREADS_OPTION \
-					%q" "$INPUT_FILENAME" "$OUTPUT_FILENAME")
+					%q 2>&1" "$SOURCE_FILE_PATH" "$DEST_FILENAME_WITH_EXTENSION")
+
+				# Based on Yifeng Mu's answer in https://unix.stackexchange.com/questions/230800/re-encoding-video-library-in-x265-hevc-with-no-quality-loss :
+				# Here:
+				# echo_and_eval $(printf "ffmpeg -hide_banner \
+					# -i %q \
+					# -map_metadata 0 \
+					# -map_chapters 0 \
+					# -metadata title=\"Title\" \
+					# -map 0:0 -metadata:s:v:0 language=eng \
+					# -map 0:1 -metadata:s:a:0 language=eng -metadata:s:a:0 title=\"Advanced Audio Coding (AAC)\" \
+					# -map 0:2? -metadata:s:s:0 language=eng -metadata:s:s:0 title=\"English\" \
+					# -c:v libx265 -preset $PRESET -x265-params \
+					# crf=${CRF}:pools=${POOLS}:qcomp=0.8:aq-mode=1:aq_strength=1.0:qg-size=16:psy-rd=0.7:psy-rdoq=5.0:rdoq-level=1:merange=44 \
+					# -c:a $AUDIO_CODEC \
+					# -c:s copy \
+					# $THREADS_OPTION \
+					# %q 2>&1" "$SOURCE_FILE_PATH" "$DEST_FILENAME_WITH_EXTENSION")
 					
 				# ... And then, to verify the result:
 				# ffmpeg -i "$OUTPUT_FILENAME" | grep hevc
