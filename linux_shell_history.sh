@@ -15,7 +15,7 @@
 
 #!/bin/bash
 
-# HISTFILE=~/.bash_history  # Set the history file.
+HISTFILE=~/.bash_history  # Set the history file.
 # HISTTIMEFORMAT='%F %T '   # Set the hitory time format.
 set -o history            # Enable the history.
 

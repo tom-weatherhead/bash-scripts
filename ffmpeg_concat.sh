@@ -155,4 +155,21 @@
 
 # **** END Web page excerpt ****
 
-ffmpeg -f concat -safe 0 -i mylist.txt -c copy output
+# ffmpeg -f concat -safe 0 -i mylist.txt -c copy output
+
+# ****
+
+# 0) Use ffmpeg_segments.sh to generate the segments (*Segment*.mp4), then delete the unwanted segments:
+
+#!/bin/bash
+ffmpeg -i "$1" -acodec copy -f segment -vcodec copy -reset_timestamps 1 -map 0 "$1.Segment%06d.mp4"
+
+# 1) GenerateFileList.shell
+
+#!/bin/bash
+ls -w 1 *Segment*.mp4 | sed -rn 's/^(.*)$/file \x27Z:\\Directory1\\Directory2\\Directory3\\\1\x27/p' > FileList.txt
+
+# 2) Concat.sh
+
+#!/bin/bash
+ffmpeg -f concat -safe 0 -i FileList.txt -c copy "$1.ConcatenatedSegments.mp4"

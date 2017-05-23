@@ -183,6 +183,7 @@ echo "$FFMPEG_INFO_OUTPUT" | grep -q Audio:\ aac && {
 	# The source audio stream is already encoded as AAC; just copy it.
 	echo "The source audio stream is encoded as AAC; copying..."
 	AUDIO_CODEC="copy"
+	AUDIO_CODEC_IN_DEST_FILENAME="$AUDIO_CODEC"
 } || {
 	echo "The source audio stream is not encoded as AAC; transcoding to AAC..."
 
@@ -200,6 +201,7 @@ echo "$FFMPEG_INFO_OUTPUT" | grep -q Audio:\ aac && {
 	AUDIO_KBPS_OUT="128"
 	# AUDIO_KBPS_OUT="192"
 	# AUDIO_KBPS_OUT="256"
+	AUDIO_CODEC_IN_DEST_FILENAME="$AUDIO_CODEC.${AUDIO_KBPS_OUT}kbps"
 	AUDIO_CODEC="$AUDIO_CODEC -b:a ${AUDIO_KBPS_OUT}k"
 }
 
@@ -231,7 +233,7 @@ case $MODE in
 
 		echo "NULL_DEVICE is $NULL_DEVICE"
 
-		DEST_FILENAME_WITH_EXTENSION="$SOURCE_FILENAME_BASE.h264.$AUDIO_CODEC.$PRESET.2pass.mp4"
+		DEST_FILENAME_WITH_EXTENSION="$SOURCE_FILENAME_BASE.h264.$AUDIO_CODEC_IN_DEST_FILENAME.$PRESET.2pass.mp4"
 		# DEST_FILENAME_WITH_EXTENSION="$SOURCE_FILENAME_BASE.h264.$AUDIO_CODEC.$PRESET.crf${CRF}.mp4"
 
 		ffmpeg -y -i "$SOURCE_FILE_PATH" -c:v $VIDEO_CODEC -preset $PRESET -b:v ${VIDEO_KBPS_OUT}k -pass 1 -c:a $AUDIO_CODEC -f mp4 $NULL_DEVICE && \
@@ -263,7 +265,7 @@ case $MODE in
 				# See https://trac.ffmpeg.org/wiki/Encode/H.264
 
 				# EXTRA_OPTIONS="-crf $CRF" # Should this be called EXTRA_VIDEO_OPTIONS? When passing options to ffmpeg, the order of the options matters! We may want to separate EXTRA_OPTIONS into EXTRA_VIDEO_OPTIONS and EXTRA_AUDIO_OPTIONS.
-				DEST_FILENAME_WITH_EXTENSION="$SOURCE_FILENAME_BASE.h264.$AUDIO_CODEC.$PRESET.crf${CRF}.mp4"
+				DEST_FILENAME_WITH_EXTENSION="$SOURCE_FILENAME_BASE.h264.$AUDIO_CODEC_IN_DEST_FILENAME.$PRESET.crf${CRF}.mp4"
 
 				# TODO: Write code to detect the stream numbers of the audio, video, and subtitle streams; don't assume that video=0:0, audio=0:1, and subtitles=0:2. Use regexes to search the output of "ffmpeg -i".
 				# Or... do not indicate the stream numbers of the source audio, video, and subtitle streams; e.g. :
@@ -297,7 +299,7 @@ case $MODE in
 				
 				# E.g. echo_and_eval $(printf "ffmpeg -i %q -c:v libx265 -preset slow -c:a $AUDIO_CODEC -an -x265-params crf=25 %q" "$1" "$FILENAME.h265.mp4") # What does -an do? -> Disable the selection of a default audio stream? See https://ffmpeg.org/ffmpeg.html
 
-				DEST_FILENAME_WITH_EXTENSION="$SOURCE_FILENAME_BASE.h265.$AUDIO_CODEC.$PRESET.crf${CRF}.mp4"
+				DEST_FILENAME_WITH_EXTENSION="$SOURCE_FILENAME_BASE.h265.$AUDIO_CODEC_IN_DEST_FILENAME.$PRESET.crf${CRF}.mp4"
 
 				# TODO: Write code to detect the stream numbers of the audio, video, and subtitle streams; don't assume that video=0:0, audio=0:1, and subtitles=0:2. Use regexes to search the output of "ffmpeg -i".
 				# Or... do not indicate the stream numbers of the source audio, video, and subtitle streams; e.g. :

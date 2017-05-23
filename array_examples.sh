@@ -150,3 +150,99 @@ echo "Read file content!"
 # Read file content!
 
 # In the above example, each index of an array element has printed through for loop.
+
+# **** BEGIN Bash Associative Array Examples ****
+
+# From https://stackoverflow.com/questions/1494178/how-to-define-hash-tables-in-bash :
+
+
+Bash 4
+
+Bash 4 natively supports this feature. Make sure your script's hashbang is #!/usr/bin/env bash or #!/bin/bash or anything else that references bash and not sh. Make sure you're executing your script, and not doing something silly like sh script which would cause your bash hashbang to be ignored. This is basic stuff, but so many keep failing at it, hence the re-iteration.
+
+You declare an associative array by doing:
+
+declare -A animals
+
+You can fill it up with elements using the normal array assignment operator:
+
+animals=( ["moo"]="cow" ["woof"]="dog")
+
+Or merge them:
+
+declare -A animals=( ["moo"]="cow" ["woof"]="dog")
+
+Then use them just like normal arrays. "${animals[@]}" expands the values, "${!animals[@]}" (notice the !) expands the keys. Don't forget to quote them:
+
+echo "${animals[moo]}"
+for sound in "${!animals[@]}"; do echo "$sound - ${animals[$sound]}"; done
+
+Bash 3
+
+Before bash 4, you don't have associative arrays. Do not use eval to emulate them. You must avoid eval like the plague, because it is the plague of shell scripting. The most important reason is that you don't want to treat your data as executable code (there are many other reasons too).
+
+First and foremost: Just consider upgrading to bash 4. Seriously. The future is now, stop living in the past and suffering from it by forcing stupid broken and ugly hacks on your code and every poor soul stuck maintaining it.
+
+If you have some silly excuse why you "can't upgrade", declare is a far safer option. It does not evaluate data as bash code like eval does, and as such it does not allow arbitrary code injection quite so easily.
+
+Let's prepare the answer by introducing the concepts:
+
+First, indirection (seriously; never use this unless you're mentally ill or have some other bad excuse for writing hacks).
+
+$ animals_moo=cow; sound=moo; i="animals_$sound"; echo "${!i}"
+cow
+
+Secondly, declare:
+
+$ sound=moo; animal=cow; declare "animals_$sound=$animal"; echo "$animals_moo"
+cow
+
+Bring them together:
+
+# Set a value:
+declare "array_$index=$value"
+
+# Get a value:
+arrayGet() { 
+    local array=$1 index=$2
+    local i="${array}_$index"
+    printf '%s' "${!i}"
+}
+
+Let's use it:
+
+$ sound=moo
+$ animal=cow
+$ declare "animals_$sound=$animal"
+$ arrayGet animals "$sound"
+cow
+
+Note: declare cannot be put in a function. Any use of declare inside a bash function turns the variable it creates local to the scope of that function, meaning we can't access or modify global arrays with it. (In bash 4 you can use declare -g to declare global variables - but in bash 4, you should be using associative arrays in the first place, not this hack.)
+Summary
+
+Upgrade to bash 4 and use declare -A. If you can't, consider switching entirely to awk before doing ugly hacks as described above. And definitely stay the heck away from eval hackery.
+shareimprove this answer
+	
+edited Aug 18 '16 at 18:31
+haridsv
+2,23623033
+	
+answered Aug 12 '10 at 13:09
+lhunath
+59.2k125469
+	
+9 	 
+	
+Don't beat yourself up. It's new in bash 4. – glenn jackman Apr 15 '11 at 16:07
+25 	 
+	
+Ahh, I appreciate the forward-looking sentiment, but "I can't upgrade a server I'm not in charge of" is hardly a silly excuse why you can't upgrade. Many people who have real work to do are, unfortunately, required to do it in a workplace owned by someone else, on servers run by someone else, and if you work in IT I'm sure you know how enjoyable it is for users to come in and demand IT changes. I know this is a sad and tragic state of affairs, but it's life! – David M. Perlman Jan 18 '12 at 20:11
+1 	 
+	
+@Richard: Presumably, you aren't actually using bash. Is your hashbang sh instead of bash, or are you otherwise invoking your code with sh? Try putting this right before your declare: echo "$BASH_VERSION $POSIXLY_CORRECT", it should output 4.x and not y. – lhunath Aug 9 '12 at 16:47
+48 	 
+	
+I love hearing "The future is now" while talking about bash – Arthur Jaouen Dec 7 '12 at 15:12
+7 	 
+	
+@ken it's a licensing issue. Bash on OSX is stuck at the latest non-GPLv3 licensed build. – lhunath Oct 23 '14 at 12:23 
