@@ -6,16 +6,13 @@
 
 . bash_script_include.sh
 
-PROGRAM_NAME=$(basename "$0")
+# PROGRAM_NAME=$(basename "$0")
 
 usage()
 {
 	# Output the usage message to the standard error stream.
 	echo_error_message
-	echo_error_message "Usage: $PROGRAM_NAME [-c | -v] InputFilename"
-	# echo_error_message "-c : Constant Bitrate Encoding (CBR) (default)"
-	# echo_error_message "-v : Variable Bitrate Encoding (VBR)"
-	# echo_error_message "-t n : Adjust the audio tempo: Speed up the audio by a factor of n"
+	echo_error_message "Usage: $PROGRAM_NAME InputFilename"
 	echo_error_message
 }
 
@@ -49,35 +46,34 @@ SOURCE_FILENAME_BASE=$(basename -s ."$SOURCE_EXTENSION" "$SOURCE_FILE_PATH")
 # echo "SOURCE_FILENAME_BASE is $SOURCE_FILENAME_BASE"
 
 FFMPEG_INFO_OUTPUT=$(ffmpeg -i "$SOURCE_FILE_PATH" 2>&1)
-# FFMPEG_INFO_OUTPUT=$(ffmpeg -i "$SOURCE_FILE_PATH" 2>&1 -c copy /dev/null)
+# Should we do this? : FFMPEG_INFO_OUTPUT=$(ffmpeg -i "$SOURCE_FILE_PATH" 2>&1 -c copy /dev/null)
 
-# [[ "$FFMPEG_INFO_OUTPUT" =~ Audio:\ aac ]] && { # TODO: Use grep -q : ffmpeg -i Radiohead\ -\ Creep.m4a 2>&1 | grep -q "Audio: aac" && echo "Yay!" || echo "Non."
-# echo "$FFMPEG_INFO_OUTPUT" | grep -q "Audio: aac" && {
 echo "$FFMPEG_INFO_OUTPUT" | grep -q Audio:\ aac && {
 	# The source audio stream is already encoded as AAC; just copy it.
 	echo "The source audio stream is encoded as AAC; copying..."
-	CODEC="copy"
+	AUDIO_CODEC="copy"
+	AUDIO_CODEC_IN_DEST_FILENAME="aac.$AUDIO_CODEC"
 } || {
 	# The source audio stream is not encoded as AAC; Use the libfdk_aac codec to encode it as AAC.
 	echo "The source audio stream is not encoded as AAC; transcoding to AAC..."
 
-	# [[ "$FFMPEG_INFO_OUTPUT" =~ libfdk_aac ]] && {
 	echo "$FFMPEG_INFO_OUTPUT" | grep -q libfdk_aac && {
 		# The libfdk_aac codec is available.
 		echo "libfdk_aac detected. Yay!"
-		CODEC="libfdk_aac"
+		AUDIO_CODEC="libfdk_aac"
 	} || {
-		CODEC="aac"
+		AUDIO_CODEC="aac"
 	}
 
 	echo "Using the $CODEC codec to transcode the audio stream to AAC..."
-	KBPS_OUT="128"
-	# KBPS_OUT="192"
-	# KBPS_OUT="256"
-	CODEC="$CODEC -b:a ${KBPS_OUT}k"
+	AUDIO_KBPS_OUT="128"
+	# AUDIO_KBPS_OUT="192"
+	# AUDIO_KBPS_OUT="256"
+	AUDIO_CODEC_IN_DEST_FILENAME="$AUDIO_CODEC.${AUDIO_KBPS_OUT}kbps"
+	AUDIO_CODEC="$AUDIO_CODEC -b:a ${AUDIO_KBPS_OUT}k"
 }
 
-DEST_FILENAME_WITH_EXTENSION="$SOURCE_FILENAME_BASE.aac.${KBPS_OUT}kbps.m4a"
+DEST_FILENAME_WITH_EXTENSION="$SOURCE_FILENAME_BASE.$AUDIO_CODEC_IN_DEST_FILENAME.m4a"
 
 echo "DEST_FILENAME_WITH_EXTENSION is $DEST_FILENAME_WITH_EXTENSION"
 
@@ -86,8 +82,8 @@ echo "DEST_FILENAME_WITH_EXTENSION is $DEST_FILENAME_WITH_EXTENSION"
 # -sn : Don't copy or transcode the source subtitle stream.
 
 # ? Should we redirect stderr to stdout here with 2>&1, or should we not? Might the process invoking this script want to distinguish between stdout and stderr?
-printf "ffmpeg -i %q -vn -sn -c:a $CODEC %q 2>&1" "$SOURCE_FILE_PATH" "$DEST_FILENAME_WITH_EXTENSION"
-# echo_and_eval $(printf "ffmpeg -i %q -vn -sn -c:a $CODEC %q 2>&1" "$SOURCE_FILE_PATH" "$DEST_FILENAME_WITH_EXTENSION")
+# printf "ffmpeg -i %q -vn -sn -c:a $AUDIO_CODEC %q 2>&1" "$SOURCE_FILE_PATH" "$DEST_FILENAME_WITH_EXTENSION"
+echo_and_eval $(printf "ffmpeg -i %q -vn -sn -c:a $AUDIO_CODEC %q 2>&1" "$SOURCE_FILE_PATH" "$DEST_FILENAME_WITH_EXTENSION")
 
 EXIT_STATUS=$?
 

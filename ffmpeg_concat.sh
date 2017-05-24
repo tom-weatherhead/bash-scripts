@@ -164,7 +164,7 @@
 #!/bin/bash
 ffmpeg -i "$1" -acodec copy -f segment -vcodec copy -reset_timestamps 1 -map 0 "$1.Segment%06d.mp4"
 
-# 1) GenerateFileList.shell
+# 1) GenerateFileList.sh
 
 #!/bin/bash
 ls -w 1 *Segment*.mp4 | sed -rn 's/^(.*)$/file \x27Z:\\Directory1\\Directory2\\Directory3\\\1\x27/p' > FileList.txt
