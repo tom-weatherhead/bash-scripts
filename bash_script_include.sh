@@ -278,6 +278,18 @@ safe_eval()
 
 # safe_eval "$1" # For testing.
 
+is_a_non_negative_integer()
+{
+	[[ "$1" =~ ^[0-9]+$ ]] && echo 1 || echo
+}
+
+# [ $(is_a_non_negative_integer 128) ] && echo "128 is a non neg int!" || echo "128 is NOT a non neg int."
+# [ $(is_a_non_negative_integer "128") ] && echo "128 is a non neg int!" || echo "128 is NOT a non neg int."
+# [ $(is_a_non_negative_integer "abc.mp3") ] && echo "abc.mp3 is a non neg int!" || echo "abc.mp3 is NOT a non neg int."
+# [ $(is_a_non_negative_integer) ] && echo "(empty) is a non neg int!" || echo "(empty) is NOT a non neg int."
+
+# ***
+
 # SOURCE_FILE_PATH="$1"
 # SOURCE_FILENAME_WITH_EXTENSION=$(basename "$SOURCE_FILE_PATH")
 # SOURCE_EXTENSION="${SOURCE_FILENAME_WITH_EXTENSION##*.}" # If SOURCE_FILENAME_WITH_EXTENSION contains one or more dots, this expression evaluates to the substring after the last dot; otherwise, it evaluates to all of SOURCE_FILENAME_WITH_EXTENSION

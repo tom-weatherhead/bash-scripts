@@ -111,7 +111,6 @@ POOLS=2
 				
 # Using getopts to detect and handle command-line options : See https://stackoverflow.com/questions/16483119/example-of-how-to-use-getopts-in-bash
 
-# while getopts "245c:" option; do
 while getopts "245c:p:" option; do
     case $option in
         2)

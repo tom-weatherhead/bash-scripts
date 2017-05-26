@@ -6,19 +6,42 @@
 
 . bash_script_include.sh
 
-# PROGRAM_NAME=$(basename "$0")
-
 usage()
 {
 	# Output the usage message to the standard error stream.
 	echo_error_message
-	echo_error_message "Usage: $PROGRAM_NAME InputFilename"
+	echo_error_message "Usage: $PROGRAM_NAME [-b { 64 | 96 | 128 | 192 | 256 }] InputFilename"
+	echo_error_message "  -b : Sets the output audio bitrate (in kilobits per second)"
 	echo_error_message
 }
 
 which_test ffmpeg
 
-# TODO? Support an option to select the output bit rate in kilobits per second; e.g. -b [128 | 192 | 256]
+AUDIO_KBPS_OUT="128"
+
+while getopts "b:" option; do
+    case $option in
+		b) # Set the output audio bitrate (in kilobits per second)
+			[ $(is_a_non_negative_integer $OPTARG) ] && {
+				if [ $OPTARG -eq 64 ] || [ $OPTARG -eq 96 ] || [ $OPTARG -eq 128 ] || [ $OPTARG -eq 192 ] || [ $OPTARG -eq 256 ]; then
+					AUDIO_KBPS_OUT=$OPTARG
+				else
+					usage
+					error_exit "Option -b : The argument '$OPTARG' is not one of 64, 96, 128, 192, or 256"
+				fi
+			} || {
+				usage
+				error_exit "Option -b : The argument '$OPTARG' is not a non-negative integer"
+			}
+			;;
+        *)
+            usage
+			error_exit "Unrecognized option: -$OPTARG"
+            # No ;; is necessary here.
+    esac
+done
+
+shift $((OPTIND -1))
 
 if [ $# != 1 ]; then # Using != instead of -ne
 	usage
@@ -40,11 +63,7 @@ SOURCE_EXTENSION="${SOURCE_FILENAME_WITH_EXTENSION##*.}" # If SOURCE_FILENAME_WI
 # Is this SOURCE_FILENAME_BASE or is it all of SOURCE_FILE_PATH minus the extension? -> The former: Just the filename base. E.g. If SOURCE_FILE_PATH is /dir1/dir2/dir3/filename.ext, then SOURCE_FILENAME_BASE is just "filename".
 SOURCE_FILENAME_BASE=$(basename -s ."$SOURCE_EXTENSION" "$SOURCE_FILE_PATH")
 
-# echo "SOURCE_FILE_PATH is $SOURCE_FILE_PATH"
-# echo "SOURCE_FILENAME_WITH_EXTENSION is $SOURCE_FILENAME_WITH_EXTENSION"
-# echo "SOURCE_EXTENSION is $SOURCE_EXTENSION"
-# echo "SOURCE_FILENAME_BASE is $SOURCE_FILENAME_BASE"
-
+# FFMPEG_INFO_OUTPUT=
 FFMPEG_INFO_OUTPUT=$(ffmpeg -i "$SOURCE_FILE_PATH" 2>&1)
 # Should we do this? : FFMPEG_INFO_OUTPUT=$(ffmpeg -i "$SOURCE_FILE_PATH" 2>&1 -c copy /dev/null)
 
@@ -66,9 +85,6 @@ echo "$FFMPEG_INFO_OUTPUT" | grep -q Audio:\ aac && {
 	}
 
 	echo "Using the $CODEC codec to transcode the audio stream to AAC..."
-	AUDIO_KBPS_OUT="128"
-	# AUDIO_KBPS_OUT="192"
-	# AUDIO_KBPS_OUT="256"
 	AUDIO_CODEC_IN_DEST_FILENAME="$AUDIO_CODEC.${AUDIO_KBPS_OUT}kbps"
 	AUDIO_CODEC="$AUDIO_CODEC -b:a ${AUDIO_KBPS_OUT}k"
 }
@@ -82,7 +98,7 @@ echo "DEST_FILENAME_WITH_EXTENSION is $DEST_FILENAME_WITH_EXTENSION"
 # -sn : Don't copy or transcode the source subtitle stream.
 
 # ? Should we redirect stderr to stdout here with 2>&1, or should we not? Might the process invoking this script want to distinguish between stdout and stderr?
-# printf "ffmpeg -i %q -vn -sn -c:a $AUDIO_CODEC %q 2>&1" "$SOURCE_FILE_PATH" "$DEST_FILENAME_WITH_EXTENSION"
+# echo $(printf "ffmpeg -i %q -vn -sn -c:a $AUDIO_CODEC %q 2>&1" "$SOURCE_FILE_PATH" "$DEST_FILENAME_WITH_EXTENSION")
 echo_and_eval $(printf "ffmpeg -i %q -vn -sn -c:a $AUDIO_CODEC %q 2>&1" "$SOURCE_FILE_PATH" "$DEST_FILENAME_WITH_EXTENSION")
 
 EXIT_STATUS=$?
