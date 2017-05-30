@@ -16,4 +16,7 @@ CURRENT_DIR_NAME=$(basename "$PWD")
               # and    time    to    the    indicated    precision.     Example:
               # 2006-08-14T02:34:56-06:00
 
-git archive --format=tar HEAD | bzip2 -9 - > "../$CURRENT_DIR_NAME_$(date --utc -Idate).tar.bz2"
+# DATE_TIME_STRING=$(date --utc -Idate)
+DATE_TIME_STRING=$(date --utc +%Y-%m-%d_%H-%M-%S)
+
+git archive --format=tar HEAD | bzip2 -9 - > "../${CURRENT_DIR_NAME}_$DATE_TIME_STRING.tar.bz2"
