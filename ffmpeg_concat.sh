@@ -162,14 +162,13 @@
 # 0) Use ffmpeg_segments.sh to generate the segments (*Segment*.mp4), then delete the unwanted segments:
 
 #!/bin/bash
-ffmpeg -i "$1" -acodec copy -f segment -vcodec copy -reset_timestamps 1 -map 0 "$1.Segment%06d.mp4"
+# ffmpeg -i "$1" -acodec copy -f segment -vcodec copy -reset_timestamps 1 -map 0 "$1.Segment%06d.mp4"
 
 # 1) GenerateFileList.sh
 
-#!/bin/bash
-ls -w 1 *Segment*.mp4 | sed -rn 's/^(.*)$/file \x27Z:\\Directory1\\Directory2\\Directory3\\\1\x27/p' > FileList.txt
+find `pwd` -maxdepth 1 -name "*Segment*" | sed -rn 's/^\/(cygdrive|mnt)\/(.)/\U\2:/;s/\//\\\\/g;s/^(.*)$/file \x27\1\x27/p' > FileList.txt
 
 # 2) Concat.sh
 
 #!/bin/bash
-ffmpeg -f concat -safe 0 -i FileList.txt -c copy "$1.ConcatenatedSegments.mp4"
+ffmpeg -f concat -safe 0 -i ./FileList.txt -c copy "$1.ConcatenatedSegments.mp4"
