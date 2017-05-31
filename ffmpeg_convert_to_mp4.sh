@@ -108,6 +108,8 @@ MODE="c"
 # POOLS=1
 POOLS=2
 # POOLS=4
+
+NUM_THREADS=1
 				
 # Using getopts to detect and handle command-line options : See https://stackoverflow.com/questions/16483119/example-of-how-to-use-getopts-in-bash
 
@@ -142,6 +144,10 @@ while getopts "245c:p:" option; do
 			# NUM_CPU_CORES=$(grep -c processor /proc/cpuinfo)
 			POOLS=$OPTARG
 			;;
+		# t) # Number of threads (per pool?) to use during x265 encoding
+			# TODO: Verify that $OPTARG is a positive integer: if [ $OPTARG -gt 0 ] ... fi ?
+			# NUM_THREADS=$OPTARG
+			# ;;
         *)
             usage
 			error_exit "Unrecognized option: -$OPTARG"
@@ -251,10 +257,10 @@ case $MODE in
 		# echo "Suggested number of threads: $NUM_THREADS"
 
 		# THREADS_OPTION=""
-		THREADS_OPTION="-threads 1"
+		# THREADS_OPTION="-threads 1"
 		# THREADS_OPTION="-threads 2"
 		# THREADS_OPTION="-threads 4"
-		# THREADS_OPTION="-threads $NUM_THREADS"
+		THREADS_OPTION="-threads $NUM_THREADS"
 
 		# Possible ffmpeg options:
 		# - -map 0 : Map all streams from the first input file to output (from the ffmpeg man page)

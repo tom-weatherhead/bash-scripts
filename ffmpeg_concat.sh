@@ -155,20 +155,30 @@
 
 # **** END Web page excerpt ****
 
-# ffmpeg -f concat -safe 0 -i mylist.txt -c copy output
+SOURCE_FILE_PATH="$1"
 
-# ****
+# Get file extension: see http://tecadmin.net/how-to-extract-filename-extension-in-shell-script/
+SOURCE_FILENAME_WITH_EXTENSION=$(basename "$SOURCE_FILE_PATH")
+
+SOURCE_EXTENSION="${SOURCE_FILENAME_WITH_EXTENSION##*.}" # If SOURCE_FILENAME_WITH_EXTENSION contains one or more dots, this expression evaluates to the substring after the last dot; otherwise, it evaluates to all of SOURCE_FILENAME_WITH_EXTENSION
+
+# To get the filename without the extension, see https://stackoverflow.com/questions/965053/extract-filename-and-extension-in-bash
+# Is this SOURCE_FILENAME_BASE or is it all of SOURCE_FILE_PATH minus the extension? -> The former: Just the filename base. E.g. If SOURCE_FILE_PATH is /dir1/dir2/dir3/filename.ext, then SOURCE_FILENAME_BASE is just "filename".
+SOURCE_FILENAME_BASE=$(basename -s ."$SOURCE_EXTENSION" "$SOURCE_FILE_PATH")
 
 # 0) Use ffmpeg_segments.sh to generate the segments (*Segment*.mp4), then delete the unwanted segments:
 
-#!/bin/bash
-# ffmpeg -i "$1" -acodec copy -f segment -vcodec copy -reset_timestamps 1 -map 0 "$1.Segment%06d.mp4"
+# ffmpeg -i "$SOURCE_FILE_PATH" -acodec copy -f segment -vcodec copy -reset_timestamps 1 -map 0 "$SOURCE_FILENAME_BASE.Segment%06d.mp4"
 
 # 1) GenerateFileList.sh
 
-find `pwd` -maxdepth 1 -name "*Segment*" | sed -rn 's/^\/(cygdrive|mnt)\/(.)/\U\2:/;s/\//\\\\/g;s/^(.*)$/file \x27\1\x27/p' > FileList.txt
+find `pwd` -maxdepth 1 -name "*Segment*.mp4" | sed -rn 's/^\/(cygdrive|mnt)\/(.)/\U\2:/;s/\//\\\\/g;s/^(.*)$/file \x27\1\x27/p' > FileList.txt
 
 # 2) Concat.sh
 
-#!/bin/bash
-ffmpeg -f concat -safe 0 -i ./FileList.txt -c copy "$1.ConcatenatedSegments.mp4"
+ffmpeg -f concat -safe 0 -i FileList.txt -c copy "$SOURCE_FILENAME_BASE.ConcatenatedSegments.mp4"
+
+# 3) Cleanup
+
+# rm -f FileList.txt
+[ -f FileList.txt ] && rm -f FileList.txt	# If FileList.txt is an existing file, then remove it.
