@@ -19,4 +19,9 @@ CURRENT_DIR_NAME=$(basename "$PWD")
 # DATE_TIME_STRING=$(date --utc -Idate)
 DATE_TIME_STRING=$(date --utc +%Y-%m-%d_%H-%M-%S)
 
+# TODO: Is HEAD necessary below, or it the default value?
 git archive --format=tar HEAD | bzip2 -9 - > "../${CURRENT_DIR_NAME}_$DATE_TIME_STRING.tar.bz2"
+
+# git archive --format=tar HEAD | gpg -r foo -e -o "../${CURRENT_DIR_NAME}_$DATE_TIME_STRING.tar.gpg"
+
+# alias gbz='[ -d .git ] && { git archive --format=tar HEAD | bzip2 -9 - > "../$(basename $(pwd))_$(date --utc +%Y-%m-%d_%H-%M-%S).tar.bz2"; } || { echo "No .git subdirectory detected."; }'

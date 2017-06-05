@@ -172,7 +172,21 @@ SOURCE_FILENAME_BASE=$(basename -s ."$SOURCE_EXTENSION" "$SOURCE_FILE_PATH")
 
 # 1) GenerateFileList.sh
 
-find `pwd` -maxdepth 1 -name "*Segment*.mp4" | sed -rn 's/^\/(cygdrive|mnt)\/(.)/\U\2:/;s/\//\\\\/g;s/^(.*)$/file \x27\1\x27/p' > FileList.txt
+# 1a) Using sed:
+find `pwd` -maxdepth 1 -name "*Segment*" | sed -rn 's/^\/(cygdrive|mnt)\/([a-zA-Z])/\U\2:/;s/\//\\\\/g;s/^(.*)$/file \x27\1\x27/p' > FileList.txt
+
+# 1b) Using awk:
+
+# Awk stage 1: At the start of the input, convert "/cygdrive/x" or "/mnt/x" to "x:" (for any letter "x")
+# - The "g" can be replaced with 1
+# Awk stage 2: Convert the first character of the input (the drive letter "x" from stage 1) to uppercase
+# Awk stage 3: Convert every forward slash in the input to a pair of backslashes
+# Awk stage 4: Prepend "file '" and append "'" to each line of the input
+
+# find `pwd` -maxdepth 1 -name "*Segment*" | awk '{ print gensub(/^\/(cygdrive|mnt)\/([a-zA-Z])/, "\\2:", "g") }' | awk '{ sub(".", substr(toupper($i),1,1) , $i) }1' | awk '{ gsub("/","\\\\") }1' | awk '{ print "file '\''" $0 "'\''" }'
+
+# 1c) Using perl:
+# find `pwd` -maxdepth 1 -name "*Segment*" | perl -nle 's/\/(cygdrive|mnt)\/([a-zA-Z])/\U$2:/; s/\//\\\\/g; print "file '\''$_'\''";' > FileList.Perl.txt
 
 # 2) Concat.sh
 
@@ -182,3 +196,5 @@ ffmpeg -f concat -safe 0 -i FileList.txt -c copy "$SOURCE_FILENAME_BASE.Concaten
 
 # rm -f FileList.txt
 [ -f FileList.txt ] && rm -f FileList.txt	# If FileList.txt is an existing file, then remove it.
+[ -f FileList.Awk.txt ] && rm -f FileList.Awk.txt
+[ -f FileList.Perl.txt ] && rm -f FileList.Perl.txt

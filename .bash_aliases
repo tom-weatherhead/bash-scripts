@@ -4,7 +4,7 @@
 alias lb='ls -al ~/.bash*'
 
 #-------------------
-# Personnal Aliases
+# Personal Aliases
 #-------------------
 
 # Avoid accidentally clobbering files:
@@ -133,10 +133,20 @@ alias sudo='sudo '
 
 # ThAW's Additional Aliases
 
+# Git aliases: Begin
+
+# gbz : Create a bzip2-compressed archive of a Git repository.
+alias gbz='[ -d .git ] && { git archive --format=tar HEAD | bzip2 -9 - > "../$(basename $(pwd))_$(date --utc +%Y-%m-%d_%H-%M-%S).tar.bz2"; } || { echo "No .git subdirectory detected."; }'
+
 # Create the "gh" ("GitHub") alias.
 alias gh='cd $(archive_dir_parent); cd Archive/Git/GitHubSandbox/tom-weatherhead 1>&/dev/null'
 alias lg='cd $(archive_dir_parent); cd Archive/Git/LocalSandbox 1>&/dev/null'
 alias m='cd $(archive_dir_parent); cd Archive/Git/LocalSandbox/MEAN 1>&/dev/null'
+
+# Git aliases: End
+
+alias fnm='find . -type d -name node_modules'
+# TODO? : Create an alias that auto-removes all node_modules directories? Or just exclude them from the archive that tar creates?
 
 alias pipe_status='echo "${PIPESTATUS[@]}" | tr -s " " + | bc'
 alias arch_bits='uname -m | sed "s/x86_//;s/i[3-6]86/32/"'

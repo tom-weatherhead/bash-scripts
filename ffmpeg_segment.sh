@@ -15,7 +15,14 @@
 
 # Some more examples: ffmpeg.org/ffmpeg-formats.html#Examples-5 – zanetu Mar 28 '15
 
-ffmpeg -i "$1" -acodec copy -f segment -vcodec copy -reset_timestamps 1 -map 0 "$1.Segment%06d.mp4"
+# Note: For .avi source files, change the extension to .mp4 before segmenting. (???)
+
+SOURCE_FILE_PATH="$1"
+SOURCE_FILENAME_WITH_EXTENSION=$(basename "$SOURCE_FILE_PATH")
+SOURCE_EXTENSION="${SOURCE_FILENAME_WITH_EXTENSION##*.}" # If SOURCE_FILENAME_WITH_EXTENSION contains one or more dots, this expression evaluates to the substring after the last dot; otherwise, it evaluates to all of SOURCE_FILENAME_WITH_EXTENSION
+SOURCE_FILENAME_BASE=$(basename -s ."$SOURCE_EXTENSION" "$SOURCE_FILE_PATH")
+
+ffmpeg -i "$SOURCE_FILE_PATH" -acodec copy -f segment -vcodec copy -reset_timestamps 1 -map 0 "$SOURCE_FILENAME_BASE.Segment%06d.$SOURCE_EXTENSION"
 
 # ffmpeg -ss start_time -i "$1" -t length_of_desired_excerpt -acodec copy -f segment -vcodec copy -reset_timestamps 1 -map 0 "$1.Segment%06d.mp4"
 # E.g. : ffmpeg -ss 01:12:35 -i "$1" -t 00:01:00 -acodec copy -f segment -vcodec copy -reset_timestamps 1 -map 0 "$1.Segment%06d.mp4"
