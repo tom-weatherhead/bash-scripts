@@ -261,19 +261,19 @@ get_null_device_name()
     fi
 }
 
+which_test_quiet()
+{
+	which $1 1>/dev/null 2>&1 && echo 1 || echo
+}
+
 safe_eval()
 {
 	CMD=$(echo $1 | awk '{print $1}')
 	
-	# if which $CMD 1>/dev/null 2>&1; then
-	if which $CMD >/dev/null 2>&1; then
-		eval $1
-	# else
-		# echo_error_message
-		# echo_error_message "The command '$CMD' was not found in the path."
-		# echo_error_message "To view the path, execute this command: echo \$PATH"
-		# clean_up 1
-	fi
+	# if which $CMD >/dev/null 2>&1; then
+		# eval $1
+	# fi
+	which_test_quiet $CMD && eval $1
 }
 
 # safe_eval "$1" # For testing.

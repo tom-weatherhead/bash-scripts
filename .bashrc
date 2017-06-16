@@ -880,6 +880,34 @@ complete -F _killall killall killps
 
 # **** Begin additions by TW ****
 
+SUCCESS=0
+FAILURE=1
+
+which_test_quiet()
+{
+	which $1 1>/dev/null 2>&1 && return $SUCCESS || return $FAILURE
+	# which $1 1>/dev/null 2>&1 && return 0 || return 1
+}
+
+safe_eval()
+{
+	CMD=$(echo $1 | awk '{print $1}')
+	
+	# if which $CMD >/dev/null 2>&1; then
+	# if which_test_quiet $CMD ; then
+		# eval $1
+	# fi
+	which_test_quiet $CMD && eval $1
+	# which_test_quiet $CMD && uptime
+	# eval $1
+	# whoami
+}
+
+is_a_non_negative_integer()
+{
+	[[ "$1" =~ ^[0-9]+$ ]] && echo 1 || echo
+}
+
 archive_dir_parent()
 {
 	local A="/mnt/c"
@@ -897,15 +925,52 @@ archive_dir_parent()
 	fi
 }
 
+gtb()
+{
+	# tar cv --exclude=node_modules "$1" | bzip2 -9 - > "$1.tar.bz2"
+	tar cjfv "$1.tar.bz2" --exclude=node_modules "$1"
+}
+
+gtbx()
+{
+	# tar cv --exclude=.git --exclude=node_modules "$1" | bzip2 -9 - > "$1.tar.bz2"
+	tar cjfv "$1.tar.bz2" --exclude=.git --exclude=node_modules "$1"
+}
+
+gtbc()
+{
+	CURRENT_DIR_NAME=$(basename $(pwd))
+	cd ..
+	gtb $CURRENT_DIR_NAME
+	cd $CURRENT_DIR_NAME
+}
+
+gtbxc()
+{
+	CURRENT_DIR_NAME=$(basename $(pwd))
+	cd ..
+	gtbx $CURRENT_DIR_NAME
+	cd $CURRENT_DIR_NAME
+}
+
+run_script_if_it_exists()
+{
+	[ -f "$1" ] && . "$1"
+}
+
 # .bash_aliases : See https://askubuntu.com/questions/17536/how-do-i-create-a-permanent-bash-alias
 
-if [ -f ~/.bash_aliases ]; then
-	. ~/.bash_aliases
-fi
+# if [ -f ~/.bash_aliases ]; then
+	# . ~/.bash_aliases
+# fi
 
-if [ -f ~/.bash_aliases_local ]; then
-	. ~/.bash_aliases_local
-fi
+run_script_if_it_exists ~/.bash_aliases
+
+# if [ -f ~/.bash_aliases_local ]; then
+	# . ~/.bash_aliases_local
+# fi
+
+run_script_if_it_exists ~/.bash_aliases_local
 
 # If bash_script_include.sh is in the PATH:
 
@@ -915,28 +980,44 @@ fi
 
 # If not:
 
-if [ -f $HOME/bin/bash_script_include.sh ]; then
-	. $HOME/bin/bash_script_include.sh
-fi
+# if [ -f $HOME/bin/bash_script_include.sh ]; then
+	# . $HOME/bin/bash_script_include.sh
+# fi
+
+run_script_if_it_exists $HOME/bin/bash_script_include.sh
 
 # [ -z $BASH_VERSION ] || echo "Bash version $BASH_VERSION" # ThAW: Perhaps this is portable enough to be placed in ~/.profile
 
-echo -e "${BCyan}This is Bash version ${BRed}${BASH_VERSION%.*}${BCyan} - Display on ${BRed}$DISPLAY${NC}"
-echo -e "You are: $(whoami)"
-# date --iso-8601=seconds
-date --rfc-2822
-# which uptime 1>/dev/null 2>&1 && uptime
-safe_eval uptime
-echo -e "Host: $(hostname)"
-echo -e "Number of CPU cores: $NCPU"
-echo -e "Platform: $(uname -o)"
-# which determine_distro 1>/dev/null 2>&1 && echo -e "Distribution: $(determine_distro)"
-echo -e "Distribution: $(determine_distro)"
-echo -e "The system has a $(arch_bits)-bit architecture."
+# Initialize nvm (the Node.js version manager) if it is available.
+# See https://github.com/creationix/nvm
+run_script_if_it_exists ~/.nvm/nvm.sh
 
-which free 1>/dev/null 2>&1 && {
-	echo -e "Total memory: $(free -m | grep Mem | awk '{print $2}') MB"
-	echo -e "Free memory: $(free -m | grep Mem | awk '{print $4}') MB"
+echo -e "${BCyan}This is Bash version ${BRed}${BASH_VERSION%.*}${BCyan} - Display on ${BRed}$DISPLAY${NC}"
+which whoami 1>/dev/null 2>&1  && echo -e "You are: $(whoami)"
+# date --iso-3339=seconds
+# date --iso-8601=seconds
+which date 1>/dev/null 2>&1 && date --rfc-3339=seconds
+# [ $(which_test_quiet date) ] && date --rfc-2822
+which date 1>/dev/null 2>&1 date --rfc-2822
+which uptime 1>/dev/null 2>&1 && uptime
+# safe_eval uptime
+[ $(which_test_quiet hostname) ] && echo -e "Host: $(hostname)"
+echo -e "Number of CPU cores: $NCPU"
+[ $(which_test_quiet uname) ] && echo -e "Platform: $(uname -o)"
+# which determine_distro 1>/dev/null 2>&1 && echo -e "Distribution: $(determine_distro)"
+[ $(which_test_quiet determine_distro) ] && echo -e "Distribution: $(determine_distro)"
+[ $(which_test_quiet arch_bits) ] && echo -e "The system has a $(arch_bits)-bit architecture."
+
+# This works:
+# which free 1>/dev/null 2>&1 && {
+# NO: which_test_quiet free && {
+# NO: [ which_test_quiet free ] && {
+# NO: [[ which_test_quiet free ]] && {
+# Yes! :
+[ $(which_test_quiet free) ] && {
+	FREE_M_OUTPUT=$(free -m | grep Mem)
+	echo -e "Total memory: $(echo $FREE_M_OUTPUT | awk '{print $2}') MB"
+	echo -e "Free memory: $(echo $FREE_M_OUTPUT | awk '{print $4}') MB"
 }
 
 echo -e "\nAvailable disk space:\n"
@@ -946,6 +1027,30 @@ echo
 # if [ -x /usr/games/fortune ]; then
 #     /usr/games/fortune -s     # Makes our day a bit more fun.
 # fi
+[ -x /usr/games/fortune ] && /usr/games/fortune -s	# Makes our day a bit more fun.
+
+# See http://nothingworks.donaitken.com/2012/04/returning-booleans-from-bash-functions :
+SUCCESS=0
+
+# alwaysTrue() { return $SUCCESS; }	# Returning a variable works.
+alwaysTrue() { return 0; }	# Returning a literal constant .
+
+if alwaysTrue; then
+	echo "alwaysTrue is true"
+else
+	echo "alwaysTrue is false"
+fi
+
+FAILURE=1
+
+# alwaysFalse() { return $FAILURE; }
+alwaysFalse() { return 1; }
+
+if alwaysFalse; then
+	echo "alwaysFalse is true"
+else
+	echo "alwaysFalse is false"
+fi
 
 # **** End additions by TW ****
 

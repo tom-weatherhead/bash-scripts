@@ -114,6 +114,7 @@ NUM_THREADS=1
 # Using getopts to detect and handle command-line options : See https://stackoverflow.com/questions/16483119/example-of-how-to-use-getopts-in-bash
 
 while getopts "245c:p:" option; do
+	# echo "Option $option detected."
     case $option in
         2)
 			MODE="2"
@@ -143,6 +144,7 @@ while getopts "245c:p:" option; do
 			# TODO: Verify that $OPTARG is a positive integer no greater than the system's number of CPU cores?
 			# NUM_CPU_CORES=$(grep -c processor /proc/cpuinfo)
 			POOLS=$OPTARG
+			# echo "Number of pools is now $POOLS"
 			;;
 		# t) # Number of threads (per pool?) to use during x265 encoding
 			# TODO: Verify that $OPTARG is a positive integer: if [ $OPTARG -gt 0 ] ... fi ?
@@ -159,7 +161,8 @@ shift $((OPTIND -1))
 
 if [ $# != 1 ]; then # Using != instead of -ne
 	usage
-	error_exit "Exactly one file to convert must be specified as a command-line argument."
+	echo "File path argument: $1"
+	error_exit "$# non-option arguments detected. Exactly one file to convert must be specified as a command-line argument."
 fi
 
 # In order to handle spaces in $1, wrap it in quotes: "$1"
