@@ -928,13 +928,15 @@ archive_dir_parent()
 gtb()
 {
 	# tar cv --exclude=node_modules "$1" | bzip2 -9 - > "$1.tar.bz2"
-	tar cjfv "$1.tar.bz2" --exclude=node_modules "$1"
+	# tar cjfv "$1.tar.bz2" --exclude=node_modules "$1"
+	tar cjfv "$1_$(date --utc +%Y-%m-%d_%H-%M-%S).tar.bz2" --exclude=node_modules "$1"
 }
 
 gtbx()
 {
 	# tar cv --exclude=.git --exclude=node_modules "$1" | bzip2 -9 - > "$1.tar.bz2"
-	tar cjfv "$1.tar.bz2" --exclude=.git --exclude=node_modules "$1"
+	# tar cjfv "$1.tar.bz2" --exclude=.git --exclude=node_modules "$1"
+	tar cjfv "$1_$(date --utc +%Y-%m-%d_%H-%M-%S).tar.bz2" --exclude=.git --exclude=node_modules "$1"
 }
 
 gtbc()
@@ -952,6 +954,17 @@ gtbxc()
 	gtbx $CURRENT_DIR_NAME
 	cd $CURRENT_DIR_NAME
 }
+
+# recursive_grep()		# See fstr above.
+# {
+	# grep -R -i --include="$1" "$2" .
+# }
+
+# ts()
+# {
+	# grep -R -i --include="*.txt" "$1" .
+	# recursive_grep "*.txt" "$1"
+# }
 
 run_script_if_it_exists()
 {
