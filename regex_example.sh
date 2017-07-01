@@ -20,7 +20,7 @@
 
 TESTMP4=$(ffmpeg -i C\:\\NoArchiv\\Test.mp4 2>&1)
 
-# echo $TESTMP4
+echo $TESTMP4
 
 # if [[ $(ffmpeg -i C\:\\NoArchiv\\Test.mp4 2>&1 | grep Audio) ]]; then echo "Yay!"; fi
 
@@ -50,6 +50,9 @@ TESTMP4=$(ffmpeg -i C\:\\NoArchiv\\Test.mp4 2>&1)
 
 # if [[ 'a #bcdefg' =~ a' #'b([a-z]{3})fg ]]; then echo "Yay! 3 characters 3: ${BASH_REMATCH[1]}"; else echo "Non. 3 characters 3."; fi
 
-if [[ $TESTMP4 =~ Stream' #'([0-9]':'[0-9])'('([a-z]+)'): 'Video': '([a-zA-Z0-9]+)' ' ]]; then echo "Yay! .mp4 video stream : ${BASH_REMATCH[1]} : ${BASH_REMATCH[2]} : ${BASH_REMATCH[3]}"; else echo "Non. .mp4 video stream"; fi
+if [[ $TESTMP4 =~ Stream' #'([0-9]':'[0-9])'('([a-z]+)'): 'Video': '([a-zA-Z0-9]+)' ' ]]; then echo "Yay! .mp4 video stream : Stream number ${BASH_REMATCH[1]} : Language ${BASH_REMATCH[2]} : Encoding ${BASH_REMATCH[3]}"; else echo "Non. .mp4 video stream"; fi
 
-if [[ $TESTMP4 =~ Stream' #'([0-9]':'[0-9])'('([a-z]+)'): 'Audio': '([a-zA-Z0-9]+)' ' ]]; then echo "Yay! .mp4 audio stream : ${BASH_REMATCH[1]} : ${BASH_REMATCH[2]} : ${BASH_REMATCH[3]}"; else echo "Non. .mp4 audio stream"; fi
+if [[ $TESTMP4 =~ Stream' #'([0-9]':'[0-9])'('([a-z]+)'): 'Audio': '([a-zA-Z0-9]+)' ' ]]; then echo "Yay! .mp4 audio stream : Stream number ${BASH_REMATCH[1]} : Language ${BASH_REMATCH[2]} : Encoding ${BASH_REMATCH[3]}"; else echo "Non. .mp4 audio stream"; fi
+
+# if [[ $(echo $TESTMP4 | grep Audio) ]]; then echo "Yay!"; else echo "Non."; fi
+# if [[ $(echo $TESTMP4 | grep Axdio) ]]; then echo "Yay!"; else echo "Non."; fi

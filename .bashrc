@@ -1043,27 +1043,27 @@ echo
 [ -x /usr/games/fortune ] && /usr/games/fortune -s	# Makes our day a bit more fun.
 
 # See http://nothingworks.donaitken.com/2012/04/returning-booleans-from-bash-functions :
-SUCCESS=0
+# SUCCESS=0
 
 # alwaysTrue() { return $SUCCESS; }	# Returning a variable works.
-alwaysTrue() { return 0; }	# Returning a literal constant .
+# alwaysTrue() { return 0; }	# Returning a literal constant .
 
-if alwaysTrue; then
-	echo "alwaysTrue is true"
-else
-	echo "alwaysTrue is false"
-fi
+# if alwaysTrue; then
+	# echo "alwaysTrue is true"
+# else
+	# echo "alwaysTrue is false"
+# fi
 
-FAILURE=1
+# FAILURE=1
 
 # alwaysFalse() { return $FAILURE; }
-alwaysFalse() { return 1; }
+# alwaysFalse() { return 1; }
 
-if alwaysFalse; then
-	echo "alwaysFalse is true"
-else
-	echo "alwaysFalse is false"
-fi
+# if alwaysFalse; then
+	# echo "alwaysFalse is true"
+# else
+	# echo "alwaysFalse is false"
+# fi
 
 # **** End additions by TW ****
 

@@ -1,5 +1,9 @@
 # bash_script_include.sh
 
+# See http://nothingworks.donaitken.com/2012/04/returning-booleans-from-bash-functions :
+SUCCESS=0
+FAILURE=1
+
 # PROGRAM_NAME=$(basename "$0")
 PROGRAM_NAME=$(basename "$0" 2>/dev/null)
 
@@ -168,18 +172,34 @@ distro_is_cygwin()
 {
 	# if [ "$(uname -o)" == "Cygwin" ]; then
 	if [ "$(determine_distro)" == "Cygwin" ]; then
-		echo 1
+		# echo 1
+		# return 0	# True, because z status code of zero inducates success.
+		return $SUCCESS
 	else
-		echo
+		# echo
+		# return 1	# False, because any non-zero status code indicates failure.
+		return $FAILURE
 	fi
 }
+
+# **** BEGIN test of distro_is_cygwin ****
+
+# if distro_is_cygwin; then
+	# echo "distro_is_cygwin is true"
+# else
+	# echo "distro_is_cygwin is false"
+# fi
+
+# distro_is_cygwin && echo "distro_is_cygwin is true" || echo "distro_is_cygwin is false"
+
+# **** END test of distro_is_cygwin ****
 
 distro_is_linux()
 {
 	if [ "$(uname -o)" == "GNU/Linux" ]; then
-		echo 1
+		return 0	# echo 1
 	else
-		echo
+		return 1	# echo
 	fi
 }
 
@@ -194,36 +214,36 @@ distro_is_ubuntu() # Some form of Ubuntu; possibly WSL.
 {
 	# if [ "$(print_linux_distro_name)" == "Ubuntu" ]; then
 	if [[ "$(determine_distro)" =~ ^Ubuntu ]]; then
-		echo 1
+		return 0	# echo 1
 	else
-		echo
+		return 1	# echo
 	fi
 }
 
 distro_is_wsl() # WSL == Windows 10 Subsystem for Linux; a variant of Ubuntu
 {
 	if [[ "$(determine_distro)" =~ ^Ubuntu[[:space:]] ]]; then
-		echo 1
+		return 0	# echo 1
 	else
-		echo
+		return 1	# echo
 	fi
 }
 
 distro_is_ubuntu_not_wsl()
 {
 	if [ "$(determine_distro)" == 'Ubuntu' ]; then
-		echo 1
+		return 0	# echo 1
 	else
-		echo
+		return 1	# echo
 	fi
 }
 
 distro_is_fedora()
 {
 	if [ "$(determine_distro)" == 'Fedora' ]; then
-		echo 1
+		return 0	# echo 1
 	else
-		echo
+		return 1	# echo
 	fi
 }
 
