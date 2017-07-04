@@ -96,9 +96,10 @@ alias ...='cd ../..'
 alias ....='cd ../../..'
 alias .....='cd ../../../..'
 
-# simple ip
-alias ip='ifconfig | grep "inet " | grep -v 127.0.0.1 | sed -E "s/[^0-9]*([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}).*/\1/"'
-alias localip=ip
+# Simple ip
+# ThAW 2017/07/04: "ip" is now a Linux command, similar to "ifconfig"; e.g. "ip a"
+alias ipa='ifconfig | grep "inet " | grep -v 127.0.0.1 | sed -E "s/[^0-9]*([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}).*/\1/"'
+alias localip=ipa
 
 # external ip
 # alias ip-external='curl http://wtfismyip.com/text'
