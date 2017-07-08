@@ -173,7 +173,9 @@ SOURCE_FILENAME_BASE=$(basename -s ."$SOURCE_EXTENSION" "$SOURCE_FILE_PATH")
 # 1) GenerateFileList.sh
 
 # 1a) Using sed:
-find `pwd` -maxdepth 1 -name "*Segment*" | sed -rn 's/^\/(cygdrive|mnt)\/([a-zA-Z])/\U\2:/;s/\//\\\\/g;s/^(.*)$/file \x27\1\x27/p' > FileList.txt
+# find `pwd` -maxdepth 1 -name "*Segment*" | sed -rn 's/^\/(cygdrive|mnt)\/([a-zA-Z])/\U\2:/;s/\//\\\\/g;s/^(.*)$/file \x27\1\x27/p' > FileList.txt
+
+find "`pwd`" -maxdepth 1 -name "*.mp4" | sed -rn 's/^\/(cygdrive|mnt)\/([a-zA-Z])/\U\2:/;s/\//\\\\/g;s/^(.*)$/file \x27\1\x27/p' > FileList.txt
 
 # 1b) Using awk:
 
