@@ -966,6 +966,11 @@ gtbxc()
 	# recursive_grep "*.txt" "$1"
 # }
 
+ggx()
+{
+	grep -R --exclude-dir=".git" --exclude-dir="node_modules" --exclude-dir="deprecated" "$1" .
+}
+
 run_script_if_it_exists()
 {
 	[ -f "$1" ] && . "$1"
@@ -1036,6 +1041,9 @@ echo -e "Number of CPU cores: $NCPU"
 echo -e "\nAvailable disk space:\n"
 df -h
 echo
+
+# Print the file system type of each mounted volume:
+# df -khT | awk '{ print $2, "\t\t\t", $1 }'
 
 # if [ -x /usr/games/fortune ]; then
 #     /usr/games/fortune -s     # Makes our day a bit more fun.

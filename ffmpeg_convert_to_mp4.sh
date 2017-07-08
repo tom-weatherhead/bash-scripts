@@ -284,11 +284,14 @@ case $MODE in
 				# -map 0:1 -metadata:s:a:0 language=eng -metadata:s:a:0 title=\"Advanced Audio Coding (AAC)\" \
 				# -map 0:2? -metadata:s:s:0 language=eng -metadata:s:s:0 title=\"English\" \
 
+				# 2017/07/07 : Added -vf yadif (a de-interlacing filter) : See https://video.stackexchange.com/questions/17396/how-to-deinterlacing-with-ffmpeg
+
 				echo_and_eval $(printf "ffmpeg -hide_banner \
 					-i %q \
 					-map_metadata 0 \
 					-map_chapters 0 \
 					-metadata title=\"Title\" \
+					-vf yadif \
 					-c:v libx264 -preset $PRESET \
 					-crf $CRF \
 					-c:a $AUDIO_CODEC \
@@ -325,6 +328,7 @@ case $MODE in
 					-map_metadata 0 \
 					-map_chapters 0 \
 					-metadata title=\"Title\" \
+					-vf yadif \
 					-c:v libx265 -preset $PRESET -x265-params \
 					crf=${CRF}:pools=${POOLS}:qcomp=0.8:aq-mode=1:aq_strength=1.0:qg-size=16:psy-rd=0.7:psy-rdoq=5.0:rdoq-level=1:merange=44 \
 					-c:a $AUDIO_CODEC \
