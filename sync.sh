@@ -95,10 +95,13 @@ usage()
 	echo_error_message
 }
 
-if [ "$(distro_is_cygwin)" ]; then
+# if [ "$(distro_is_cygwin)" ]; then
 	# We want to avoid having unwanted entries (e.g. "NULL SID" or "Deny foo") added to the ACL on a Windows receiver; this problem occurs when this script is run within Cygwin, but it apparently does not occur under the Windows Subsystem for Linux.
-	error_exit 'This script might not preserve Access Control Lists when run from Cygwin; aborting.'
-fi
+	# error_exit 'This script might not preserve Access Control Lists when run from Cygwin; aborting.'
+# fi
+
+# We rewrote the "distro_is_cygwin" function to use "return" rather than "echo" :
+distro_is_cygwin && error_exit 'This script might not preserve Access Control Lists when run from Cygwin; aborting.'
 
 echo 'Cygwin not detected; we may proceed.'
 
