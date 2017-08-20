@@ -339,11 +339,10 @@ case ${TERM} in
         # User@Host (with connection type info):
         PS1=${PS1}"\[${SU}\]\u\[${NC}\]@\[${CNX}\]\h\[${NC}\] "
         # PWD (with 'disk space' info):
-        PS1=${PS1}"\[\$(disk_color)\]\W]\[${NC}\] "
+        # PS1=${PS1}"\[\$(disk_color)\]\W]\[${NC}\] "
+        PS1=${PS1}"\[\$(disk_color)\]\W\[\033[32m\]]\[${NC}\]"		# Same as the line above, but with the trailing space removed.
         # Prompt (with 'job' info):
         # PS1=${PS1}"\[\$(job_color)\]>\[${NC}\] "
-        # Set title of current xterm:
-        PS1=${PS1}"\[\e]0;[\u@\h] \w\a\]"
 
 		# See https://coderwall.com/p/fasnya/add-git-branch-name-to-bash-prompt :
 
@@ -361,17 +360,31 @@ case ${TERM} in
 		if [ -f ~/git-prompt.sh ]; then
 			source ~/git-prompt.sh
 			GIT_PS1_SHOWDIRTYSTATE=1
-			GIT_FOO='$(__git_ps1 "(%s)")'
+			GIT_BRANCH_INFO='$(__git_ps1 " (%s)")'
 			# PS1='\w$(__git_ps1 " (%s)")\$ '						# Yes! Because: No colours.
 			# PS1=${PS1}${Purple}'\w$(__git_ps1 " (%s)") \$ '		# No.
 			# PS1=${PS1}'\w$(__git_ps1 " (%s)") \$ '
 			# PS1=${PS1}"${Purple}${GIT_FOO}${Cyan}\$ ${White}"
 			# PS1=${PS1}"\e[0;35m${GIT_FOO}"
-			PS1=${PS1}"\[\033[35m\]${GIT_FOO} \[\033[36m\]\$ \[\033[37m\]"		# Yes.
 		else
 			# export PS1="\u@\h \[\033[32m\]\w\[\033[33m\]\$(parse_git_branch)\[\033[00m\] $ "
-			PS1=${PS1}"${Purple}\$(parse_git_branch) ${Cyan}\$ ${White}"
+
+			# PS1=${PS1}"${Purple}\$(parse_git_branch) ${Cyan}\$ ${White}"
+			# PS1=${PS1}"\[\033[35m\]$(parse_git_branch) \[\033[36m\]\$ \[\033[37m\]"
+
+			GIT_BRANCH_INFO=" $(parse_git_branch)"
 		fi
+
+		# PS1=${PS1}"${Purple}${GIT_BRANCH_INFO} ${Cyan}\$ ${White}"
+		PS1=${PS1}"\[\033[35m\]${GIT_BRANCH_INFO} \[\033[36m\]\$ \[\033[37m\]"
+
+		# \[\033[32m\] is Green.
+		# \[\033[33m\] is Yellow.
+		# \[\033[34m\] is Blue.
+		# PS1=${PS1}"\[\033[32m\]Green "
+
+        # Set title of current xterm:
+        PS1=${PS1}"\[\e]0;[\u@\h] \w\a\]"
         ;;
     *)
         PS1="(\A \u@\h \W) > " # --> PS1="(\A \u@\h \w) > "
