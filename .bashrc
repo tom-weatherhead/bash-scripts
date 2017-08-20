@@ -310,27 +310,37 @@ function job_color()
 # See xdamman.profile.txt for ideas about how to integrate the Git branch name and dirty status into the prompt.
 
 PROMPT_COMMAND="history -a"
-case ${TERM} in
-#	*term | rxvt | linux)
-	*term | xterm-256color | rxvt)
+# case ${TERM} in
+##	*term | rxvt | linux)
+	# *term | xterm-256color | rxvt)
 		# ThAW 2017/04/04 : Can we add "$(arch_bits)-bit " into the prompt somewhere? (So we don't confuse 32-bit and 64-bit Cygwin Terminals)
         # PS1="\[\$(load_color)\][\A\[${NC}\] "
         # Time of day (with load info):
-        PS1="\[\$(load_color)\][\A\[${NC}\] "
+        # PS1="\[\$(load_color)\][\A\[${NC}\] "
         # User@Host (with connection type info):
-        PS1=${PS1}"\[${SU}\]\u\[${NC}\]@\[${CNX}\]\h\[${NC}\] "
+        # PS1=${PS1}"\[${SU}\]\u\[${NC}\]@\[${CNX}\]\h\[${NC}\] "
         # PWD (with 'disk space' info):
-        PS1=${PS1}"\[\$(disk_color)\]\W]\[${NC}\] "
+        # PS1=${PS1}"\[\$(disk_color)\]\W]\[${NC}\] "
         # Prompt (with 'job' info):
-        PS1=${PS1}"\[\$(job_color)\]>\[${NC}\] "
+        # PS1=${PS1}"\[\$(job_color)\]>\[${NC}\] "
         # Set title of current xterm:
-        PS1=${PS1}"\[\e]0;[\u@\h] \w\a\]"
-        ;;
-    *)
-        PS1="(\A \u@\h \W) > " # --> PS1="(\A \u@\h \w) > "
+        # PS1=${PS1}"\[\e]0;[\u@\h] \w\a\]"
+        # ;;
+    # *)
+        # PS1="(\A \u@\h \W) > " # --> PS1="(\A \u@\h \w) > "
                                # --> Shows full pathname of current dir.
-        ;;
-esac
+        # ;;
+# esac
+
+# **** Begin Insert from https://coderwall.com/p/fasnya/add-git-branch-name-to-bash-prompt ****
+
+parse_git_branch() {
+	git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/ (\1)/'
+}
+
+export PS1="\u@\h \[\033[32m\]\w\[\033[33m\]\$(parse_git_branch)\[\033[00m\] $ "
+
+# **** End Insert ****
 
 export TIMEFORMAT=$'\nreal %3R\tuser %3U\tsys %3S\tpcpu %P\n'
 export HISTIGNORE="&:bg:fg:ll:h"
@@ -1079,3 +1089,4 @@ echo
 # mode:shell-script
 # sh-shell:bash
 # End:
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion

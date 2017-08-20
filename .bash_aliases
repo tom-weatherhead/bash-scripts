@@ -142,7 +142,8 @@ alias gbz='[ -d .git ] && { git archive --format=tar HEAD | bzip2 -9 - > "../$(b
 # Create the "gh" ("GitHub") alias.
 alias gh='cd $(archive_dir_parent); cd Archive/Git/GitHubSandbox/tom-weatherhead 1>&/dev/null'
 alias lg='cd $(archive_dir_parent); cd Archive/Git/LocalSandbox 1>&/dev/null'
-alias m='cd $(archive_dir_parent); cd Archive/Git/LocalSandbox/MEAN 1>&/dev/null'
+alias n='cd $(archive_dir_parent); cd Archive/Git/LocalSandbox/Node.js 1>&/dev/null'
+alias m='cd $(archive_dir_parent); cd Archive/Git/LocalSandbox/Node.js/Express.js/MEAN 1>&/dev/null'
 
 # Git aliases: End
 
@@ -156,5 +157,11 @@ alias shhi="history | awk '{a[\$4]++ } END{for(i in a){print a[i], i}}' | sort -
 
 # sed:
 # - s : Regular-expression-based substitution : s/regexp/replacement/
+
+# Django aliases: Begin
+
+alias djrun='./manage.py runserver 0:8000'
+
+# Django aliases: End
 
 # End of .bash_aliases
