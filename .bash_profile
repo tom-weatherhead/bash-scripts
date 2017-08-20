@@ -53,3 +53,7 @@ echo '\n$GREEN[\w] \n$DARKGRAY('\$PCT'\t$DARKGRAY)-\
 ('\$PCT'\u$DARKGRAY)-('\$PCT'\!$DARKGRAY)$YELLOW-> $NC'\`"
 
 # The trick is to use strong quoting for parts of old PS1 variable.
+
+if [ -f ~/.bashrc ]; then
+	source ~/.bashrc
+fi
