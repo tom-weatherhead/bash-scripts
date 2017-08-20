@@ -226,7 +226,7 @@ ALERT=${BWhite}${On_Red} # Bold White on red background
 
 function _exit()              # Function to run upon exit of shell.
 {
-    echo -e "${Blue}God loves you!${NC}"
+    echo -e "${Cyan}God loves you!${NC}"
 }
 
 trap _exit EXIT
@@ -374,7 +374,10 @@ case ${TERM} in
         # PWD (with 'disk space' info):
         # PS1=${PS1}"\[\$(disk_color)\]\W]\[${NC}\] "
         # PS1=${PS1}"\[\$(disk_color)\]\W\[\033[32m\]]\[${NC}\]"			# Same as the line above, but with the trailing space removed.
+
+		# \w yields the full directory path; \W yields just the name of the topmost directory (the last directory name in the full directory path).
         PS1=${PS1}"\[\$(disk_color)\]\W\[\$(load_color)\]]\[${NC}\]"		# Ensure that the closing ] is coloured with $(load_color) , just like the opening [ .
+        # PS1=${PS1}"\[\$(disk_color)\]\w\[\$(load_color)\]]\[${NC}\]"		# Ensure that the closing ] is coloured with $(load_color) , just like the opening [ .
 
         # Prompt (with 'job' info):
         # PS1=${PS1}"\[\$(job_color)\]>\[${NC}\] "
