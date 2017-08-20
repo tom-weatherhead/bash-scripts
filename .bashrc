@@ -63,6 +63,35 @@ fi
 
 # **** End - From Harmony's .bashrc ****
 
+# ThAW 2017/08/20 : Some setup of the Bash environment needs to be done regardless of whether we're running interactively or not,
+# so do it now, before the '[ -z "$PS1" ] && return'
+
+# Do not echo anything before the '[ -z "$PS1" ] && return', because a .bashrc that echoes anything will break scp.
+
+HOME_BIN_DIR="$HOME/bin"
+
+function use_home_bin()
+{
+	if ! [ -e "$HOME_BIN_DIR" ]; then
+		# echo "$HOME_BIN_DIR does not exist."
+		return
+	elif ! [ -d "$HOME_BIN_DIR" ]; then
+		# echo "$HOME_BIN_DIR is not a directory."
+		return
+	elif ! [ -r "$HOME_BIN_DIR" ]; then
+		# echo "$HOME_BIN_DIR is not readable."
+		return
+	elif echo $PATH | grep $HOME_BIN_DIR; then
+		# echo "$HOME_BIN_DIR is already in the path."
+		return
+	else
+		# echo "Adding $HOME_BIN_DIR to the path."
+		PATH="$HOME_BIN_DIR:$PATH"
+		# export PATH
+	fi
+}
+
+use_home_bin
 
 # --> Comments added by HOWTO author.
 
@@ -312,6 +341,9 @@ function job_color()
         echo -en ${BRed}
     elif [ $(jobs -r | wc -l) -gt "0" ] ; then
         echo -en ${BCyan}
+	else
+        # echo -en ${BWhite}
+        echo -en ${BGreen}
     fi
 }
 
@@ -338,9 +370,12 @@ case ${TERM} in
         PS1="\[\$(load_color)\][\A\[${NC}\] "
         # User@Host (with connection type info):
         PS1=${PS1}"\[${SU}\]\u\[${NC}\]@\[${CNX}\]\h\[${NC}\] "
+
         # PWD (with 'disk space' info):
         # PS1=${PS1}"\[\$(disk_color)\]\W]\[${NC}\] "
-        PS1=${PS1}"\[\$(disk_color)\]\W\[\033[32m\]]\[${NC}\]"		# Same as the line above, but with the trailing space removed.
+        # PS1=${PS1}"\[\$(disk_color)\]\W\[\033[32m\]]\[${NC}\]"			# Same as the line above, but with the trailing space removed.
+        PS1=${PS1}"\[\$(disk_color)\]\W\[\$(load_color)\]]\[${NC}\]"		# Ensure that the closing ] is coloured with $(load_color) , just like the opening [ .
+
         # Prompt (with 'job' info):
         # PS1=${PS1}"\[\$(job_color)\]>\[${NC}\] "
 
@@ -376,12 +411,16 @@ case ${TERM} in
 		fi
 
 		# PS1=${PS1}"${Purple}${GIT_BRANCH_INFO} ${Cyan}\$ ${White}"
-		PS1=${PS1}"\[\033[35m\]${GIT_BRANCH_INFO} \[\033[36m\]\$ \[\033[37m\]"
+		# PS1=${PS1}"\[\033[35m\]${GIT_BRANCH_INFO} \[\033[36m\]\$ \[\033[37m\]"
+		PS1=${PS1}"\[\033[35m\]${GIT_BRANCH_INFO} "
 
 		# \[\033[32m\] is Green.
 		# \[\033[33m\] is Yellow.
 		# \[\033[34m\] is Blue.
 		# PS1=${PS1}"\[\033[32m\]Green "
+
+        # Prompt (with 'job' info):
+        PS1=${PS1}"\[\$(job_color)\]>\[${NC}\] "
 
         # Set title of current xterm:
         PS1=${PS1}"\[\e]0;[\u@\h] \w\a\]"
