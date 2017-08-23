@@ -81,7 +81,8 @@ function use_home_bin()
 	elif ! [ -r "$HOME_BIN_DIR" ]; then
 		# echo "$HOME_BIN_DIR is not readable."
 		return
-	elif echo $PATH | grep $HOME_BIN_DIR; then
+	# elif echo $PATH | grep $HOME_BIN_DIR; then
+	elif [[ $PATH =~ $HOME_BIN_DIR ]]; then
 		# echo "$HOME_BIN_DIR is already in the path."
 		return
 	else
