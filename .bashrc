@@ -1,70 +1,10 @@
-# From http://tldp.org/LDP/abs/html/sample-bashrc.html
-
-# The ~/.bashrc file determines the behavior of interactive shells. A good look at this file can lead to a better understanding of Bash.
-
-# Emmanuel Rouat contributed the following very elaborate .bashrc file, written for a Linux system. He welcomes reader feedback on it.
-
-# Study the file carefully, and feel free to reuse code snippets and functions from it in your own .bashrc file or even in your scripts.
-
-# Example M-1. Sample .bashrc file
-
-# =============================================================== #
-#
-# PERSONAL $HOME/.bashrc FILE for bash-3.0 (or later)
-# By Emmanuel Rouat [no-email]
-#
-# Last modified: Tue Nov 20 22:04:47 CET 2012
-
-#  This file is normally read by interactive shells only.
-#  Here is the place to define your functions and
-#  other interactive features like your prompt.
-#
-#  The majority of the code here assumes you are on a GNU
-#  system (most likely a Linux box) and is often based on code
-#  found on the Internet.
-#
-#  See for instance:
-#  http://tldp.org/LDP/abs/html/index.html
-#  http://www.caliban.org/bash
-#  http://www.shelldorado.com/scripts/categories.html
-#  http://www.dotfiles.org
-#
-#  The choice of colors was done for a shell with a dark background
-#  (white on black), and this is usually also suited for pure text-mode
-#  consoles (no X server available). If you use a white background,
-#  you'll have to do some other choices for readability.
-#
-#  This bashrc file is a bit overcrowded.
-#  Remember, it is just just an example.
-#  Tailor it to your needs.
-#
-# =============================================================== #
-
-#echo "Inside .bashrc"
+# See http://tldp.org/LDP/abs/html/sample-bashrc.html
 
 if [[ ! $- == *i* ]]; then
     . /etc/profile
 fi
 
-# **** Begin - From Harmony's .bashrc ****
-
-# If not running interactively, don't do anything
-
-#case $- in
-#    *i*) ;;
-#	*) return;;
-#esac
-
-#if ! [ $(echo $- | grep i) ]; then echo "Not interactive."; fi
-
-#if ! [ $(echo $- | grep i) ]; then echo "Not interactive."; fi
-
-#[ $(echo $- | grep i) ] || return # ThAW 2017/02/12. TODO: Use "$-" instead of $- ?
-
-# **** End - From Harmony's .bashrc ****
-
-# ThAW 2017/08/20 : Some setup of the Bash environment needs to be done regardless of whether we're running interactively or not,
-# so do it now, before the '[ -z "$PS1" ] && return'
+# ThAW 2017/08/20 : Some setup of the Bash environment needs to be done regardless of whether we're running interactively or not, so do it now, before the '[ -z "$PS1" ] && return'
 
 # Do not echo anything before the '[ -z "$PS1" ] && return', because a .bashrc that echoes anything will break scp.
 
@@ -94,32 +34,15 @@ function use_home_bin()
 
 use_home_bin
 
-# --> Comments added by HOWTO author.
-
 # If not running interactively, don't do anything
 [ -z "$PS1" ] && return
 
-#-------------------------------------------------------------
-# Source global definitions (if any)
-#-------------------------------------------------------------
-
-#if [ -f ~/.bash_profile ]; then
-#   source ~/.bash_profile          # --> Read $HOME/.profile, if present.
-    # export PATH
-#fi
-
-# if [ -f $HOME/.profile ]; then
-# 	. $HOME/.profile			# --> Read $HOME/.profile, if present.
-# 	# export PATH
-# fi
-
 if [ -f /etc/bashrc ]; then
-	. /etc/bashrc				# --> Read /etc/bashrc, if present.
+	. /etc/bashrc
 fi
 
 #--------------------------------------------------------------
 #  Automatic setting of $DISPLAY (if not set already).
-#  This works for me - your mileage may vary. . . .
 #  The problem is that different types of terminals give
 #+ different answers to 'who am i' (rxvt in particular can be
 #+ troublesome) - however this code seems to work in a majority
@@ -128,35 +51,31 @@ fi
 
 function get_xserver ()
 {
-    case $TERM in
-        xterm)
-            XSERVER=$(who am i | awk '{print $NF}' | tr -d ')''(' )
-            # Ane-Pieter Wieringa suggests the following alternative:
-            #  I_AM=$(who am i)
-            #  SERVER=${I_AM#*(}
-            #  SERVER=${SERVER%*)}
-            XSERVER=${XSERVER%%:*}
-            ;;
+	case $TERM in
+		xterm)
+			XSERVER=$(who am i | awk '{print $NF}' | tr -d ')''(' )
+			# Ane-Pieter Wieringa suggests the following alternative:
+			#  I_AM=$(who am i)
+			#  SERVER=${I_AM#*(}
+			#  SERVER=${SERVER%*)}
+			XSERVER=${XSERVER%%:*}
+			;;
 		aterm | rxvt)
-            # Find some code that works here. ...
-            ;;
-    esac
+			# Find some code that works here. ...
+			;;
+	esac
 }
 
 if [ -z ${DISPLAY:=""} ]; then
     get_xserver
     if [[ -z ${XSERVER} || ${XSERVER} == $(hostname) || ${XSERVER} == "unix" ]]; then
-		DISPLAY=":0.0"          # Display on local host.
+		DISPLAY=":0.0"				# Display on local host.
     else
-		DISPLAY=${XSERVER}:0.0     # Display on remote host.
+		DISPLAY=${XSERVER}:0.0		# Display on remote host.
     fi
 fi
 
 export DISPLAY
-
-#-------------------------------------------------------------
-# Some settings
-#-------------------------------------------------------------
 
 #set -o nounset     # These  two options are useful for debugging.
 #set -o xtrace
@@ -181,10 +100,6 @@ shopt -s extglob       # Necessary for programmable completion.
 # Disable options:
 shopt -u mailwarn
 unset MAILCHECK        # Don't want my shell to warn me of incoming mail.
-
-#-------------------------------------------------------------
-# Greeting, motd etc. ...
-#-------------------------------------------------------------
 
 # Color definitions (taken from Color Bash Prompt HowTo).
 # Some colors might look different of some terminals.
@@ -356,10 +271,7 @@ if [ -f ~/git-completion.bash ]; then
 	source ~/git-completion.bash
 fi
 
-# Adds some text in the terminal frame (if applicable).
-
 # Now we construct the prompt.
-# See xdamman.profile.txt for ideas about how to integrate the Git branch name and dirty status into the prompt.
 
 PROMPT_COMMAND="history -a"
 case ${TERM} in
@@ -489,44 +401,6 @@ function xtitle()
     esac
 }
 
-# .. and functions
-# function man()
-# {
-    # for i ; do
-        # xtitle The $(basename $1|tr -d .[:digit:]) manual
-        # command man -a "$i"
-    # done
-# }
-
-# function mv()
-# {
-	# On Windows Subsystem for Linux (Bash on Windows), the kernel will hang if "mv" is given a source path that ends with a /
-	# See https://github.com/Microsoft/BashOnWindows/issues/765
-
-	# TODO: Properly handle options passed to mv; e.g. -i
-	# SRC="$1"
-	# DST="$2"
-	# echo "mv: SRC is initially $SRC"
-	# echo "mv: DST is initially $DST"
-	
-	# [[ $SRC =~ (.*)/$ ]] && {
-		# SRC=${BASH_REMATCH[1]}
-		# echo "mv() : Changed SRC to $SRC"
-	# }
-	
-	# echo $(printf "About to: mv %q %q" "$SRC" "$DST")
-	# command mv "$@"
-	# XXX=$(printf "%q" "$SRC")
-	# YYY=$(printf "%q" "$DST")
-	# command mv "$XXX" "$YYY"
-# }
-
-# function mv2()
-# {
-	# echo "mv2() : command mv $@"
-	# command mv "$@"
-# }
-
 #-------------------------------------------------------------
 # Make the following commands run in background automatically:
 #-------------------------------------------------------------
@@ -545,7 +419,7 @@ function xtitle()
 # function xpdf() { command xpdf "$@" & }
 
 #-------------------------------------------------------------
-# File & strings related functions:
+# File- and string-related functions
 #-------------------------------------------------------------
 
 # Find a file with a pattern in name:
@@ -688,8 +562,8 @@ function ii()   # Get current host related info.
     echo -e "\n${BRed}Machine stats :$NC " ; uptime
     echo -e "\n${BRed}Memory stats :$NC " ; free
     echo -e "\n${BRed}Diskspace :$NC " ; mydf / $HOME
-    echo -e "\n${BRed}Local IP Address :$NC" ; my_ip
-    echo -e "\n${BRed}Open connections :$NC "; netstat -pan --inet;
+    # echo -e "\n${BRed}Local IP Address :$NC" ; my_ip
+    # echo -e "\n${BRed}Open connections :$NC "; netstat -pan --inet;
     echo
 }
 
@@ -723,7 +597,6 @@ function corename()   # Get name of app that created a corefile.
 }
 
 #=========================================================================
-#
 #  PROGRAMMABLE COMPLETION SECTION
 #  Most are taken from the bash 2.05 documentation and from Ian McDonald's
 # 'Bash completion' package (http://www.caliban.org/bash/#completion)
@@ -808,9 +681,9 @@ COMP_WORDBREAKS=${COMP_WORDBREAKS/=/}
 
 _get_longopts()
 {
-  #$1 --help | sed  -e '/--/!d' -e 's/.*--\([^[:space:].,]*\).*/--\1/'| \
-  #grep ^"$2" |sort -u ;
-    $1 --help | grep -o -e "--[^[:space:].,]*" | grep -e "$2" |sort -u
+	#$1 --help | sed  -e '/--/!d' -e 's/.*--\([^[:space:].,]*\).*/--\1/'| \
+	#grep ^"$2" |sort -u ;
+	$1 --help | grep -o -e "--[^[:space:].,]*" | grep -e "$2" |sort -u
 }
 
 _longopts()
@@ -829,6 +702,7 @@ _longopts()
     esac
     COMPREPLY=( $(_get_longopts ${1} ${cur} ) )
 }
+
 complete  -o default -F _longopts configure bash
 complete  -o default -F _longopts wget id info a2ps ls recode
 
@@ -988,27 +862,30 @@ FAILURE=1
 
 which_test_quiet()
 {
-	which $1 1>/dev/null 2>&1 && return $SUCCESS || return $FAILURE
-	# which $1 1>/dev/null 2>&1 && return 0 || return 1
+	which $1 1>/dev/null 2>&1
+	# which $1
+	return $?
 }
 
 safe_eval()
 {
-	CMD=$(echo $1 | awk '{print $1}')
-	
-	# if which $CMD >/dev/null 2>&1; then
-	# if which_test_quiet $CMD ; then
-		# eval $1
-	# fi
-	which_test_quiet $CMD && eval $1
-	# which_test_quiet $CMD && uptime
-	# eval $1
-	# whoami
+	# echo "safe_eval: \$1 is '$1'"
+	# echo "safe_eval: \$2 is '$2'"
+
+	if [ -z "$2" ]; then
+		CMD=$(echo $1 | awk '{print $1}')
+	else
+		CMD="$2"
+	fi
+
+	# which_test_quiet "$CMD" && echo "which_test_quiet '$CMD' : Yes" || echo "which_test_quiet '$CMD' : No"
+	which_test_quiet "$CMD" && eval "$1"
 }
 
 is_a_non_negative_integer()
 {
-	[[ "$1" =~ ^[0-9]+$ ]] && echo 1 || echo
+	# [[ "$1" =~ ^[0-9]+$ ]] && echo 1 || echo
+	[[ "$1" =~ ^[0-9]+$ ]] && return $SUCCESS || return $FAILURE
 }
 
 archive_dir_parent()
@@ -1074,6 +951,11 @@ ggx()
 	grep -R --exclude-dir=".git" --exclude-dir="node_modules" --exclude-dir="deprecated" "$1" .
 }
 
+ggxi()
+{
+	grep -R -i --exclude-dir=".git" --exclude-dir="node_modules" --exclude-dir="deprecated" "$1" .
+}
+
 run_script_if_it_exists()
 {
 	[ -f "$1" ] && . "$1"
@@ -1081,62 +963,68 @@ run_script_if_it_exists()
 
 # .bash_aliases : See https://askubuntu.com/questions/17536/how-do-i-create-a-permanent-bash-alias
 
-# if [ -f ~/.bash_aliases ]; then
-	# . ~/.bash_aliases
-# fi
+# run_script_if_it_exists ~/.bash_aliases
+# run_script_if_it_exists ~/.bash_aliases_local
+run_script_if_it_exists "$HOME/.bash_aliases"
+run_script_if_it_exists "$HOME/.bash_aliases_local"
 
-run_script_if_it_exists ~/.bash_aliases
-
-# if [ -f ~/.bash_aliases_local ]; then
-	# . ~/.bash_aliases_local
-# fi
-
-run_script_if_it_exists ~/.bash_aliases_local
-
-# If bash_script_include.sh is in the PATH:
-
-# if [ -f bash_script_include.sh ]; then
-#	. bash_script_include.sh
-# fi
-
-# If not:
-
-# if [ -f $HOME/bin/bash_script_include.sh ]; then
-	# . $HOME/bin/bash_script_include.sh
-# fi
-
-run_script_if_it_exists $HOME/bin/bash_script_include.sh
-
-# [ -z $BASH_VERSION ] || echo "Bash version $BASH_VERSION" # ThAW: Perhaps this is portable enough to be placed in ~/.profile
+# run_script_if_it_exists $HOME/bin/bash_script_include.sh
+# run_script_if_it_exists ~/bin/bash_script_include.sh
 
 # Initialize nvm (the Node.js version manager) if it is available.
 # See https://github.com/creationix/nvm
 run_script_if_it_exists ~/.nvm/nvm.sh
+# [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+run_script_if_it_exists "$NVM_DIR/bash_completion"
 
 echo -e "${BCyan}This is Bash version ${BRed}${BASH_VERSION%.*}${BCyan} - Display on ${BRed}$DISPLAY${NC}"
-which whoami 1>/dev/null 2>&1  && echo -e "You are: $(whoami)"
+# which whoami 1>/dev/null 2>&1 && echo -e "You are: $(whoami)"
+safe_eval 'echo -e "You are: $(whoami)"' whoami
+
 # date --iso-3339=seconds
 # date --iso-8601=seconds
-which date 1>/dev/null 2>&1 && date --rfc-3339=seconds
-# [ $(which_test_quiet date) ] && date --rfc-2822
-which date 1>/dev/null 2>&1 date --rfc-2822
-which uptime 1>/dev/null 2>&1 && uptime
-# safe_eval uptime
-[ $(which_test_quiet hostname) ] && echo -e "Host: $(hostname)"
-echo -e "Number of CPU cores: $NCPU"
-[ $(which_test_quiet uname) ] && echo -e "Platform: $(uname -o)"
-# which determine_distro 1>/dev/null 2>&1 && echo -e "Distribution: $(determine_distro)"
-[ $(which_test_quiet determine_distro) ] && echo -e "Distribution: $(determine_distro)"
-[ $(which_test_quiet arch_bits) ] && echo -e "The system has a $(arch_bits)-bit architecture."
+# date --rfc-2822
+safe_eval "date --rfc-3339=seconds"
 
-# This works:
-# which free 1>/dev/null 2>&1 && {
-# NO: which_test_quiet free && {
-# NO: [ which_test_quiet free ] && {
-# NO: [[ which_test_quiet free ]] && {
-# Yes! :
-[ $(which_test_quiet free) ] && {
-	FREE_M_OUTPUT=$(free -m | grep Mem)
+safe_eval uptime
+
+safe_eval 'echo -e "Host: $(hostname)"' hostname
+
+echo -e "Number of CPU cores: $NCPU"
+
+safe_eval 'echo -e "Platform: $(uname -o)"' uname
+
+# **** BEGIN : Kludge copy and paste from bash_script_include.sh ****
+
+determine_distro()
+{
+	# Find the Distributor ID:
+	if [ "$(uname -o)" == "Cygwin" ]; then
+		echo 'Cygwin'
+	elif grep -q Microsoft /proc/version; then # WSL; See https://stackoverflow.com/questions/38859145/detect-ubuntu-on-windows-vs-native-ubuntu-from-bash-script
+		echo 'Ubuntu on Windows' # This string delibrately starts with Ubuntu, so that both WSL and genuine Ubuntu return results that match the regex /^Ubuntu/
+	elif which lsb_release 1>/dev/null 2>&1; then
+		lsb_release -is
+	elif [ -e /etc/os-release ]; then
+		cat /etc/os-release | perl -nle 'print $1 if /^NAME="?(.*?)"?$/'
+	else
+		echo 'Unknown distribution'
+	fi
+}
+
+# **** END : Kludge copy and paste from bash_script_include.sh ****
+
+fooblah()
+{
+	which $1 1>/dev/null 2>&1 && eval $2
+}
+
+fooblah determine_distro 'echo -e "Distribution: $(determine_distro)"'
+
+fooblah arch_bits 'echo -e "The system has a $(arch_bits)-bit architecture."'
+
+FREE_M_OUTPUT=$(free -m 2>&1 | grep Mem)
+[ -z "$FREE_M_OUTPUT" ] || {
 	echo -e "Total memory: $(echo $FREE_M_OUTPUT | awk '{print $2}') MB"
 	echo -e "Free memory: $(echo $FREE_M_OUTPUT | awk '{print $4}') MB"
 }
@@ -1144,42 +1032,3 @@ echo -e "Number of CPU cores: $NCPU"
 echo -e "\nAvailable disk space:\n"
 df -h
 echo
-
-# Print the file system type of each mounted volume:
-# df -khT | awk '{ print $2, "\t\t\t", $1 }'
-
-# if [ -x /usr/games/fortune ]; then
-#     /usr/games/fortune -s     # Makes our day a bit more fun.
-# fi
-[ -x /usr/games/fortune ] && /usr/games/fortune -s	# Makes our day a bit more fun.
-
-# See http://nothingworks.donaitken.com/2012/04/returning-booleans-from-bash-functions :
-# SUCCESS=0
-
-# alwaysTrue() { return $SUCCESS; }	# Returning a variable works.
-# alwaysTrue() { return 0; }	# Returning a literal constant .
-
-# if alwaysTrue; then
-	# echo "alwaysTrue is true"
-# else
-	# echo "alwaysTrue is false"
-# fi
-
-# FAILURE=1
-
-# alwaysFalse() { return $FAILURE; }
-# alwaysFalse() { return 1; }
-
-# if alwaysFalse; then
-	# echo "alwaysFalse is true"
-# else
-	# echo "alwaysFalse is false"
-# fi
-
-# **** End additions by TW ****
-
-# Local Variables:
-# mode:shell-script
-# sh-shell:bash
-# End:
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
