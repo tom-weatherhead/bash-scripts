@@ -144,6 +144,7 @@ alias gh='cd $(archive_dir_parent); cd Archive/Git/GitHubSandbox/tom-weatherhead
 alias lg='cd $(archive_dir_parent); cd Archive/Git/LocalSandbox 1>&/dev/null'
 alias n='cd $(archive_dir_parent); cd Archive/Git/LocalSandbox/Node.js 1>&/dev/null'
 alias m='cd $(archive_dir_parent); cd Archive/Git/LocalSandbox/Node.js/Express.js/MEAN 1>&/dev/null'
+alias mern='cd $(archive_dir_parent); cd Archive/Git/LocalSandbox/Node.js/Express.js/MERN 1>&/dev/null'
 
 # Git aliases: End
 

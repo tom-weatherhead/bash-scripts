@@ -959,6 +959,9 @@ ggxi()
 run_script_if_it_exists()
 {
 	[ -f "$1" ] && . "$1"
+
+	# ThAW 2017/08/30 : Is -s better than -f ?
+	# [ -s "$1" ] && . "$1"
 }
 
 # .bash_aliases : See https://askubuntu.com/questions/17536/how-do-i-create-a-permanent-bash-alias
@@ -967,15 +970,20 @@ run_script_if_it_exists()
 # run_script_if_it_exists ~/.bash_aliases_local
 run_script_if_it_exists "$HOME/.bash_aliases"
 run_script_if_it_exists "$HOME/.bash_aliases_local"
-
-# run_script_if_it_exists $HOME/bin/bash_script_include.sh
-# run_script_if_it_exists ~/bin/bash_script_include.sh
+run_script_if_it_exists "$HOME/bin/determine_distro_core.sh"
 
 # Initialize nvm (the Node.js version manager) if it is available.
 # See https://github.com/creationix/nvm
 run_script_if_it_exists ~/.nvm/nvm.sh
 # [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 run_script_if_it_exists "$NVM_DIR/bash_completion"
+
+# Initialize rvm (the Ruby Version Manager) if it is available.
+# See https://rvm.io/rvm/install
+# export PATH="$PATH:$HOME/.rvm/bin"
+# [[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm" # Load RVM into a shell session *as a function*
+[ -d "$HOME/.rvm/bin" ] && export PATH="$PATH:$HOME/.rvm/bin"
+run_script_if_it_exists "$HOME/.rvm/scripts/rvm"
 
 echo -e "${BCyan}This is Bash version ${BRed}${BASH_VERSION%.*}${BCyan} - Display on ${BRed}$DISPLAY${NC}"
 # which whoami 1>/dev/null 2>&1 && echo -e "You are: $(whoami)"
@@ -993,26 +1001,6 @@ safe_eval 'echo -e "Host: $(hostname)"' hostname
 echo -e "Number of CPU cores: $NCPU"
 
 safe_eval 'echo -e "Platform: $(uname -o)"' uname
-
-# **** BEGIN : Kludge copy and paste from bash_script_include.sh ****
-
-determine_distro()
-{
-	# Find the Distributor ID:
-	if [ "$(uname -o)" == "Cygwin" ]; then
-		echo 'Cygwin'
-	elif grep -q Microsoft /proc/version; then # WSL; See https://stackoverflow.com/questions/38859145/detect-ubuntu-on-windows-vs-native-ubuntu-from-bash-script
-		echo 'Ubuntu on Windows' # This string delibrately starts with Ubuntu, so that both WSL and genuine Ubuntu return results that match the regex /^Ubuntu/
-	elif which lsb_release 1>/dev/null 2>&1; then
-		lsb_release -is
-	elif [ -e /etc/os-release ]; then
-		cat /etc/os-release | perl -nle 'print $1 if /^NAME="?(.*?)"?$/'
-	else
-		echo 'Unknown distribution'
-	fi
-}
-
-# **** END : Kludge copy and paste from bash_script_include.sh ****
 
 fooblah()
 {
