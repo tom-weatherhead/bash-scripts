@@ -982,8 +982,14 @@ run_script_if_it_exists "$NVM_DIR/bash_completion"
 # See https://rvm.io/rvm/install
 # export PATH="$PATH:$HOME/.rvm/bin"
 # [[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm" # Load RVM into a shell session *as a function*
-[ -d "$HOME/.rvm/bin" ] && export PATH="$PATH:$HOME/.rvm/bin"
-run_script_if_it_exists "$HOME/.rvm/scripts/rvm"
+
+if [ -d "/usr/local/rvm" ]; then
+	[ -d "/usr/local/rvm/bin" ] && export PATH="$PATH:/usr/local/rvm/bin"
+	run_script_if_it_exists "/usr/local/rvm/scripts/rvm"
+elif [ -d "$HOME/.rvm" ]; then
+	[ -d "$HOME/.rvm/bin" ] && export PATH="$PATH:$HOME/.rvm/bin"
+	run_script_if_it_exists "$HOME/.rvm/scripts/rvm"
+fi
 
 echo -e "${BCyan}This is Bash version ${BRed}${BASH_VERSION%.*}${BCyan} - Display on ${BRed}$DISPLAY${NC}"
 # which whoami 1>/dev/null 2>&1 && echo -e "You are: $(whoami)"
