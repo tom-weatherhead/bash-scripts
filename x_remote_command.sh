@@ -1,5 +1,40 @@
 #!/bin/bash
 
+# See https://unix.stackexchange.com/questions/12755/how-to-forward-x-over-ssh-to-run-graphics-applications-remotely (especially Gilles' answer)
+
+# Server (host) setup:
+# - Ensure that xauth is installed
+# - Ensure that ~/ssh/sshd_config contains the line:
+	# X11Forwarding yes
+
+# Client setup:
+# - Use the "-X" option when you ssh into the server, or set X11 forwarding as the default by ensuring that ~/.ssh/config contains the line:
+	# ForwardX11 yes
+# - If ~/.ssh/config exists, ensure that its mode is 644:
+	# $ chmod 644 ~/.ssh/config
+
+# Additional client setup for Cygwin:
+# - Ensure than these packages are installed: xorg-server, xinit
+# - These packages may be useful: xorg-docs, xlaunch, openssh, inetutils
+	# - See https://x.cygwin.com/docs/ug/setup.html
+# $ startxwin &
+
+# Note: Cygwin: 3.8. ssh -X now says "Warning: untrusted X11 forwarding setup failed: xauth key data not generated" -> Use "ssh -Y" rather than "ssh -X".
+# See https://x.cygwin.com/docs/faq/cygwin-x-faq.html#q-ssh-y
+
+# If the client is Cygwin: $ ssh -v -Y user@host
+# Else: $ ssh -v -X user@host
+	# - Ensure that the (verbose) output contains the substring "Requesting X11 forwarding"
+
+# If the client is Cygwin: $ ssh -Y user@host
+# Else: $ ssh -X user@host (or just "ssh user@host" if "X11Forwarding yes" is set in ~/.ssh/config)
+# - $ echo $DISPLAY
+	# - (Ensure that $DISPLAY is not empty)
+# - $ lxterminal &
+	# - Launch an app on the server, and watch its window appear on the client! Yay!
+
+###
+
 # Windows shortcut:
 # Name: remote_hostname remote_command
 # Target: C:\Path\To\Cygwin\Root\bin\bash.exe -lc "exec /home/username/bin/CygwinXRemoteCommand.sh remote_hostname remote_command"
