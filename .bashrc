@@ -1026,3 +1026,23 @@ FREE_M_OUTPUT=$(free -m 2>&1 | grep Mem)
 echo -e "\nAvailable disk space:\n"
 df -h
 echo
+
+# 2017/10/04 : Check versions of node and ruby
+which thaw-latest-version-of 1>/dev/null 2>&1 && {
+
+	which node 1>/dev/null 2>&1 && {
+		# pattern="v(\S+)$"		# This works in WSL, but not in Cygwin.
+		pattern="v(.+)"			# This works in WSL and Cygwin.
+		if [[ $(node -v) =~ $pattern ]]; then echo "Currently using Node.js version ${BASH_REMATCH[1]}"; else echo "Could not determine the currently-used version of Node.js."; fi
+		echo -e "Latest version of Node.js is $(thaw-latest-version-of node)"
+		echo
+	}
+
+	which ruby 1>/dev/null 2>&1 && {
+		# pattern="ruby (\S+)p"	# This works in WSL, but not in Cygwin.
+		pattern="ruby.(.+)p"	# This works in WSL and Cygwin.
+		if [[ $(ruby -v) =~ $pattern ]]; then echo "Currently using Ruby version ${BASH_REMATCH[1]}"; else echo "Could not determine the currently-used version of Ruby."; fi
+		echo -e "Latest version of Ruby is $(thaw-latest-version-of ruby)"
+		echo
+	}
+}
