@@ -1027,7 +1027,17 @@ echo -e "\nAvailable disk space:\n"
 df -h
 echo
 
-# 2017/10/04 : Check versions of node and ruby
+# Check versions of Node.js and Ruby :
+
+# To install thaw-latest-version-of :
+
+# - Install git
+# - Install Node.js (i.e. node and npm) (via nvm or nodist)
+# $ git clone https://github.com/tom-weatherhead/http-get-regex-capture.git
+# $ cd http-get-regex-capture
+# $ npm i
+# $ npm link
+
 which thaw-latest-version-of 1>/dev/null 2>&1 && {
 
 	which node 1>/dev/null 2>&1 && {
@@ -1045,4 +1055,6 @@ which thaw-latest-version-of 1>/dev/null 2>&1 && {
 		echo -e "Latest version of Ruby is $(thaw-latest-version-of ruby)"
 		echo
 	}
+} || {
+	echo "thaw-latest-version-of is not installed."
 }

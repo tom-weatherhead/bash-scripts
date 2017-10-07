@@ -151,6 +151,16 @@ alias mern='cd $(archive_dir_parent); cd Archive/Git/LocalSandbox/Node.js/Expres
 alias fnm='find . -type d -name node_modules'
 # TODO? : Create an alias that auto-removes all node_modules directories? Or just exclude them from the archive that tar creates?
 
+# find -exec : See e.g. https://linuxaria.com/howto/linux-shell-how-to-use-the-exec-option-in-find-with-examples
+
+# Purge node_modules
+# alias pnm='find . -type d -name node_modules -exec rm -rf {} \;'
+alias pnm='find . -type d -name node_modules -exec rm -rf {} \; -prune'
+# alias pnm='find . -type d -name node_modules -delete'
+
+# Purge log files
+alias plg='find . -type f -iname "*.log" -exec rm -f {} \;'
+
 alias pipe_status='echo "${PIPESTATUS[@]}" | tr -s " " + | bc'
 alias arch_bits='uname -m | sed "s/x86_//;s/i[3-6]86/32/"'
 
