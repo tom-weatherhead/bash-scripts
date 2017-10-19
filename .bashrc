@@ -1027,6 +1027,12 @@ echo -e "\nAvailable disk space:\n"
 df -h
 echo
 
+hmm()
+{
+	# which $1 >/dev/null 2>&1 && echo "$1 is present." || echo "$1 is absent."
+	which $1 >/dev/null 2>&1 && echo "$1 is installed." || echo "$1 is mot installed."
+}
+
 # Check versions of Node.js and Ruby :
 
 # To install thaw-latest-version-of :
@@ -1046,6 +1052,8 @@ which thaw-latest-version-of 1>/dev/null 2>&1 && {
 		if [[ $(node -v) =~ $pattern ]]; then echo "Currently using Node.js version ${BASH_REMATCH[1]}"; else echo "Could not determine the currently-used version of Node.js."; fi
 		echo -e "Latest version of Node.js is $(thaw-latest-version-of node)"
 		echo
+	} || {
+		echo "Node.js is not installed."
 	}
 
 	which ruby 1>/dev/null 2>&1 && {
@@ -1054,6 +1062,8 @@ which thaw-latest-version-of 1>/dev/null 2>&1 && {
 		if [[ $(ruby -v) =~ $pattern ]]; then echo "Currently using Ruby version ${BASH_REMATCH[1]}"; else echo "Could not determine the currently-used version of Ruby."; fi
 		echo -e "Latest version of Ruby is $(thaw-latest-version-of ruby)"
 		echo
+	} || {
+		echo "Ruby is not installed."
 	}
 } || {
 	echo "thaw-latest-version-of is not installed."
