@@ -1030,7 +1030,7 @@ echo
 hmm()
 {
 	# which $1 >/dev/null 2>&1 && echo "$1 is present." || echo "$1 is absent."
-	which $1 >/dev/null 2>&1 && echo "$1 is installed." || echo "$1 is mot installed."
+	which $1 >/dev/null 2>&1 && echo "$1 is installed." || echo "$1 is not installed."
 }
 
 # Check versions of Node.js and Ruby :
@@ -1046,7 +1046,7 @@ hmm()
 
 which thaw-latest-version-of 1>/dev/null 2>&1 && {
 
-	which node 1>/dev/null 2>&1 && {
+	which node >/dev/null 2>&1 && {
 		# pattern="v(\S+)$"		# This works in WSL, but not in Cygwin.
 		pattern="v(.+)"			# This works in WSL and Cygwin.
 		if [[ $(node -v) =~ $pattern ]]; then echo "Currently using Node.js version ${BASH_REMATCH[1]}"; else echo "Could not determine the currently-used version of Node.js."; fi
@@ -1056,7 +1056,7 @@ which thaw-latest-version-of 1>/dev/null 2>&1 && {
 		echo "Node.js is not installed."
 	}
 
-	which ruby 1>/dev/null 2>&1 && {
+	which ruby >/dev/null 2>&1 && {
 		# pattern="ruby (\S+)p"	# This works in WSL, but not in Cygwin.
 		pattern="ruby.(.+)p"	# This works in WSL and Cygwin.
 		if [[ $(ruby -v) =~ $pattern ]]; then echo "Currently using Ruby version ${BASH_REMATCH[1]}"; else echo "Could not determine the currently-used version of Ruby."; fi
