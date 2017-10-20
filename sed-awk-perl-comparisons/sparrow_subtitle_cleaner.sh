@@ -10,6 +10,36 @@ INPUT_EXTENSION="${INPUT_FILENAME_WITH_EXTENSION##*.}" # If INPUT_FILENAME_WITH_
 INPUT_FILENAME_BASE=$(basename -s ."$INPUT_EXTENSION" "$INPUT_FILE_PATH")
 OUTPUT_FILENAME="$INPUT_FILENAME_BASE.clean.$INPUT_EXTENSION"
 
+# srt.txt :
+
+# 1
+# abc def
+# ghi <br> jlk
+
+# 2
+# foo bar
+# blah Shirt Team xxx
+
+# 3
+# hi there <br>
+# doh man
+
+# srt.clean.txt :
+
+# 1
+# abc def
+# ghi <br /> jlk
+
+# 2
+# hi there <br />
+# doh man
+
+# $ file srt.txt
+# srt.txt: ASCII text
+
+# $ file Sparrow\ Episode\ 01.srt
+# Sparrow Episode 01.srt: UTF-8 Unicode text, with CRLF line terminators
+
 perl -00lpe "s/\A(.*)$//m" "$INPUT_FILE_PATH" | perl -00ne 'BEGIN { $i = 1; } print $i++, "\n", s/<br>/<br \/>/r unless /Shirt Team/' > "$OUTPUT_FILENAME"
 
 # perl -00lpe "s/\A(.*)$//m" "$INPUT_FILE_PATH" | perl -00ne 'BEGIN { $i = 1; } print "${\($i++)}\n", s/<br>/<br \/>/r unless /Shirt Team/' > "$OUTPUT_FILENAME"
