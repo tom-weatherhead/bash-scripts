@@ -40,6 +40,8 @@ OUTPUT_FILENAME="$INPUT_FILENAME_BASE.clean.$INPUT_EXTENSION"
 # $ file Sparrow\ Episode\ 01.srt
 # Sparrow Episode 01.srt: UTF-8 Unicode text, with CRLF line terminators
 
-perl -00lpe "s/\A(.*)$//m" "$INPUT_FILE_PATH" | perl -00ne 'BEGIN { $i = 1; } print $i++, "\n", s/<br>/<br \/>/r unless /Shirt Team/' > "$OUTPUT_FILENAME"
+# perl -00lpe "s/\A(.*)$//m" "$INPUT_FILE_PATH" | perl -00ne 'BEGIN { $i = 1; } print $i++, "\n", s/<br>/<br \/>/r unless /Shirt Team/' > "$OUTPUT_FILENAME"
 
 # perl -00lpe "s/\A(.*)$//m" "$INPUT_FILE_PATH" | perl -00ne 'BEGIN { $i = 1; } print "${\($i++)}\n", s/<br>/<br \/>/r unless /Shirt Team/' > "$OUTPUT_FILENAME"
+
+sed 's/\r//;s/<br>/<br \/>/'<Sparrow\ Episode\ 01.srt|perl -00pe's/.*Shirt Team.*//s'|perl -00pe's/^.*$/\Q$.\E/m'
