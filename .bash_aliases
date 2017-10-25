@@ -175,4 +175,6 @@ alias djrun='./manage.py runserver 0:8000'
 
 # Django aliases: End
 
+alias cleansrt="sed 's/\r//;s/<br>/\n/'|perl -00pe's/.*@.*//s'|perl -00pe's/^.*$/\Q$.\E/m'"
+
 # End of .bash_aliases
