@@ -862,8 +862,7 @@ FAILURE=1
 
 which_test_quiet()
 {
-	which $1 1>/dev/null 2>&1
-	# which $1
+	which $1 >/dev/null 2>&1
 	return $?
 }
 
@@ -905,12 +904,29 @@ archive_dir_parent()
 	fi
 }
 
+# See https://stackoverflow.com/questions/14132210/use-find-command-but-exclude-files-in-two-directories
+# find . -type f -name "*_peaks.bed" ! -path "./tmp/*" ! -path "./scripts/*"
+
+# find in a Git / npm repository:
+
+fgn()
+{
+	# find . -type f -iname "$1" ! -path "./.git/*" ! -path "./node_modules/*"
+	find . -iname "$1" ! -path "./.git/*" ! -path "./node_modules/*"
+}
+
+# tar and bzip2 a Git repository : Begin
+
+# tar and bzip2 a Git repository, excluding the node_modules subtree
+
 gtb()
 {
 	# tar cv --exclude=node_modules "$1" | bzip2 -9 - > "$1.tar.bz2"
 	# tar cjfv "$1.tar.bz2" --exclude=node_modules "$1"
 	tar cjfv "$1_$(date --utc +%Y-%m-%d_%H-%M-%S).tar.bz2" --exclude=node_modules "$1"
 }
+
+# tar and bzip2 a Git repository, excluding the .git and node_modules subtrees
 
 gtbx()
 {
@@ -935,6 +951,8 @@ gtbxc()
 	cd $CURRENT_DIR_NAME
 }
 
+# tar and bzip2 a Git repository : End
+
 # recursive_grep()		# See fstr above.
 # {
 	# grep -R -i --include="$1" "$2" .
@@ -948,12 +966,16 @@ gtbxc()
 
 ggx()
 {
-	grep -R --exclude-dir=".git" --exclude-dir="node_modules" --exclude-dir="deprecated" "$1" .
+	# grep -R --exclude-dir=".git" --exclude-dir="node_modules" --exclude-dir="deprecated" "$1" .
+
+	# See lll in .bash_aliases
+	grep -R --exclude-dir=".git" --exclude-dir="node_modules" --exclude-dir="deprecated" "$1" . | sed '/^.\{100,\}$/d'
 }
 
 ggxi()
 {
-	grep -R -i --exclude-dir=".git" --exclude-dir="node_modules" --exclude-dir="deprecated" "$1" .
+	# grep -R -i --exclude-dir=".git" --exclude-dir="node_modules" --exclude-dir="deprecated" "$1" .
+	grep -R -i --exclude-dir=".git" --exclude-dir="node_modules" --exclude-dir="deprecated" "$1" . | sed '/^.\{100,\}$/d'
 }
 
 run_script_if_it_exists()
@@ -974,9 +996,12 @@ run_script_if_it_exists "$HOME/bin/determine_distro_core.sh"
 
 # Initialize nvm (the Node.js version manager) if it is available.
 # See https://github.com/creationix/nvm
-run_script_if_it_exists ~/.nvm/nvm.sh
-# [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
-run_script_if_it_exists "$NVM_DIR/bash_completion"
+export NVM_DIR=~/.nvm
+# [ -s "$NVM_DIR/nvm.sh" ] && source "$NVM_DIR/nvm.sh"
+[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+# run_script_if_it_exists ~/.nvm/nvm.sh
+[ -s "$NVM_DIR/bash_completion" ] && source "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+# run_script_if_it_exists "$NVM_DIR/bash_completion"
 
 # Initialize rvm (the Ruby Version Manager) if it is available.
 # See https://rvm.io/rvm/install

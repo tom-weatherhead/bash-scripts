@@ -134,19 +134,27 @@ alias sudo='sudo '
 
 # ThAW's Additional Aliases
 
+# Django aliases: Begin
+
+alias djrun='./manage.py runserver 0:8000'
+
+# Django aliases: End
+
 # Git aliases: Begin
 
 # gbz : Create a bzip2-compressed archive of a Git repository.
 alias gbz='[ -d .git ] && { git archive --format=tar HEAD | bzip2 -9 - > "../$(basename $(pwd))_$(date --utc +%Y-%m-%d_%H-%M-%S).tar.bz2"; } || { echo "No .git subdirectory detected."; }'
 
 # Create the "gh" ("GitHub") alias.
-alias gh='cd $(archive_dir_parent); cd Archive/Git/GitHubSandbox/tom-weatherhead 1>&/dev/null'
-alias lg='cd $(archive_dir_parent); cd Archive/Git/LocalSandbox 1>&/dev/null'
-alias n='cd $(archive_dir_parent); cd Archive/Git/LocalSandbox/Node.js 1>&/dev/null'
-alias m='cd $(archive_dir_parent); cd Archive/Git/LocalSandbox/Node.js/Express.js/MEAN 1>&/dev/null'
-alias mern='cd $(archive_dir_parent); cd Archive/Git/LocalSandbox/Node.js/Express.js/MERN 1>&/dev/null'
+alias gh='cd $(archive_dir_parent); cd Archive/Git/GitHubSandbox/tom-weatherhead >&/dev/null'
+alias lg='cd $(archive_dir_parent); cd Archive/Git/LocalSandbox >&/dev/null'
+alias n='cd $(archive_dir_parent); cd Archive/Git/LocalSandbox/Node.js >&/dev/null'
+alias m='cd $(archive_dir_parent); cd Archive/Git/LocalSandbox/Node.js/Express.js/MEAN >&/dev/null'
+alias mern='cd $(archive_dir_parent); cd Archive/Git/LocalSandbox/Node.js/Express.js/MERN >&/dev/null'
 
 # Git aliases: End
+
+# find aliases: Begin
 
 alias fnm='find . -type d -name node_modules'
 # TODO? : Create an alias that auto-removes all node_modules directories? Or just exclude them from the archive that tar creates?
@@ -154,26 +162,28 @@ alias fnm='find . -type d -name node_modules'
 # find -exec : See e.g. https://linuxaria.com/howto/linux-shell-how-to-use-the-exec-option-in-find-with-examples
 
 # Purge node_modules
+# alias pnm='find . -type d -name node_modules -delete'
 # alias pnm='find . -type d -name node_modules -exec rm -rf {} \;'
 alias pnm='find . -type d -name node_modules -exec rm -rf {} \; -prune'
-# alias pnm='find . -type d -name node_modules -delete'
 
 # Purge log files
 alias plg='find . -type f -iname "*.log" -exec rm -f {} \;'
 
+# find aliases: End
+
+# sed aliases: Begin
+
+# lll : Limit line length : See https://unix.stackexchange.com/questions/9981/how-to-delete-line-if-longer-than-xy
+# alias lll="sed '/^.\{100\}./d'"		# May not work on BSD.
+alias lll="sed '/^.\{100,\}$/d'"
+
+# sed aliases: End
+
 alias pipe_status='echo "${PIPESTATUS[@]}" | tr -s " " + | bc'
 alias arch_bits='uname -m | sed "s/x86_//;s/i[3-6]86/32/"'
 
-alias shhi="history | awk '{a[\$4]++ } END{for(i in a){print a[i], i}}' | sort -rn | head"
-
-# sed:
-# - s : Regular-expression-based substitution : s/regexp/replacement/
-
-# Django aliases: Begin
-
-alias djrun='./manage.py runserver 0:8000'
-
-# Django aliases: End
+# alias shhi="history | awk '{a[\$4]++ } END{for(i in a){print a[i], i}}' | sort -rn | head"
+alias shhi="history|awk '{a[\$4]++}END{for(i in a){print a[i],i}}'|sort -rn|head"
 
 alias cleansrt="sed 's/\r//;s/<br>/\n/'|perl -00pe's/.*@.*//s'|perl -00pe's/^.*$/\Q$.\E/m'"
 
