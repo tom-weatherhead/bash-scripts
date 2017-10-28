@@ -986,6 +986,11 @@ run_script_if_it_exists()
 	# [ -s "$1" ] && . "$1"
 }
 
+first2()
+{
+	od --endian=big -v -x "$1" | head -n 1 | cut -c 9-12
+}
+
 # .bash_aliases : See https://askubuntu.com/questions/17536/how-do-i-create-a-permanent-bash-alias
 
 # run_script_if_it_exists ~/.bash_aliases
