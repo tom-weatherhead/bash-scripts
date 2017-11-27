@@ -146,11 +146,17 @@ alias djrun='./manage.py runserver 0:8000'
 alias gbz='[ -d .git ] && { git archive --format=tar HEAD | bzip2 -9 - > "../$(basename $(pwd))_$(date --utc +%Y-%m-%d_%H-%M-%S).tar.bz2"; } || { echo "No .git subdirectory detected."; }'
 
 # Create the "gh" ("GitHub") alias.
-alias gh='cd $(archive_dir_parent); cd Archive/Git/GitHubSandbox/tom-weatherhead >&/dev/null'
-alias lg='cd $(archive_dir_parent); cd Archive/Git/LocalSandbox >&/dev/null'
-alias n='cd $(archive_dir_parent); cd Archive/Git/LocalSandbox/Node.js >&/dev/null'
-alias m='cd $(archive_dir_parent); cd Archive/Git/LocalSandbox/Node.js/Express.js/MEAN >&/dev/null'
-alias mern='cd $(archive_dir_parent); cd Archive/Git/LocalSandbox/Node.js/Express.js/MERN >&/dev/null'
+# alias gh='cd $(archive_dir_parent); cd Archive/Git/GitHubSandbox/tom-weatherhead >&/dev/null'
+# alias lg='cd $(archive_dir_parent); cd Archive/Git/LocalSandbox >&/dev/null'
+# alias n='cd $(archive_dir_parent); cd Archive/Git/LocalSandbox/Node.js >&/dev/null'
+# alias m='cd $(archive_dir_parent); cd Archive/Git/LocalSandbox/Node.js/Express.js/MEAN >&/dev/null'
+# alias mern='cd $(archive_dir_parent); cd Archive/Git/LocalSandbox/Node.js/Express.js/MERN >&/dev/null'
+
+alias gh='cd $(git_dir)/GitHubSandbox/tom-weatherhead >&/dev/null'
+alias lg='cd $(git_dir)/LocalSandbox >&/dev/null'
+# alias n='cd $(git_dir)/LocalSandbox/Node.js >&/dev/null'
+# alias m='cd $(git_dir)/LocalSandbox/Node.js/Express.js/MEAN >&/dev/null'
+# alias mern='cd $(git_dir)/LocalSandbox/Node.js/Express.js/MERN >&/dev/null'
 
 # Git aliases: End
 

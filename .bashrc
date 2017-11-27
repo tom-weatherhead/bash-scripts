@@ -904,6 +904,23 @@ archive_dir_parent()
 	fi
 }
 
+git_dir()
+{
+    local A="/usr/local/Git"
+    local B="$(archive_dir_parent)/Archive/Git"
+
+    # echo $A
+    # echo $B
+
+    if [ -d "$A" ]; then
+        echo "$A"
+    elif [ -d "$B" ]; then
+        echo "$B"
+    else
+        echo "git_dir() : Could not find $A or $B"
+    fi
+}
+
 # See https://stackoverflow.com/questions/14132210/use-find-command-but-exclude-files-in-two-directories
 # find . -type f -name "*_peaks.bed" ! -path "./tmp/*" ! -path "./scripts/*"
 
@@ -1033,6 +1050,14 @@ safe_eval "date --rfc-3339=seconds"
 safe_eval uptime
 
 safe_eval 'echo -e "Host: $(hostname)"' hostname
+
+# ****
+
+pattern="model.name\s+: ([[:print:]]*)"
+
+[[ $(cat /proc/cpuinfo) =~ $pattern ]] && echo "CPU model: ${BASH_REMATCH[1]}" || echo "Could not determine the CPU model."
+
+# ****
 
 echo -e "Number of CPU cores: $NCPU"
 
