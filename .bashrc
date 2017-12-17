@@ -1107,9 +1107,15 @@ which thaw-latest-version-of 1>/dev/null 2>&1 && {
 		if [[ $(node -v) =~ $pattern ]]; then echo "Currently using Node.js version ${BASH_REMATCH[1]}"; else echo "Could not determine the currently-used version of Node.js."; fi
 		echo -e "Latest version of Node.js is $(thaw-latest-version-of node)"
 		echo
+		echo "To upgrade:"
+		echo "$ nvm install node"
+		echo "$ nvm uninstall old"
+		echo "$ npm i -g http-get-regex-capture"
 	} || {
 		echo "Node.js is not installed."
 	}
+
+	echo
 
 	which ruby >/dev/null 2>&1 && {
 		# pattern="ruby (\S+)p"	# This works in WSL, but not in Cygwin.
@@ -1117,6 +1123,10 @@ which thaw-latest-version-of 1>/dev/null 2>&1 && {
 		if [[ $(ruby -v) =~ $pattern ]]; then echo "Currently using Ruby version ${BASH_REMATCH[1]}"; else echo "Could not determine the currently-used version of Ruby."; fi
 		echo -e "Latest version of Ruby is $(thaw-latest-version-of ruby)"
 		echo
+		echo "To upgrade:"
+		echo "# rvm install ruby-new"
+		echo "# rvm uninstall ruby-old"
+		echo "# rvm use --default ruby-new"
 	} || {
 		echo "Ruby is not installed."
 	}
