@@ -109,8 +109,9 @@ which_test rsync
 
 RSYNC_DELETE_OPTION=''	# The delete option is turned off by default, for safety.
 RSYNC_DRY_RUN_OPTION=''
+RSYNC_SSH_OPTION=''
 
-while getopts ':dn' option; do
+while getopts ':dns' option; do
     case $option in
 		d)
 			# --del is a alias for --delete-during
@@ -126,6 +127,9 @@ while getopts ':dn' option; do
         n)
 			RSYNC_DRY_RUN_OPTION='n'
             ;;
+        s)
+			RSYNC_SSH_OPTION='-e ssh'
+			;;
 		*)
             usage
 			error_exit "Unrecognized option: -$OPTARG"
@@ -231,7 +235,7 @@ RSYNC_EXCLUDE_OPTIONS="--exclude '?'[Rr][Ee][Cc][Yy][Cc][Ll][Ee].[Bb][Ii][Nn] --
 RSYNC_LONG_OPTIONS="$RSYNC_DELETE_OPTION $RSYNC_EXCLUDE_OPTIONS --numeric-ids"
 
 # See https://stackoverflow.com/questions/2854655/command-to-escape-a-string-in-bash
-echo_and_eval $(printf "rsync $RSYNC_SHORT_OPTIONS $RSYNC_LONG_OPTIONS %q %q" "$SRC_PATH" "$DEST_PATH")
+echo_and_eval $(printf "rsync $RSYNC_SHORT_OPTIONS $RSYNC_LONG_OPTIONS %q $RSYNC_SSH_OPTION %q" "$SRC_PATH" "$DEST_PATH")
 
 RSYNC_STATUS=$?
 echo "rsync returned status code $RSYNC_STATUS"
@@ -267,5 +271,37 @@ clean_up $RSYNC_STATUS
 # 6) Click on the "Apply" button, and let the permissions propagate
 # 7) Click "OK"
 # 8) Click "OK" again
+
+# rsync from local to remote or vice versa: See https://www.liquidweb.com/kb/how-to-securely-transfer-files-via-rsync-and-ssh-on-linux/
+
+# Use These Commands to Securely Download From a Server
+
+# Standard SSH Port:
+
+# rsync -avHe ssh user@server:/path/to/file /home/user/path/to/file
+
+    # user: The username of the remote user through which you’ll be logging into the target (remote) server.
+    # server: The hostname or IP address of the target (remote) server.
+    # /path/to/file: The path to the file that needs to be downloaded from the target (remote) server, where file is the file name.
+    # /home/user/path/to/file: The local path where you would like to store the file that is downloaded from the target (remote) server, where file is the file name.
+
+# Example:
+
+# rsync -avHe ssh adam@web01.adamsserver.com:/home/adam/testfile1 /home/localuser/testfile1
+
+# Use These Commands to Securely Upload To a Server
+
+# Standard SSH Port:
+
+# rsync -avH /home/user/path/to/file -e ssh user@server:/path/to/file
+
+    # /home/user/path/to/file: The local path where the file that will be uploaded to the target (remote) server exists, where file is the file name.
+    # user: The username of the remote user through which you’ll be logging into the target (remote) server.
+    # server: The hostname or IP address of the target (remote) server.
+    # /path/to/file: The remote path for the file that will be uploaded to the target (remote) server, where file is the file name.
+
+# Example:
+
+# rsync -avH /home/localuser/testfile1 -e ssh adam@web01.adamsserver.com:/home/adam/testfile1
 
 ### The End. ###
