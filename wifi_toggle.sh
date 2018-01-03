@@ -1,5 +1,7 @@
 #!/bin/sh
 
+# From https://ubuntuforums.org/showthread.php?t=2181558&s=76c8fa24956123973d09f26adbdc549e&p=12819607#post12819607
+
 # Re: Fix : Asus WiFi Disabled (Hard-blocked), Fn+F2 won't work
 
 # Setting a HotKey to Toggle the WiFi On/Off (Alternative to the Fn+F2 switch)
