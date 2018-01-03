@@ -92,13 +92,15 @@ REMOTE_COMMAND="$2"
 
 echo "Remote user is '$REMOTE_USER'."
 
-if [ "$REMOTE_HOSTNAME" != 'Caritas' ]; then
-	error_exit "Unexpected remote host '$REMOTE_HOSTNAME'."
-fi
+# if [ "$REMOTE_HOSTNAME" != 'Caritas' ]; then
+	# error_exit "Unexpected remote host '$REMOTE_HOSTNAME'."
+# fi
 
 echo "Remote hostname '$REMOTE_HOSTNAME' accepted."
 
-if [ "$REMOTE_COMMAND" != 'firefox' ] && [ "$REMOTE_COMMAND" != 'lxterminal' ]; then
+# if [ "$REMOTE_COMMAND" != 'firefox' ] && [ "$REMOTE_COMMAND" != 'lxterminal' ]; then
+# if [ "$REMOTE_COMMAND" != 'firefox' ] && [ "$REMOTE_COMMAND" != 'gnome-terminal' ]; then
+if [ "$REMOTE_COMMAND" != 'firefox' ] && [ "$REMOTE_COMMAND" != 'xterm' ]; then
 	error_exit "Remote host '$REMOTE_HOSTNAME': Unexpected remote command '$REMOTE_COMMAND'."
 fi
 
