@@ -1099,37 +1099,85 @@ hmm()
 # $ npm i
 # $ npm link
 
-which thaw-latest-version-of 1>/dev/null 2>&1 && {
-
-	which node >/dev/null 2>&1 && {
-		# pattern="v(\S+)$"		# This works in WSL, but not in Cygwin.
-		pattern="v(.+)"			# This works in WSL and Cygwin.
-		if [[ $(node -v) =~ $pattern ]]; then echo "Currently using Node.js version ${BASH_REMATCH[1]}"; else echo "Could not determine the currently-used version of Node.js."; fi
-		echo -e "Latest version of Node.js is $(thaw-latest-version-of node)"
+version_checks()
+{
+	which thaw-version 1>/dev/null 2>&1 && {
+		echo -e "Latest version of Angular is $(thaw-version angular)"
 		echo
-		echo "To upgrade:"
-		echo "$ nvm install node"
-		echo "$ nvm uninstall old"
-		echo "$ npm i -g http-get-regex-capture"
-	} || {
-		echo "Node.js is not installed."
-	}
 
-	echo
+		which node >/dev/null 2>&1 && {
+			# pattern="v(\S+)$"		# This works in WSL, but not in Cygwin.
+			pattern="v(.+)"			# This works in WSL and Cygwin.
+			if [[ $(node -v) =~ $pattern ]]; then echo "Currently using Node.js version ${BASH_REMATCH[1]}"; else echo "Could not determine the currently-used version of Node.js."; fi
+			echo -e "Latest version of Node.js is $(thaw-version node)"
+			echo
+			echo "To upgrade:"
+			echo "$ nvm install node"
+			echo "$ nvm uninstall old"
+			echo "$ npm i -g http-get-regex-capture"
+		} || {
+			echo "Node.js is not installed."
+		}
 
-	which ruby >/dev/null 2>&1 && {
-		# pattern="ruby (\S+)p"	# This works in WSL, but not in Cygwin.
-		pattern="ruby.(.+)p"	# This works in WSL and Cygwin.
-		if [[ $(ruby -v) =~ $pattern ]]; then echo "Currently using Ruby version ${BASH_REMATCH[1]}"; else echo "Could not determine the currently-used version of Ruby."; fi
-		echo -e "Latest version of Ruby is $(thaw-latest-version-of ruby)"
 		echo
-		echo "To upgrade:"
-		echo "# rvm install ruby-new"
-		echo "# rvm uninstall ruby-old"
-		echo "# rvm use --default ruby-new"
+
+		which ruby >/dev/null 2>&1 && {
+			# pattern="ruby (\S+)p"	# This works in WSL, but not in Cygwin.
+			pattern="ruby.(.+)p"	# This works in WSL and Cygwin.
+			if [[ $(ruby -v) =~ $pattern ]]; then echo "Currently using Ruby version ${BASH_REMATCH[1]}"; else echo "Could not determine the currently-used version of Ruby."; fi
+			echo -e "Latest version of Ruby is $(thaw-version ruby)"
+			echo
+			echo "To upgrade:"
+			echo "# rvm install ruby-new"
+			echo "# rvm uninstall ruby-old"
+			echo "# rvm use --default ruby-new"
+		} || {
+			echo "Ruby is not installed."
+		}
 	} || {
-		echo "Ruby is not installed."
+		echo "thaw-version is not installed. Install it by building get-http-response-body and then running npm link:"
+		echo
+		echo "$ git clone https://github.com/tom-weatherhead/get-http-response-body.git"
+		echo "$ cd get-http-response-body"
+		echo "$ npm i"
+		echo "$ npm link"
 	}
-} || {
-	echo "thaw-latest-version-of is not installed."
 }
+
+# For details about Bash tests (e.g. -r), see https://www.tldp.org/LDP/abs/html/fto.html
+
+# version_checks
+# [ -f ~/.bash_do_version_checks ] && version_checks
+[ -f ~/.bash_tomw_config ] && grep -q ^DoVersionChecks$ ~/.bash_tomw_config && version_checks
+echo
+
+# Do it only on Mondays (weekday 1) :
+# [ `date +%u` == 1 ] && [ -r ~/.bash_tomw_config ] && grep -q ^DoVersionChecks$ ~/.bash_tomw_config && version_checks
+
+# To obtain the current user's ID: id -u
+# root's ID is 0.
+# [ `id -u` == 0 ] && echo "Root!" || echo "Not root."
+
+user_is_root()
+{
+	# !!! Remember: In *nix exit codes, 0 is OK (true), and anything non-zero is an error (false).
+	# return [ `id -u` == 0 ]								# No.
+	[ `id -u` == 0 ] && return 0 || return 1
+}
+
+# [ $(user_is_root) ] && echo "Root!" || echo "Not root."
+# [ `user_is_root` ] && echo "Root!" || echo "Not root."
+user_is_root && echo "Root!" || echo "Not root."
+
+user_is_tomw()
+{
+	# return [ `id -u` == 1000 ]							# No.
+	[ `id -u` == 1000 ] && return 0 || return 1
+}
+
+# id -u
+# [ `id -u` == 1000 ] && echo "user_is_tomw() : TomW!" || echo "user_is_tomw() : Not TomW."
+
+# [ $(user_is_tomw) ] && echo "TomW!" || echo "Not TomW."	# No.
+# [ `user_is_tomw` ] && echo "TomW!" || echo "Not TomW."	# No.
+user_is_tomw && echo "TomW!" || echo "Not TomW."			# Yes.
