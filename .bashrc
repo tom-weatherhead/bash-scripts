@@ -1142,6 +1142,8 @@ version_checks()
 		echo "$ npm i"
 		echo "$ npm link"
 	}
+
+	echo
 }
 
 # For details about Bash tests (e.g. -r), see https://www.tldp.org/LDP/abs/html/fto.html
@@ -1149,7 +1151,6 @@ version_checks()
 # version_checks
 # [ -f ~/.bash_do_version_checks ] && version_checks
 [ -f ~/.bash_tomw_config ] && grep -q ^DoVersionChecks$ ~/.bash_tomw_config && version_checks
-echo
 
 # Do it only on Mondays (weekday 1) :
 # [ `date +%u` == 1 ] && [ -r ~/.bash_tomw_config ] && grep -q ^DoVersionChecks$ ~/.bash_tomw_config && version_checks

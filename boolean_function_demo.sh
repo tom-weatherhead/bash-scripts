@@ -2,6 +2,19 @@
 
 # Demonstrate how to write and call a Bash function that returns a value that can be interpreter as a Boolean value:
 
+user_is_root()
+{
+	# !!! Remember: In *nix exit codes, 0 is OK (true), and anything non-zero is an error (false).
+	# return [ `id -u` == 0 ]								# No.
+	[ `id -u` == 0 ] && return 0 || return 1
+}
+
+# [ $(user_is_root) ] && echo "Root!" || echo "Not root."	# No.
+# [ `user_is_root` ] && echo "Root!" || echo "Not root."	# No.
+user_is_root && echo "Root!" || echo "Not root."			# Yes!
+
+# **** Older stuff: ****
+
 is_toasty_version1()
 {
 	[[ "$1" =~ Toast ]] && echo 1 || echo
