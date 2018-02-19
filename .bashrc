@@ -860,10 +860,10 @@ complete -F _killall killall killps
 SUCCESS=0
 FAILURE=1
 
-which_test_quiet()
+which_silent()
 {
 	which $1 >/dev/null 2>&1
-	return $?
+	#return $?
 }
 
 safe_eval()
@@ -877,8 +877,8 @@ safe_eval()
 		CMD="$2"
 	fi
 
-	# which_test_quiet "$CMD" && echo "which_test_quiet '$CMD' : Yes" || echo "which_test_quiet '$CMD' : No"
-	which_test_quiet "$CMD" && eval "$1"
+	# which_silent "$CMD" && echo "which_silent '$CMD' : Yes" || echo "which_silent '$CMD' : No"
+	which_silent "$CMD" && eval "$1"
 }
 
 is_a_non_negative_integer()
@@ -1065,7 +1065,7 @@ safe_eval 'echo -e "Platform: $(uname -o)"' uname
 
 fooblah()
 {
-	which $1 1>/dev/null 2>&1 && eval $2
+	which_silent $1 && eval $2
 }
 
 fooblah determine_distro 'echo -e "Distribution: $(determine_distro)"'
@@ -1084,8 +1084,8 @@ echo
 
 hmm()
 {
-	# which $1 >/dev/null 2>&1 && echo "$1 is present." || echo "$1 is absent."
-	which $1 >/dev/null 2>&1 && echo "$1 is installed." || echo "$1 is not installed."
+	# which_silent $1 && echo "$1 is present." || echo "$1 is absent."
+	which_silent $1 && echo "$1 is installed." || echo "$1 is not installed."
 }
 
 # Check versions of Node.js and Ruby :
@@ -1101,11 +1101,11 @@ hmm()
 
 version_checks()
 {
-	which thaw-version 1>/dev/null 2>&1 && {
+	which_silent thaw-version && {
 		echo -e "Latest version of Angular is $(thaw-version angular)"
 		echo
 
-		which node >/dev/null 2>&1 && {
+		which_silent node && {
 			# pattern="v(\S+)$"		# This works in WSL, but not in Cygwin.
 			pattern="v(.+)"			# This works in WSL and Cygwin.
 			if [[ $(node -v) =~ $pattern ]]; then echo "Currently using Node.js version ${BASH_REMATCH[1]}"; else echo "Could not determine the currently-used version of Node.js."; fi
@@ -1121,7 +1121,7 @@ version_checks()
 
 		echo
 
-		which ruby >/dev/null 2>&1 && {
+		which_silent ruby && {
 			# pattern="ruby (\S+)p"	# This works in WSL, but not in Cygwin.
 			pattern="ruby.(.+)p"	# This works in WSL and Cygwin.
 			if [[ $(ruby -v) =~ $pattern ]]; then echo "Currently using Ruby version ${BASH_REMATCH[1]}"; else echo "Could not determine the currently-used version of Ruby."; fi
@@ -1182,3 +1182,24 @@ user_is_tomw()
 # [ $(user_is_tomw) ] && echo "TomW!" || echo "Not TomW."	# No.
 # [ `user_is_tomw` ] && echo "TomW!" || echo "Not TomW."	# No.
 user_is_tomw && echo "TomW!" || echo "Not TomW."			# Yes.
+
+# Check for hardware-accelerated video on Ubuntu:
+# Install mesa-utils, and then:
+# if where glxinfo; then glxinfo | grep -q "direct rendering: Yes"
+# which_silent glxinfo && {
+	# glxinfo | grep -q "direct rendering: Yes" && echo "Hardware-accelerated graphics!"
+# }
+
+# which_silent glxinfo && glxinfo | grep -q "direct rendering: Yes" && echo "Hardware-accelerated graphics! 2"
+
+# From https://zipizap.wordpress.com/2013/11/15/detect-ssh-login-from-bashrc/ :
+# [ "$SSH_CONNECTION" -a "$SSH_TTY" == $(tty) ] && echo "This bash session was opened from an ssh login."
+
+is_Xorg_running()
+{
+	ps aux | grep -q Xorg
+}
+
+# is_Xorg_running && [ -z "$SSH_CONNECTION" -o "$SSH_TTY" != $(tty) ] && echo "Run glxinfo?"
+
+is_Xorg_running && [ -z "$SSH_CONNECTION" -o "$SSH_TTY" != $(tty) ] && which_silent glxinfo && glxinfo | grep "direct rendering: Yes"
