@@ -104,6 +104,10 @@ if [ "$REMOTE_COMMAND" != 'firefox' ] && [ "$REMOTE_COMMAND" != 'xterm' ]; then
 	error_exit "Remote host '$REMOTE_HOSTNAME': Unexpected remote command '$REMOTE_COMMAND'."
 fi
 
+if [ "$REMOTE_COMMAND" != 'firefox' ]; then
+	REMOTE_COMMAND='firefox -private'
+fi
+
 echo "Remote command '$REMOTE_COMMAND' accepted."
 
 DISTRO_IS_CYGWIN=distro_is_cygwin

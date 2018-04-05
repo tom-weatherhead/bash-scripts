@@ -224,7 +224,7 @@ RSYNC_EXCLUDE_OPTIONS="--exclude '?'[Rr][Ee][Cc][Yy][Cc][Ll][Ee].[Bb][Ii][Nn] --
 
 [[ $SRC_PATH =~ iTunes || $(pwd) =~ iTunes ]] && {
 	echo 'iTunes backup: Not backing up Home Videos...'
-	RSYNC_EXCLUDE_OPTIONS="$RSYNC_EXCLUDE_OPTIONS --exclude 'Home Videos'"
+	RSYNC_EXCLUDE_OPTIONS="$RSYNC_EXCLUDE_OPTIONS --exclude 'Home Videos' --exclude 'Mobile Applications'"
 }
 
 # The --numeric-ids option is necessary to preserve NTFS hard links.
