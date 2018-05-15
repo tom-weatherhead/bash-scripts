@@ -95,16 +95,6 @@ usage()
 	echo_error_message
 }
 
-# if [ "$(distro_is_cygwin)" ]; then
-	# We want to avoid having unwanted entries (e.g. "NULL SID" or "Deny foo") added to the ACL on a Windows receiver; this problem occurs when this script is run within Cygwin, but it apparently does not occur under the Windows Subsystem for Linux.
-	# error_exit 'This script might not preserve Access Control Lists when run from Cygwin; aborting.'
-# fi
-
-# We rewrote the "distro_is_cygwin" function to use "return" rather than "echo" :
-distro_is_cygwin && error_exit 'This script might not preserve Access Control Lists when run from Cygwin; aborting.'
-
-echo 'Cygwin not detected; we may proceed.'
-
 which_test rsync
 
 RSYNC_DELETE_OPTION=''	# The delete option is turned off by default, for safety.
@@ -136,6 +126,17 @@ while getopts ':dns' option; do
             # No ;; is necessary here.
     esac
 done
+
+# if [ "$(distro_is_cygwin)" ]; then
+	# We want to avoid having unwanted entries (e.g. "NULL SID" or "Deny foo") added to the ACL on a Windows receiver; this problem occurs when this script is run within Cygwin, but it apparently does not occur under the Windows Subsystem for Linux.
+	# But it is safe to use this script with Cygwin to rsync via ssh.
+	# error_exit 'This script might not preserve Access Control Lists when run from Cygwin; aborting.'
+# fi
+
+# We rewrote the "distro_is_cygwin" function to use "return" rather than "echo" :
+[ -z "RSYNC_SSH_OPTION" ] && distro_is_cygwin && error_exit 'This script might not preserve Access Control Lists when run from Cygwin; aborting.'
+
+# echo 'Cygwin not detected; we may proceed.'
 
 shift $((OPTIND -1))
 
