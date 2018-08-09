@@ -106,7 +106,7 @@ alias localip=ipa
 # alias externalip=ip-external
 
 # grep with color
-alias grep='grep --color=auto'
+alias grep='grep -n --color=auto'
 
 # pretty json in color (`sudo npm install -g json`)
 # alias json="json -i"
