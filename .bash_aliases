@@ -193,4 +193,10 @@ alias shhi="history|awk '{a[\$4]++}END{for(i in a){print a[i],i}}'|sort -rn|head
 
 alias cleansrt="sed 's/\r//;s/<br>/\n/'|perl -00pe's/.*@.*//s'|perl -00pe's/^.*$/\Q$.\E/m'"
 
+# Docker aliases
+
+alias dsa='docker stop $(docker ps -a -q)'
+alias dra='docker rm $(docker ps -a -q)'
+alias dsra='dsa; dra'
+
 # End of .bash_aliases
