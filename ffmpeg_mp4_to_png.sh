@@ -4,4 +4,5 @@
 
 SRCFILEPATH="$1"
 
-ffmpeg -i "$SRCFILEPATH" frame%04d.png -hide_banner
+# ffmpeg -i "$SRCFILEPATH" frame%04d.png -hide_banner
+ffmpeg -hide_banner -i "$SRCFILEPATH" frame%04d.png

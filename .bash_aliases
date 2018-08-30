@@ -193,6 +193,8 @@ alias shhi="history|awk '{a[\$4]++}END{for(i in a){print a[i],i}}'|sort -rn|head
 
 alias cleansrt="sed 's/\r//;s/<br>/\n/'|perl -00pe's/.*@.*//s'|perl -00pe's/^.*$/\Q$.\E/m'"
 
+alias sums="find . -type f -exec md5sum {} \; | cut -c 1-32 | sort | uniq > md5sums_$(date --utc +%Y-%m-%d_%H-%M-%S).txt"
+
 # Docker aliases
 
 alias dsa='docker stop $(docker ps -a -q)'

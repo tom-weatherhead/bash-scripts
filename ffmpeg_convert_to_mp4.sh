@@ -285,13 +285,15 @@ case $MODE in
 				# -map 0:2? -metadata:s:s:0 language=eng -metadata:s:s:0 title=\"English\" \
 
 				# 2017/07/07 : Added -vf yadif (a de-interlacing filter) : See https://video.stackexchange.com/questions/17396/how-to-deinterlacing-with-ffmpeg
+				# 2018/08/22 : Added -vf format=yuv420p so that the generated .mp4 file will be playable by Windows 10's "Films & TV" app. See https://superuser.com/questions/592464/how-do-i-merge-a-folder-of-png-images-to-a-mp4-movie-using-avconv
 
-				echo_and_eval $(printf "ffmpeg -hide_banner \
+				echo_and_eval $(printf "ffmpeg \
+					-hide_banner \
 					-i %q \
 					-map_metadata 0 \
 					-map_chapters 0 \
 					-metadata title=\"Title\" \
-					-vf yadif \
+					-vf "yadif,format=yuv420p" \
 					-c:v libx264 -preset $PRESET \
 					-crf $CRF \
 					-c:a $AUDIO_CODEC \
