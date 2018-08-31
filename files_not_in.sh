@@ -3,6 +3,8 @@
 # files_not_in.sh
 
 # $1 : The path to the text file containing a list of md5 checksums
+# - Use the following line (or "sums" in .bash_aliases) to generate this file:
+# - $ find . -type f -exec md5sum {} \; | cut -c 1-32 | sort | uniq > md5sums_$(date --utc +%Y-%m-%d_%H-%M-%S).txt
 # $2 : The directory to search; defaults to .
 
 MD5SUMFILE="$1"
@@ -29,6 +31,7 @@ fi
 
 find "$DIR" -type f -exec md5sum {} \; | while read line
 do
-	FOO=`echo $line | cut -c 1-32 -`
-	grep -q "$FOO" $MD5SUMFILE || echo $line
+	# MD5SUM=`echo $line | cut -c 1-32 -`
+	# grep -q "$MD5SUM" $MD5SUMFILE || echo $line
+	grep -q `echo $line | cut -c 1-32 -` $MD5SUMFILE || echo $line
 done

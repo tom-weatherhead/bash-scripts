@@ -1200,6 +1200,16 @@ is_Xorg_running()
 	ps aux | grep -q Xorg
 }
 
-# is_Xorg_running && [ -z "$SSH_CONNECTION" -o "$SSH_TTY" != $(tty) ] && echo "Run glxinfo?"
+# glxinfo is in the Ubuntu package mesa-utils.
 
-is_Xorg_running && [ -z "$SSH_CONNECTION" -o "$SSH_TTY" != $(tty) ] && which_silent glxinfo && glxinfo | grep "direct rendering: Yes"
+# is_Xorg_running && [ -z "$SSH_CONNECTION" -o "$SSH_TTY" != $(tty) ] && which_silent glxinfo && glxinfo | grep "direct rendering: Yes"
+is_Xorg_running && [ -z "$SSH_CONNECTION" -o "$SSH_TTY" != $(tty) ] && which_silent glxinfo && glxinfo | grep -q "direct rendering: Yes" && {
+	echo "Hardware-accelerated video rendering: Yes!"
+} || {
+	echo "Hardware-accelerated video rendering: No."
+}
+
+which_silent npm && {
+	echo -e "Latest Node.js: $(npm view node version)"
+	echo -e "Latest Angular: $(npm view @angular/core version)"
+}
