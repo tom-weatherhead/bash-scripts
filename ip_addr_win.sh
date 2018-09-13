@@ -57,18 +57,22 @@
 	# ipconfig /all | grep -e Description -e "Physical Address" -e "IPv4 Address" | perl -nle 's/\r//g; if (/^ +IPv4 Address.+: (.+)[$(]/) { print "$1 = $P = $D"; $P = $D = ""; } elsif (/^ +Description.+: (.+)$/) { $D = $1; } elsif (/^ +Physical.+: (.+)$/) { $P = $1; }' | grep $line
 # done
 
-# 2017/07/08 : Evaluate the "ipconfig /all ..." command only once:
+if [ $(uname -o) = "Cygwin" ]; then
+	# 2017/07/08 : Evaluate the "ipconfig /all ..." command only once:
 
-# echo
+	# echo
 
-# TODO: On Linux, get the same result using "ip" rather that Windows' "ipconfig".
-IP_INFO=$(ipconfig /all | grep -e Description -e "Physical Address" -e "IPv4 Address" | perl -nle 's/\r//g; if (/^ +IPv4 Address.+: (.+)[$(]/) { print "$1 = $P = $D"; $P = $D = ""; } elsif (/^ +Description.+: (.+)$/) { $D = $1; } elsif (/^ +Physical.+: (.+)$/) { $P = $1; }')
+	# TODO: On Linux, get the same result using "ip" rather that Windows' "ipconfig".
+	IP_INFO=$(ipconfig /all | grep -e Description -e "Physical Address" -e "IPv4 Address" | perl -nle 's/\r//g; if (/^ +IPv4 Address.+: (.+)[$(]/) { print "$1 = $P = $D"; $P = $D = ""; } elsif (/^ +Description.+: (.+)$/) { $D = $1; } elsif (/^ +Physical.+: (.+)$/) { $P = $1; }')
 
-# echo "$IP_INFO"
+	# echo "$IP_INFO"
 
-# echo
+	# echo
 
-netstat -rn | perl -nle 'print "$1 = $2 = $5" if /^( {1,2}[0-9]{1,2})\.{3}(([[:xdigit:]]{2} ){5}([[:xdigit:]]{2})) \.+(.+)$/' | sort -k1,3 | perl -nle 'print $1 if /^.{6}([0-9a-fA-F ]{17})/' | tr [a-f\ ] [A-F-] | while read -r line; do
-	echo "$IP_INFO" | grep $line
-	# echo $IP_INFO | grep $line
-done
+	netstat -rn | perl -nle 'print "$1 = $2 = $5" if /^( {1,2}[0-9]{1,2})\.{3}(([[:xdigit:]]{2} ){5}([[:xdigit:]]{2})) \.+(.+)$/' | sort -k1,3 | perl -nle 'print $1 if /^.{6}([0-9a-fA-F ]{17})/' | tr [a-f\ ] [A-F-] | while read -r line; do
+		echo "$IP_INFO" | grep $line
+		# echo $IP_INFO | grep $line
+	done
+else
+	echo "This script currently supports Cygwin only."
+fi

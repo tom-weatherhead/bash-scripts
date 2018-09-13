@@ -1213,9 +1213,10 @@ echo "Load: $(load)"
 
 if [ $(load) -lt ${SLOAD} ]; then
 	which_silent npm && {
-		echo -e "Latest Node.js: $(npm view node version)"
-		echo -e "Latest Angular: $(npm view @angular/core version)"
-		echo -e "Latest Electron: $(npm view electron version)"
+		echo "Foo."
+		# echo -e "Latest Node.js: $(npm view node version)"
+		# echo -e "Latest Angular: $(npm view @angular/core version)"
+		# echo -e "Latest Electron: $(npm view electron version)"
 	}
 else
 	echo "Not displaying npm package versions because of high load."

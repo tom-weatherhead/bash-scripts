@@ -154,6 +154,7 @@ alias gbz='[ -d .git ] && { git archive --format=tar HEAD | bzip2 -9 - > "../$(b
 
 alias gh='cd $(git_dir)/GitHubSandbox/tom-weatherhead >&/dev/null'
 alias lg='cd $(git_dir)/LocalSandbox >&/dev/null'
+alias sgs='cd $(git_dir)/SerenityGitSandbox >&/dev/null'
 # alias n='cd $(git_dir)/LocalSandbox/Node.js >&/dev/null'
 # alias m='cd $(git_dir)/LocalSandbox/Node.js/Express.js/MEAN >&/dev/null'
 # alias mern='cd $(git_dir)/LocalSandbox/Node.js/Express.js/MERN >&/dev/null'
@@ -171,6 +172,7 @@ alias fnm='find . -type d -name node_modules'
 # alias pnm='find . -type d -name node_modules -delete'
 # alias pnm='find . -type d -name node_modules -exec rm -rf {} \;'
 alias pnm='find . -type d -name node_modules -exec rm -rf {} \; -prune'
+alias pnmd='find . -type d \( -name node_modules -o -name dist \) -exec rm -rf {} \; -prune'
 
 # Purge log files
 alias plg='find . -type f -iname "*.log" -exec rm -f {} \;'
