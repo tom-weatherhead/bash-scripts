@@ -21,6 +21,9 @@
 # ls -At | tail -n +4 | xargs rm --
 echo "ls -At | tail -n +4 | xargs rm --"
 
+# Crontab for running a cron job every 5 minutes:
+# */5 * * * * /path/to/script.sh
+
 # But beware: parsing ls can be dangerous when the filenames contain funny characters like newlines or spaces. If you are certain that your filenames do not contain funny characters then parsing ls is quite safe, even more so if it is a one time only script.
 
 # If you are developing a script for repeated use then you should most certainly not parse the output of ls and use the methods described here: http://mywiki.wooledge.org/ParsingLs
