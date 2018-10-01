@@ -11,5 +11,6 @@ NOW=$(date --utc +%Y-%m-%d_%H-%M-%S)
 mkdir -p "$DESTDIR"
 # Use "." instead of "*" because "*" is expanded before -C changes the directory; see https://unix.stackexchange.com/questions/199038/tar-unix-not-changing-directory
 tar -cjf "$DESTDIR/git_backup_$NOW.tar.bz2" -C "$SRCDIR" .
+chown -R tomw:tomw "$DESTDIR"
 # Don't put double quotes around $DESTDIR/git_backup_*.tar.bz2 :
 ls -At $DESTDIR/git_backup_*.tar.bz2 | tail -n +4 | xargs rm -- 2>/dev/null
