@@ -85,10 +85,15 @@ if [ $# != $EXPECTED_NUMBER_OF_ARGUMENTS ]; then # Using != instead of -ne
 	error_exit "$EXPECTED_NUMBER_OF_ARGUMENTS argument(s) was/were expected; $# argument(s) was/were received"
 fi
 
+# TODO: From .bashrc:
+# run_script_if_it_exists "$HOME/bin/determine_distro_core.sh"
+
 determine_distro()
 {
 	# Find the Distributor ID:
-	if [ "$(uname -o)" == 'Cygwin' ]; then
+	if [ "$(uname -s)" == 'Darwin' ]; then
+		echo 'macOS'
+	elif [ "$(uname -o)" == 'Cygwin' ]; then
 		echo 'Cygwin'
 	elif grep -q Microsoft /proc/version; then # WSL; See https://stackoverflow.com/questions/38859145/detect-ubuntu-on-windows-vs-native-ubuntu-from-bash-script
 		echo 'Ubuntu on Windows' # This string delibrately starts with Ubuntu, so that both WSL and genuine Ubuntu return results that match the regex /^Ubuntu/
@@ -104,6 +109,10 @@ determine_distro()
 }
 
 case $(determine_distro) in
+	macOS)
+		echo 'Detected macOS'
+		PREFIX_PATH_TO_GIT_REPO='/usr/local'
+		;;
 	Cygwin)
 		echo 'Detected Cygwin'
 		PREFIX_PATH_TO_GIT_REPO='/cygdrive/c/Archive'

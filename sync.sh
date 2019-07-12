@@ -1,6 +1,55 @@
 #!/bin/bash
 
-# Using rsync to mirror a file system subtree.
+# Use rsync to mirror a file system subtree.
+
+# **** BEGIN --iconv ****
+# Handle character set changes, e.g. when copying a path including 'Bela Bartok' (with accent(s))
+# from a macOS filesystem to exFAT.
+
+# See https://askubuntu.com/questions/533690/rsync-with-special-character-files-not-working-between-mac-and-linux
+
+# Nick the Swede:
+
+# The solution was embarrassingly simple: Much due to a comment I read when researching the problem,
+# I thought you were supposed to specify the character set in the order of transformation; but it seems
+# as that is not the correct syntax. Rather, one should always use --iconv=utf-8-mac,utf-8 when initialising
+# the rsync from the mac, and always use --iconv=utf-8,utf-8-mac when initialising the rsync from the linux machine,
+# no matter if I want to sync files from the mac or linux machine.
+
+# Then it works like magic!
+
+# EDIT: Indeed, sometimes, checking the manual page closely is a good thing to do. Here it is, black on white:
+
+# --iconv=CONVERT_SPEC
+#               Rsync  can  convert  filenames between character sets using this
+#               option.  Using a CONVERT_SPEC of "." tells rsync to look up  the
+#               default  character-set via the locale setting.  Alternately, you
+#               can fully specify what conversion to do by giving a local and  a
+#               remote   charset   separated   by   a   comma   in   the   order
+#               --iconv=LOCAL,REMOTE, e.g.  --iconv=utf8,iso88591.   This  order
+#               ensures  that the option will stay the same whether you're push-
+#               ing  or  pulling  files.
+
+# ThAW: So:
+
+# if host is a Mac then --iconv=utf-8-mac,utf-8
+# else if host is Linux then --iconv=utf-8,utf-8-mac
+# else (e.g. if the host is Windows or Cygwin) then (--iconv=utf-8,utf-8-mac ? Test this.)
+
+RSYNC_ICONV_OPTION_FROM_MAC='--iconv=utf-8-mac,utf-8'
+RSYNC_ICONV_OPTION_TO_MAC='--iconv=utf-8,utf-8-mac'
+
+if [ "$(uname -s)" == 'Darwin' ]; then
+	RSYNC_ICONV_OPTION_FORWARD="$RSYNC_ICONV_OPTION_FROM_MAC" # Reverse the order of these values for files being deleted; e.g. when deleting files as part of a sync from a Mac to an exFAT volume.
+	RSYNC_ICONV_OPTION_REVERSE="$RSYNC_ICONV_OPTION_TO_MAC"
+else
+	RSYNC_ICONV_OPTION_FORWARD="$RSYNC_ICONV_OPTION_TO_MAC"
+	RSYNC_ICONV_OPTION_REVERSE="$RSYNC_ICONV_OPTION_FROM_MAC" # Use this when deleting files???
+fi
+
+# TODO: Which ICONV_OPTIONS should be used when syncing from Mac to Mac or from non-Mac to non-Mac?
+
+# **** END --iconv ****
 
 # See https://www.cyberciti.biz/faq/linux-unix-apple-osx-bsd-rsync-copy-hard-links/
 
@@ -99,9 +148,10 @@ which_test rsync
 
 RSYNC_DELETE_OPTION=''	# The delete option is turned off by default, for safety.
 RSYNC_DRY_RUN_OPTION=''
+RSYNC_ICONV_OPTION=''
 RSYNC_SSH_OPTION=''
 
-while getopts ':dns' option; do
+while getopts ':dIins' option; do
     case $option in
 		d)
 			# --del is a alias for --delete-during
@@ -113,6 +163,15 @@ while getopts ':dns' option; do
 			# --delete-after = Receiver deletes after transfer, not during
 			# --delete-excluded = Also delete excluded files from dest dirs
 			RSYNC_DELETE_OPTION='--del'
+			;;
+		I)
+			# --iconv option - reverse.
+			# The --iconv option is available in rsync version 3. (macOS: $ brew install rsync)
+			RSYNC_ICONV_OPTION="$RSYNC_ICONV_OPTION_REVERSE"
+			;;
+		i)
+			# --iconv option - forward.
+			RSYNC_ICONV_OPTION="$RSYNC_ICONV_OPTION_FORWARD"
 			;;
         n)
 			RSYNC_DRY_RUN_OPTION='n'
@@ -211,7 +270,8 @@ check_directory_is_writable_if_it_exists "$DEST_PATH"	# The DEST_PATH does not n
 # Don't use -a (the "archive" option) (: it doesn't preserve hard links : no -H)
 # Should we use the -p option? (copy the source permissions to the destination)
 # - The -p option seems to have no effect in WSL (Windows Subsystem for Linux) + NTFS
-RSYNC_SHORT_OPTIONS="-rltDH${RSYNC_DRY_RUN_OPTION}vz"
+# RSYNC_SHORT_OPTIONS="-rltDH${RSYNC_DRY_RUN_OPTION}vz"
+RSYNC_SHORT_OPTIONS="-rltD${RSYNC_DRY_RUN_OPTION}vz"
 
 # If eval sees $RECYCLE.BIN , it interprets $RECYCLE as an evaluation of the variable RECYCLE.
 # Can we suppress this part of eval's behaviour, or use something else instead of eval?
@@ -236,10 +296,14 @@ RSYNC_EXCLUDE_OPTIONS="--exclude '?'[Rr][Ee][Cc][Yy][Cc][Ll][Ee].[Bb][Ii][Nn] --
 # Use Occam's Razor to eliminate any unnecessary options.
 
 # RSYNC_LONG_OPTIONS="--chmod=ugo=rwX --chown=tomw:tomw $RSYNC_DELETE_OPTION $RSYNC_EXCLUDE_OPTIONS --numeric-ids"
-RSYNC_LONG_OPTIONS="$RSYNC_DELETE_OPTION $RSYNC_EXCLUDE_OPTIONS --numeric-ids"
+RSYNC_LONG_OPTIONS="$RSYNC_DELETE_OPTION $RSYNC_EXCLUDE_OPTIONS $RSYNC_ICONV_OPTION --numeric-ids"
+# RSYNC_LONG_OPTIONS="$RSYNC_DELETE_OPTION $RSYNC_EXCLUDE_OPTIONS"
+
+# RSYNC_LONG_OPTIONS="$RSYNC_LONG_OPTIONS --iconv=$ICONV_OPTIONS"
 
 # See https://stackoverflow.com/questions/2854655/command-to-escape-a-string-in-bash
 echo_and_eval $(printf "rsync $RSYNC_SHORT_OPTIONS $RSYNC_LONG_OPTIONS %q $RSYNC_SSH_OPTION %q" "$SRC_PATH" "$DEST_PATH")
+# printf "rsync $RSYNC_SHORT_OPTIONS $RSYNC_LONG_OPTIONS %q $RSYNC_SSH_OPTION %q" "$SRC_PATH" "$DEST_PATH"
 
 RSYNC_STATUS=$?
 echo "rsync returned status code $RSYNC_STATUS"
@@ -251,6 +315,8 @@ case $RSYNC_STATUS in
 	# *)
 		# No ;; is necessary here.
 esac
+
+# echo "--iconv=$ICONV_OPTIONS"
 
 clean_up $RSYNC_STATUS
 
