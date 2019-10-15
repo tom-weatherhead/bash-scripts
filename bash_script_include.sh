@@ -40,7 +40,7 @@ error_exit()
 {
 	# Display an error message and exit
 	echo_error_message "$PROGRAM_NAME: Error: ${1:-"Unknown Error"}"
-	clean_up 1
+	clean_up $FAILURE
 }
 
 which_test()
@@ -139,7 +139,8 @@ get_windows_drive_mounts_path()
 
 date_time_utc()
 {
-	echo "$(date --utc +'%F at %H:%M:%S') UTC"
+	# echo "$(date --utc +'%F at %H:%M:%S') UTC"
+	echo "$(date -u +'%F at %H:%M:%S') UTC" # macOS
 }
 
 pipe_status()
@@ -181,7 +182,7 @@ run_script_if_it_exists "$HOME/bin/determine_distro_core.sh"
 distro_is_cygwin()
 {
 	# if [ "$(uname -o)" == "Cygwin" ]; then
-	if [ "$(determine_distro)" == "Cygwin" ]; then
+	if [ "$(determine_distro)" == 'Cygwin' ]; then
 		# echo 1
 		# return 0	# True, because z status code of zero inducates success.
 		return $SUCCESS
@@ -206,10 +207,10 @@ distro_is_cygwin()
 
 distro_is_linux()
 {
-	if [ "$(uname -o)" == "GNU/Linux" ]; then
-		return 0	# echo 1
+	if [ "$(uname -o)" == 'GNU/Linux' ]; then
+		return $SUCCESS
 	else
-		return 1	# echo
+		return $FAILURE
 	fi
 }
 
@@ -224,42 +225,51 @@ distro_is_ubuntu() # Some form of Ubuntu; possibly WSL.
 {
 	# if [ "$(print_linux_distro_name)" == "Ubuntu" ]; then
 	if [[ "$(determine_distro)" =~ ^Ubuntu ]]; then
-		return 0	# echo 1
+		return $SUCCESS
 	else
-		return 1	# echo
+		return $FAILURE
 	fi
 }
 
 distro_is_wsl() # WSL == Windows 10 Subsystem for Linux; a variant of Ubuntu
 {
 	if [[ "$(determine_distro)" =~ ^Ubuntu[[:space:]] ]]; then
-		return 0	# echo 1
+		return $SUCCESS
 	else
-		return 1	# echo
+		return $FAILURE
 	fi
 }
 
 distro_is_ubuntu_not_wsl()
 {
 	if [ "$(determine_distro)" == 'Ubuntu' ]; then
-		return 0	# echo 1
+		return $SUCCESS
 	else
-		return 1	# echo
+		return $FAILURE
 	fi
 }
 
 distro_is_fedora()
 {
 	if [ "$(determine_distro)" == 'Fedora' ]; then
-		return 0	# echo 1
+		return $SUCCESS
 	else
-		return 1	# echo
+		return $FAILURE
 	fi
 }
 
 # distro_is_centos() {}
 
 # distro_is_red_hat_family() {}
+
+distro_is_macos()
+{
+	if [ "$(determine_distro)" == 'macOS' ]; then
+		return $SUCCESS
+	else
+		return $FAILURE
+	fi
+}
 
 get_windows_drive_mounts_path()
 {
