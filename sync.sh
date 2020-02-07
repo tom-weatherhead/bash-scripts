@@ -282,13 +282,13 @@ RSYNC_SHORT_OPTIONS="-rltD${RSYNC_DRY_RUN_OPTION}vz"
 # ThAW 2017/03/11 : I have not yet found a way to make an rsync exclude pattern case-insensitive other that the ugly [Rr][Ee][Cc][Yy][Cc][Ll][Ee]...
 # RSYNC_EXCLUDE_OPTIONS="--exclude '?RECYCLE.BIN' --exclude '?Recycle.Bin' --exclude 'System Volume Information'"
 # ThAW 2018-10-03 : RSYNC_EXCLUDE_OPTIONS="--exclude '^?RECYCLE.BIN' --exclude '^?Recycle.Bin' --exclude 'System Volume Information'"
-RSYNC_EXCLUDE_OPTIONS="--exclude '?'[Rr][Ee][Cc][Yy][Cc][Ll][Ee].[Bb][Ii][Nn] --exclude 'System Volume Information' --exclude '.DS_Store'"
+RSYNC_EXCLUDE_OPTIONS="--exclude '?'[Rr][Ee][Cc][Yy][Cc][Ll][Ee].[Bb][Ii][Nn] --exclude 'System Volume Information' --exclude '.DS_Store' --exclude '.fseventsd' --exclude '.TemporaryItems' --exclude '.Trashes'"
 # ThAW 2018-10-03 : RSYNC_EXCLUDE_OPTIONS="--exclude '^?'[Rr][Ee][Cc][Yy][Cc][Ll][Ee].[Bb][Ii][Nn] --exclude 'System Volume Information'"
 
 [[ $SRC_PATH =~ iTunes || $(pwd) =~ iTunes ]] && {
 	echo 'iTunes backup: Not backing up Home Videos...'
 	# RSYNC_EXCLUDE_OPTIONS="$RSYNC_EXCLUDE_OPTIONS --exclude 'Home Videos' --exclude 'Mobile Applications'"
-	RSYNC_EXCLUDE_OPTIONS="$RSYNC_EXCLUDE_OPTIONS --exclude 'Audiobooks' --exclude 'Books' --exclude 'Downloads' --exclude 'Home Videos' --exclude 'Mobile Applications' --exclude 'Podcasts'"
+	RSYNC_EXCLUDE_OPTIONS="$RSYNC_EXCLUDE_OPTIONS --exclude '*.m4v' --exclude 'Audiobooks' --exclude 'Automatically Add to Music.localized' --exclude 'Automatically Add to TV.localized' --exclude 'Books' --exclude 'Downloads' --exclude 'Home Videos' --exclude 'Mobile Applications' --exclude 'Podcasts'"
 }
 
 # The --numeric-ids option is necessary to preserve NTFS hard links.

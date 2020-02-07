@@ -175,7 +175,8 @@ SOURCE_FILENAME_BASE=$(basename -s ."$SOURCE_EXTENSION" "$SOURCE_FILE_PATH")
 # 1a) Using sed:
 # find `pwd` -maxdepth 1 -name "*Segment*" | sed -rn 's/^\/(cygdrive|mnt)\/([a-zA-Z])/\U\2:/;s/\//\\\\/g;s/^(.*)$/file \x27\1\x27/p' > FileList.txt
 
-find "`pwd`" -maxdepth 1 -name "*.mp4" | sed -rn 's/^\/(cygdrive|mnt)\/([a-zA-Z])/\U\2:/;s/\//\\\\/g;s/^(.*)$/file \x27\1\x27/p' > FileList.txt
+# macOS: /usr/bin/sed does not support the -r option.
+# find "`pwd`" -maxdepth 1 -name "*.mp4" | sed -rn 's/^\/(cygdrive|mnt)\/([a-zA-Z])/\U\2:/;s/\//\\\\/g;s/^(.*)$/file \x27\1\x27/p' > FileList.txt
 
 # 1b) Using awk:
 
@@ -185,7 +186,11 @@ find "`pwd`" -maxdepth 1 -name "*.mp4" | sed -rn 's/^\/(cygdrive|mnt)\/([a-zA-Z]
 # Awk stage 3: Convert every forward slash in the input to a pair of backslashes
 # Awk stage 4: Prepend "file '" and append "'" to each line of the input
 
-# find `pwd` -maxdepth 1 -name "*Segment*" | awk '{ print gensub(/^\/(cygdrive|mnt)\/([a-zA-Z])/, "\\2:", "g") }' | awk '{ sub(".", substr(toupper($i),1,1) , $i) }1' | awk '{ gsub("/","\\\\") }1' | awk '{ print "file '\''" $0 "'\''" }'
+# Windows:
+# find `pwd` -maxdepth 1 -name "*Segment*" | awk '{ print gensub(/^\/(cygdrive|mnt)\/([a-zA-Z])/, "\\2:", "g") }' | awk '{ sub(".", substr(toupper($i),1,1) , $i) }1' | awk '{ gsub("/","\\\\") }1' | awk '{ print "file '\''" $0 "'\''" }' > FileList.txt
+
+# macOS:
+find `pwd` -maxdepth 1 -name "*Segment*" | sort | awk '{ sub(".", substr(toupper($i),1,1) , $i) }1' | awk '{ print "file '\''" $0 "'\''" }' > FileList.txt
 
 # 1c) Using perl:
 # find `pwd` -maxdepth 1 -name "*Segment*" | perl -nle 's/\/(cygdrive|mnt)\/([a-zA-Z])/\U$2:/; s/\//\\\\/g; print "file '\''$_'\''";' > FileList.Perl.txt
