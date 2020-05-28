@@ -111,27 +111,31 @@ determine_distro()
 case $(determine_distro) in
 	macOS)
 		echo 'Detected macOS'
-		PREFIX_PATH_TO_GIT_REPO='/usr/local'
+		# PREFIX_PATH_TO_GIT_REPO='/usr/local'
+		FULL_PATH_TO_GIT_REPO='/usr/local/git/sandbox'
 		;;
 	Cygwin)
 		echo 'Detected Cygwin'
-		PREFIX_PATH_TO_GIT_REPO='/cygdrive/c/Archive'
+		# PREFIX_PATH_TO_GIT_REPO='/cygdrive/c/Archive'
+		FULL_PATH_TO_GIT_REPO='/cygdrive/c/git/sandbox'
 		;;
 	'Ubuntu on Windows')
 		echo 'Detected Ubuntu on Windows'
-		PREFIX_PATH_TO_GIT_REPO='/mnt/c/Archive'
+		# PREFIX_PATH_TO_GIT_REPO='/mnt/c/Archive'
+		FULL_PATH_TO_GIT_REPO='/mnt/c/git/sandbox'
 		;;
 	Linux)
 		echo 'Detected GNU/Linux'
 		# PREFIX_PATH_TO_GIT_REPO="/home/$(whoami)"
-		PREFIX_PATH_TO_GIT_REPO="/usr/local"
+		# PREFIX_PATH_TO_GIT_REPO="/usr/local"
+		FULL_PATH_TO_GIT_REPO='/usr/local/git/sandbox'
 		;;
 	*)
 		error_exit "Undetected operating system type '$OPTARG'"
 		# No ;; is necessary here.
 esac
 
-FULL_PATH_TO_GIT_REPO="$PREFIX_PATH_TO_GIT_REPO/Git/GitHubSandbox/tom-weatherhead/bash-scripts"
+# FULL_PATH_TO_GIT_REPO="$PREFIX_PATH_TO_GIT_REPO/Git/GitHubSandbox/tom-weatherhead/bash-scripts"
 
 echo "FULL_PATH_TO_GIT_REPO = $FULL_PATH_TO_GIT_REPO"
 echo
