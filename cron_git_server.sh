@@ -10,7 +10,7 @@
 
 SRCDIR="$1"
 DESTDIR="$2"
-NOW=$(date --utc +%Y-%m-%d_%H-%M-%S)
+NOW=$(date -u +%Y-%m-%d_%H-%M-%S)
 mkdir -p "$DESTDIR"
 # Use "." instead of "*" because "*" is expanded before -C changes the directory; see https://unix.stackexchange.com/questions/199038/tar-unix-not-changing-directory
 tar -cjf "$DESTDIR/git_backup_$NOW.tar.bz2" -C "$SRCDIR" .

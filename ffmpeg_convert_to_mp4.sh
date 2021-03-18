@@ -299,6 +299,7 @@ case $MODE in
 					-c:a $AUDIO_CODEC \
 					-c:s copy \
 					$THREADS_OPTION \
+					-max_muxing_queue_size 9999 \
 					%q 2>&1" "$SOURCE_FILE_PATH" "$DEST_FILENAME_WITH_EXTENSION")
 				;;
 

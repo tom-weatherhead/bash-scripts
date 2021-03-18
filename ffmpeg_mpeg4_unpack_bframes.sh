@@ -33,14 +33,14 @@ INPUT_EXTENSION="${INPUT_FILENAME_WITH_EXTENSION##*.}" # If INPUT_FILENAME_WITH_
 BASE_FILENAME=$(basename -s ."$INPUT_EXTENSION" "$INPUT_FILENAME")
 OUTPUT_FILENAME="$BASE_FILENAME.bframes_unpacked.$INPUT_EXTENSION"
 
-START_TIME=$(date --utc +'%F at %H:%M:%S')
+START_TIME=$(date -u +'%F at %H:%M:%S')
 
 # echo $(printf "ffmpeg -i %q -codec copy -bsf:v mpeg4_unpack_bframes -threads 1 %q" "$INPUT_FILENAME" "$OUTPUT_FILENAME")
 echo_and_eval $(printf "ffmpeg -i %q -codec copy -bsf:v mpeg4_unpack_bframes -threads 1 %q" "$INPUT_FILENAME" "$OUTPUT_FILENAME")
 
 EXIT_STATUS=$?
 
-FINISH_TIME=$(date --utc +'%F at %H:%M:%S')
+FINISH_TIME=$(date -u +'%F at %H:%M:%S')
 
 echo "Started at:  $START_TIME"
 echo "Finished at: $FINISH_TIME"

@@ -81,7 +81,7 @@ check_directory_exists_and_is_writable "$ARCHIVEDIR"
 echo "The Archive directory '$ARCHIVEDIR' exists and is writable by the current user '$(whoami)'."
 
 BASENAME="${ARCHIVEDIR}/$(basename $(pwd))"
-DATETIME="$(date --utc +%Y%m%d_%H%M%S)"
+DATETIME="$(date -u +%Y%m%d_%H%M%S)"
 
 if [[ $BASENAME =~ [0-9]$ ]]; then
 	BASENAME="${BASENAME}_$DATETIME"

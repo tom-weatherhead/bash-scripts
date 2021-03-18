@@ -4,7 +4,7 @@
 
 # $1 : The path to the text file containing a list of md5 checksums
 # - Use the following line (or "sums" in .bash_aliases) to generate this file:
-# - $ find . -type f -exec md5sum {} \; | cut -c 1-32 | sort | uniq > md5sums_$(date --utc +%Y-%m-%d_%H-%M-%S).txt
+# - $ find . -type f -exec md5sum {} \; | cut -c 1-32 | sort | uniq > md5sums_$(date -u +%Y-%m-%d_%H-%M-%S).txt
 # $2 : The directory to search; defaults to .
 
 MD5SUMFILE="$1"

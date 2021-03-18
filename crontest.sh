@@ -5,7 +5,7 @@
 
 mkdir -p /home/tomw/crontest/files
 cd /home/tomw/crontest/files
-NOW=$(date --utc +%Y-%m-%d_%H-%M-%S)
+NOW=$(date -u +%Y-%m-%d_%H-%M-%S)
 echo "$NOW" > $NOW.txt
 
 # Delete all *.txt files except for the most recent three:

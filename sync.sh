@@ -112,7 +112,7 @@ fi
 # rsync -av host::src /dest
 # rsync -av --rsh=ssh host:module /dest
 # rsync -av -e "ssh -l ssh-user" rsync-user@host::module /dest
-# rsync -Cavz . arvidsjaur:backup 
+# rsync -Cavz . arvidsjaur:backup
 # Makefile tar-gets:
 #	get:
 #		rsync -avuzb --exclude '*~' samba:samba/ .
@@ -205,7 +205,7 @@ case $# in
 		[[ $1 =~ ^[a-z]$ ]] || {
 			error_exit "$1 is not a lowercase letter."
 		}
-		
+
 		[[ $(pwd) =~ ^/([a-z]+)/([a-z]) ]] && {
 			MOUNTS_DIR=${BASH_REMATCH[1]}
 			SRC_PATH="/$MOUNTS_DIR/${BASH_REMATCH[2]}/"
@@ -232,7 +232,7 @@ case $# in
 esac
 
 echo "SRC_PATH is $SRC_PATH"
-echo "DEST_PATH is $DEST_PATH"	
+echo "DEST_PATH is $DEST_PATH"
 
 # The quotes around $SRC_PATH and $DEST_PATH are needed to properly handle spaces in those paths.
 check_directory_exists_and_is_readable "$SRC_PATH"
@@ -241,7 +241,7 @@ check_directory_is_writable_if_it_exists "$DEST_PATH"	# The DEST_PATH does not n
 # Windows NTFS: Ensure that the receiver dir (or its parent dir, if it does not yet exist) has the desired permissions, and that permission inheritance is enabled.
 # - This is best done for a VeraCrypt drive by setting the desired owner and permissions for the root of the drive, and then letting the rest of the items on the drive inherit them.
 # - The usual ACL for a VeraCrypt drive on Windows looks like this:
-#	Type	Principal									Access			Inherited from		Applies to		
+#	Type	Principal									Access			Inherited from		Applies to
 #	Allow	SYSTEM										Full Control	None				This folder, subfolders, and files
 #	Allow	Administrators (HOSTNAME\Administrators)	Full Control	None				This folder, subfolders, and files
 #	Allow	Users (HOSTNAME\Users)						Read & execute	None				This folder, subfolders, and files
@@ -285,10 +285,10 @@ RSYNC_SHORT_OPTIONS="-rltD${RSYNC_DRY_RUN_OPTION}vz"
 RSYNC_EXCLUDE_OPTIONS="--exclude '?'[Rr][Ee][Cc][Yy][Cc][Ll][Ee].[Bb][Ii][Nn] --exclude 'System Volume Information' --exclude '.DS_Store' --exclude '.fseventsd' --exclude '.TemporaryItems' --exclude '.Trashes'"
 # ThAW 2018-10-03 : RSYNC_EXCLUDE_OPTIONS="--exclude '^?'[Rr][Ee][Cc][Yy][Cc][Ll][Ee].[Bb][Ii][Nn] --exclude 'System Volume Information'"
 
-[[ $SRC_PATH =~ iTunes || $(pwd) =~ iTunes ]] && {
-	echo 'iTunes backup: Not backing up Home Videos...'
+[[ $SRC_PATH =~ Music || $DEST_PATH =~ iTunes ]] && {
+	echo 'DEST_PATH backup: Not backing up Home Videos, etc. ...'
 	# RSYNC_EXCLUDE_OPTIONS="$RSYNC_EXCLUDE_OPTIONS --exclude 'Home Videos' --exclude 'Mobile Applications'"
-	RSYNC_EXCLUDE_OPTIONS="$RSYNC_EXCLUDE_OPTIONS --exclude '*.m4v' --exclude 'Audiobooks' --exclude 'Automatically Add to Music.localized' --exclude 'Automatically Add to TV.localized' --exclude 'Books' --exclude 'Downloads' --exclude 'Home Videos' --exclude 'Mobile Applications' --exclude 'Podcasts'"
+	RSYNC_EXCLUDE_OPTIONS="$RSYNC_EXCLUDE_OPTIONS --exclude '*.m4r' --exclude '*.m4v' --exclude 'Audiobooks' --exclude 'Automatically Add to Music.localized' --exclude 'Automatically Add to TV.localized' --exclude 'Books' --exclude 'Downloads' --exclude 'Home Videos' --exclude 'Mobile Applications' --exclude 'Podcasts'"
 }
 
 # The --numeric-ids option is necessary to preserve NTFS hard links.
@@ -330,7 +330,7 @@ clean_up $RSYNC_STATUS
 # 3) Ensure that the owner is set correctly (e.g. to buddy.guy@hotmail.com). If you change the owner, propagate the change of ownership to all child objects, then click OK on both dialogs, and go back to step 1.
 # 4) Ensure the ACL (the Access Control List) for this root directory look like this (substitute the correct hostname):
 
-#	Type	Principal									Access			Inherited from		Applies to		
+#	Type	Principal									Access			Inherited from		Applies to
 #	Allow	SYSTEM										Full Control	None				This folder, subfolders, and files
 #	Allow	Administrators (HOSTNAME\Administrators)	Full Control	None				This folder, subfolders, and files
 #	Allow	Users (HOSTNAME\Users)						Read & execute	None				This folder, subfolders, and files

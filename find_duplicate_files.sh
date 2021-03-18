@@ -36,7 +36,7 @@ if [ $# != 1 ]; then # Using != instead of -ne
 	error_exit "Exactly one path must be specified as a command-line argument."
 fi
 
-REPORT_FILENAME=duplicate_files_report_$(date --utc +%Y%m%d_%H%M%S).txt
+REPORT_FILENAME=duplicate_files_report_$(date -u +%Y%m%d_%H%M%S).txt
 START_DATETIME=$(date_time_utc)
 
 # NEWLINE=$'\n' # See zvezda's solution in https://stackoverflow.com/questions/3005963/how-can-i-have-a-newline-in-a-string-in-sh
