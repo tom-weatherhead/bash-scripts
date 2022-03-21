@@ -21,14 +21,15 @@
 # EDIT: Indeed, sometimes, checking the manual page closely is a good thing to do. Here it is, black on white:
 
 # --iconv=CONVERT_SPEC
-#               Rsync  can  convert  filenames between character sets using this
-#               option.  Using a CONVERT_SPEC of "." tells rsync to look up  the
-#               default  character-set via the locale setting.  Alternately, you
-#               can fully specify what conversion to do by giving a local and  a
-#               remote   charset   separated   by   a   comma   in   the   order
-#               --iconv=LOCAL,REMOTE, e.g.  --iconv=utf8,iso88591.   This  order
-#               ensures  that the option will stay the same whether you're push-
-#               ing  or  pulling  files.
+
+# Rsync  can  convert  filenames between character sets using this
+# option.  Using a CONVERT_SPEC of "." tells rsync to look up  the
+# default  character-set via the locale setting.  Alternately, you
+# can fully specify what conversion to do by giving a local and  a
+# remote   charset   separated   by   a   comma   in   the   order
+# --iconv=LOCAL,REMOTE, e.g.  --iconv=utf8,iso88591.   This  order
+# ensures  that the option will stay the same whether you're push-
+# ing  or  pulling  files.
 
 # ThAW: So:
 
@@ -273,33 +274,50 @@ check_directory_is_writable_if_it_exists "$DEST_PATH"	# The DEST_PATH does not n
 # RSYNC_SHORT_OPTIONS="-rltDH${RSYNC_DRY_RUN_OPTION}vz"
 RSYNC_SHORT_OPTIONS="-rltD${RSYNC_DRY_RUN_OPTION}vz"
 
+#   - -D = Same as --devices --specials
+#   - -H, --hard-links = Preserve hard links
+#   - -l, --links = Copy symlinks as symlinks
+#   - -n, --dry-run = Perform a trial run with no changes made
+#   - -r, --recursive = Recurse into directories
+#   - -t, --times = Preserve modification times
+#   - -v, --verbose = Increase verbosity
+#   - -z, --compress = Compress file data during the transfer
+#   - --devices = Preserve device files (super-user only)
+#   - --numeric-ids = Don't map uid/gid values by user/group name
+#   - --specials = Preserve special files
+
+# We enable the --numeric-ids option below.
+# The --numeric-ids option is necessary to preserve NTFS hard links.
+
+# Let's exclude system folders that are found at the roots of drives,
+# whether the OS is macOS, Windows, or Linux:
+
+# - .fseventsd
+# - .Spotlight-V100
+# - .Trash-1000
+# - .Trashes
+# - $RECYCLE.BIN
+
 # If eval sees $RECYCLE.BIN , it interprets $RECYCLE as an evaluation of the variable RECYCLE.
 # Can we suppress this part of eval's behaviour, or use something else instead of eval?
 # How can we describe a literal dollar sign to eval?
 # -> ? The dollar sign must be escaped with '$' : See https://unix.stackexchange.com/questions/23111/what-is-the-eval-command-in-bash
 #   -> We also use Bash's printf %q to escape special characters in file paths for us
 
-# ThAW 2017/03/11 : I have not yet found a way to make an rsync exclude pattern case-insensitive other that the ugly [Rr][Ee][Cc][Yy][Cc][Ll][Ee]...
-# RSYNC_EXCLUDE_OPTIONS="--exclude '?RECYCLE.BIN' --exclude '?Recycle.Bin' --exclude 'System Volume Information'"
-# ThAW 2018-10-03 : RSYNC_EXCLUDE_OPTIONS="--exclude '^?RECYCLE.BIN' --exclude '^?Recycle.Bin' --exclude 'System Volume Information'"
-RSYNC_EXCLUDE_OPTIONS="--exclude '?'[Rr][Ee][Cc][Yy][Cc][Ll][Ee].[Bb][Ii][Nn] --exclude 'System Volume Information' --exclude '.DS_Store' --exclude '.fseventsd' --exclude '.TemporaryItems' --exclude '.Trashes'"
-# ThAW 2018-10-03 : RSYNC_EXCLUDE_OPTIONS="--exclude '^?'[Rr][Ee][Cc][Yy][Cc][Ll][Ee].[Bb][Ii][Nn] --exclude 'System Volume Information'"
+# ThAW 2017/03/11 : I have not yet found a way to make an rsync exclude pattern case-insensitive other that the ugly [Rr][Ee][Cc][Yy][Cc][Ll][Ee]
+RSYNC_EXCLUDE_OPTIONS="--exclude '?'[Rr][Ee][Cc][Yy][Cc][Ll][Ee].[Bb][Ii][Nn] --exclude 'System Volume Information' --exclude '~*' --exclude '._*' --exclude '.DS_Store' --exclude 'Thumbs.db' --exclude '.fseventsd' --exclude '.Spotlight-V100' --exclude '.TemporaryItems' --exclude '.Trash-1000' --exclude '.Trashes' --exclude 'Stuff'"
 
 [[ $SRC_PATH =~ Music || $DEST_PATH =~ iTunes ]] && {
 	echo 'DEST_PATH backup: Not backing up Home Videos, etc. ...'
-	# RSYNC_EXCLUDE_OPTIONS="$RSYNC_EXCLUDE_OPTIONS --exclude 'Home Videos' --exclude 'Mobile Applications'"
+	# .m4r files are ringtones; they are essentially renamed .m4a files
+	# .m4v files are videos
 	RSYNC_EXCLUDE_OPTIONS="$RSYNC_EXCLUDE_OPTIONS --exclude '*.m4r' --exclude '*.m4v' --exclude 'Audiobooks' --exclude 'Automatically Add to Music.localized' --exclude 'Automatically Add to TV.localized' --exclude 'Books' --exclude 'Downloads' --exclude 'Home Videos' --exclude 'Mobile Applications' --exclude 'Podcasts'"
 }
-
-# The --numeric-ids option is necessary to preserve NTFS hard links.
 
 # Use Occam's Razor to eliminate any unnecessary options.
 
 # RSYNC_LONG_OPTIONS="--chmod=ugo=rwX --chown=tomw:tomw $RSYNC_DELETE_OPTION $RSYNC_EXCLUDE_OPTIONS --numeric-ids"
 RSYNC_LONG_OPTIONS="$RSYNC_DELETE_OPTION $RSYNC_EXCLUDE_OPTIONS $RSYNC_ICONV_OPTION --numeric-ids"
-# RSYNC_LONG_OPTIONS="$RSYNC_DELETE_OPTION $RSYNC_EXCLUDE_OPTIONS"
-
-# RSYNC_LONG_OPTIONS="$RSYNC_LONG_OPTIONS --iconv=$ICONV_OPTIONS"
 
 # See https://stackoverflow.com/questions/2854655/command-to-escape-a-string-in-bash
 echo_and_eval $(printf "rsync $RSYNC_SHORT_OPTIONS $RSYNC_LONG_OPTIONS %q $RSYNC_SSH_OPTION %q" "$SRC_PATH" "$DEST_PATH")
@@ -320,7 +338,7 @@ esac
 
 clean_up $RSYNC_STATUS
 
-###
+#### **** The End ****
 
 # The following steps are probably not necessary, but users who like to practice applied paranoia may want to follow them to ensure that the file system ACLs on the receiver are sane and rational.
 
