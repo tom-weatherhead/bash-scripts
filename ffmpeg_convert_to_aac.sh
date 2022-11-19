@@ -4,6 +4,8 @@
 
 # See https://trac.ffmpeg.org/wiki/Encode/AAC
 
+# Note 2022-11-19 : iTunes (macOS Music) does not play HE-AAC files
+
 . bash_script_include.sh
 
 usage()
@@ -67,14 +69,9 @@ SOURCE_FILENAME_BASE=$(basename -s ."$SOURCE_EXTENSION" "$SOURCE_FILE_PATH")
 FFMPEG_INFO_OUTPUT=$(ffmpeg -i "$SOURCE_FILE_PATH" 2>&1)
 # Should we do this? : FFMPEG_INFO_OUTPUT=$(ffmpeg -i "$SOURCE_FILE_PATH" 2>&1 -c copy /dev/null)
 
-echo "$FFMPEG_INFO_OUTPUT" | grep -q Audio:\ aac && {
-	# The source audio stream is already encoded as AAC; just copy it.
-	echo "The source audio stream is encoded as AAC; copying..."
-	AUDIO_CODEC="copy"
-	AUDIO_CODEC_IN_DEST_FILENAME="aac.$AUDIO_CODEC"
-} || {
-	# The source audio stream is not encoded as AAC; Use the libfdk_aac codec to encode it as AAC.
-	echo "The source audio stream is not encoded as AAC; transcoding to AAC..."
+echo "$FFMPEG_INFO_OUTPUT" | grep -q "Audio: aac (HE-AAC)" && {
+	# The source audio stream is encoded as High Efficiency AAC; convert it to regular AAC.
+	echo "The source audio stream is encoded as HE-AAC; transcoding to regular AAC..."
 
 	echo "$FFMPEG_INFO_OUTPUT" | grep -q libfdk_aac && {
 		# The libfdk_aac codec is available.
@@ -84,9 +81,31 @@ echo "$FFMPEG_INFO_OUTPUT" | grep -q Audio:\ aac && {
 		AUDIO_CODEC="aac"
 	}
 
-	echo "Using the $CODEC codec to transcode the audio stream to AAC..."
+	echo "Using the $AUDIO_CODEC codec to transcode the HE-AAC audio stream to AAC..."
 	AUDIO_CODEC_IN_DEST_FILENAME="$AUDIO_CODEC.${AUDIO_KBPS_OUT}kbps"
 	AUDIO_CODEC="$AUDIO_CODEC -b:a ${AUDIO_KBPS_OUT}k"
+} || { 
+	echo "$FFMPEG_INFO_OUTPUT" | grep -q Audio:\ aac && {
+		# The source audio stream is already encoded as AAC; just copy it.
+		echo "The source audio stream is encoded as AAC; copying..."
+		AUDIO_CODEC="copy"
+		AUDIO_CODEC_IN_DEST_FILENAME="aac.$AUDIO_CODEC"
+	} || {
+		# The source audio stream is not encoded as AAC; Use the libfdk_aac codec to encode it as AAC.
+		echo "The source audio stream is not encoded as AAC; transcoding to AAC..."
+
+		echo "$FFMPEG_INFO_OUTPUT" | grep -q libfdk_aac && {
+			# The libfdk_aac codec is available.
+			echo "libfdk_aac detected. Yay!"
+			AUDIO_CODEC="libfdk_aac"
+		} || {
+			AUDIO_CODEC="aac"
+		}
+
+		echo "Using the $AUDIO_CODEC codec to transcode the audio stream to AAC..."
+		AUDIO_CODEC_IN_DEST_FILENAME="$AUDIO_CODEC.${AUDIO_KBPS_OUT}kbps"
+		AUDIO_CODEC="$AUDIO_CODEC -b:a ${AUDIO_KBPS_OUT}k"
+	}
 }
 
 # DEST_FILENAME_WITH_EXTENSION="$SOURCE_FILENAME_BASE.$AUDIO_CODEC_IN_DEST_FILENAME.m4a"	# Annoying.

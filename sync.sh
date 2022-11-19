@@ -297,6 +297,7 @@ RSYNC_SHORT_OPTIONS="-rltD${RSYNC_DRY_RUN_OPTION}vz"
 # - .Trash-1000
 # - .Trashes
 # - $RECYCLE.BIN
+# - System Volume Information
 
 # If eval sees $RECYCLE.BIN , it interprets $RECYCLE as an evaluation of the variable RECYCLE.
 # Can we suppress this part of eval's behaviour, or use something else instead of eval?
